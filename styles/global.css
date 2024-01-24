@@ -2,8 +2,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code&display=swap');
 
 body {
-   font-family: 'Inter', sans-serif;
-
    --table-vertical-spacing: 0;
 }
 
