@@ -8,11 +8,14 @@ import {
    useReactTable,
 } from '@tanstack/react-table'
 
-import { Column, Row } from '@/types'
+import { Row } from '@/types'
+import useGlobalStore from '@/store/global'
 
 const columnHelper = createColumnHelper<Row>()
 
-const Results = ({ rows, columns }: { rows: Row[]; columns: Column[] }) => {
+const Results = () => {
+   const [columns, rows] = useGlobalStore(state => [state.columns, state.rows])
+
    const table = useReactTable({
       data: rows,
       getCoreRowModel: getCoreRowModel(),

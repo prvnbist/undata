@@ -1,15 +1,15 @@
 'use client'
 
-import { FormatOptionsWithLanguage, format } from 'sql-formatter'
 import TextEditor from '@monaco-editor/react'
+import { FormatOptionsWithLanguage, format } from 'sql-formatter'
 
 import { Button, Group } from '@mantine/core'
 import { IconPlayerPlayFilled, IconSparkles } from '@tabler/icons-react'
 
+import useGlobalStore from '@/store/global'
+
 type EditorProps = {
-   query: string
-   setQuery: (value: string) => void
-   mutate: ({ query }: { query: string }) => void
+   onRun: (query: string) => void
 }
 
 const FORMAT_OPTIONS = {
@@ -19,7 +19,8 @@ const FORMAT_OPTIONS = {
    linesBetweenQueries: 2,
 } as FormatOptionsWithLanguage
 
-const Editor = ({ mutate, setQuery, query }: EditorProps) => {
+const Editor = ({ onRun }: EditorProps) => {
+   const [query, setQuery] = useGlobalStore(state => [state.query, state.setQuery])
    return (
       <>
          <Group justify='end'>
@@ -34,7 +35,7 @@ const Editor = ({ mutate, setQuery, query }: EditorProps) => {
             <Button
                color='gray'
                variant='default'
-               onClick={() => mutate({ query })}
+               onClick={() => onRun(query)}
                leftSection={<IconPlayerPlayFilled size={16} />}
             >
                Run

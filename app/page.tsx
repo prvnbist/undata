@@ -7,19 +7,20 @@ import { IconAdjustments, IconChartLine, IconTable } from '@tabler/icons-react'
 import { ActionIcon, Container, Drawer, Flex, Space, Stack, Table, Tabs } from '@mantine/core'
 
 import { Column, Row } from '@/types'
+import useGlobalStore from '@/store/global'
 import { prepareTableData, trpc } from '@/utils'
 
 import { ColumnSettings, Editor, Results } from './components'
 
 export default function Home() {
-   const [rows, setRows] = useState<Row[]>([])
-   const [columns, setColumns] = useState<Column[]>([])
+   const [rows, setColumns, setRows] = useGlobalStore(state => [
+      state.rows,
+      state.setColumns,
+      state.setRows,
+   ])
 
    const [opened, { open, close }] = useDisclosure(false)
 
-   const [query, setQuery] = useState<string>(
-      'select * from public.transactions order by date desc limit 10;'
-   )
    const { mutate } = trpc.query.useMutation({
       onSuccess: data => {
          prepareTableData(
@@ -33,7 +34,7 @@ export default function Home() {
    return (
       <Container fluid p={16} h='100vh'>
          <Stack>
-            <Editor query={query} setQuery={setQuery} mutate={mutate} />
+            <Editor onRun={query => mutate({ query })} />
             {rows.length > 0 && (
                <Tabs defaultValue='results'>
                   <Tabs.List>
@@ -56,7 +57,7 @@ export default function Home() {
                   <Tabs.Panel value='results'>
                      <Space h={16} />
                      <Table.ScrollContainer minWidth={480}>
-                        <Results rows={rows} columns={columns} />
+                        <Results />
                      </Table.ScrollContainer>
                   </Tabs.Panel>
                </Tabs>
@@ -70,7 +71,7 @@ export default function Home() {
             title='Settings'
             position='right'
          >
-            <ColumnSettings columns={columns} setColumns={setColumns} />
+            <ColumnSettings />
          </Drawer>
       </Container>
    )

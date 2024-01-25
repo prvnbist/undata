@@ -23,6 +23,7 @@ import { ActionIcon, Flex, Stack, Text } from '@mantine/core'
 import { IconEye, IconEyeOff, IconGripVertical } from '@tabler/icons-react'
 
 import { Column } from '@/types'
+import useGlobalStore from '@/store/global'
 
 const SortableItem = (props: { id: string; column: Column; actions: ReactNode }) => {
    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
@@ -60,13 +61,9 @@ const SortableItem = (props: { id: string; column: Column; actions: ReactNode })
    )
 }
 
-const ColumnSettings = ({
-   columns,
-   setColumns,
-}: {
-   columns: Column[]
-   setColumns: (value: Column[]) => void
-}) => {
+const ColumnSettings = () => {
+   const [columns, setColumns] = useGlobalStore(state => [state.columns, state.setColumns])
+
    const sensors = useSensors(
       useSensor(MouseSensor, {
          activationConstraint: {
