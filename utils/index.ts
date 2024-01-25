@@ -22,7 +22,7 @@ export const prepareTableData = <T extends Row>(
       setRows(data)
 
       const firstRow = data[0]
-      const columns = Object.keys(firstRow).map(key => ({ id: key, visible: true, title: key }))
+      const columns = Object.keys(firstRow).map(key => ({ id: key, hidden: false, title: key }))
       setColumns(columns)
    }
 }

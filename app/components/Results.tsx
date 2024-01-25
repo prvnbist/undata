@@ -20,7 +20,7 @@ const Results = () => {
       data: rows,
       getCoreRowModel: getCoreRowModel(),
       columns: columns
-         .filter(c => c.visible)
+         .filter(c => !c.hidden)
          .map(column => columnHelper.accessor(column.id, { id: column.id, header: column.title })),
    })
 

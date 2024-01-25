@@ -5,5 +5,5 @@ export type Row = {
 export type Column = {
    id: string
    title: string
-   visible: boolean
+   hidden: boolean
 }

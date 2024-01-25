@@ -99,17 +99,6 @@ const ColumnsSettings = () => {
       [columns]
    )
 
-   const toggleVisibility = useCallback(
-      (id: string, value: boolean) => {
-         const _columns = [...columns]
-         const index = _columns.findIndex(c => c.id === id)
-
-         _columns[index] = { ..._columns[index], visible: value }
-         setColumns([..._columns])
-      },
-      [columns]
-   )
-
    const saveColumnSettings = (column: Column) => {
       const _columns = [...columns]
       const index = _columns.findIndex(c => c.id === column.id)
@@ -144,10 +133,10 @@ const ColumnsSettings = () => {
                               variant='subtle'
                               onClick={e => {
                                  e.stopPropagation()
-                                 toggleVisibility(column.id, !column.visible)
+                                 saveColumnSettings({ ...column, hidden: !column.hidden })
                               }}
                            >
-                              {column.visible ? <IconEye size={16} /> : <IconEyeOff size={16} />}
+                              {column.hidden ? <IconEyeOff size={16} /> : <IconEye size={16} />}
                            </ActionIcon>
                            <ActionIcon
                               size='sm'
