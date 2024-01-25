@@ -21,7 +21,7 @@ const Results = () => {
       getCoreRowModel: getCoreRowModel(),
       columns: columns
          .filter(c => c.visible)
-         .map(column => columnHelper.accessor(column.id, { id: column.id })),
+         .map(column => columnHelper.accessor(column.id, { id: column.id, header: column.title })),
    })
 
    return (

@@ -10,7 +10,7 @@ import { Column, Row } from '@/types'
 import useGlobalStore from '@/store/global'
 import { prepareTableData, trpc } from '@/utils'
 
-import { ColumnSettings, Editor, Results } from './components'
+import { ColumnsSettings, Editor, Results } from './components'
 
 export default function Home() {
    const [rows, setColumns, setRows] = useGlobalStore(state => [
@@ -71,7 +71,7 @@ export default function Home() {
             title='Settings'
             position='right'
          >
-            <ColumnSettings />
+            <ColumnsSettings />
          </Drawer>
       </Container>
    )

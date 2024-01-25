@@ -2,6 +2,7 @@
 
 import React from 'react'
 
+import { ModalsProvider } from '@mantine/modals'
 import { ColorSchemeScript, MantineProvider } from '@mantine/core'
 
 import { theme } from 'theme'
@@ -24,7 +25,7 @@ export default function RootLayout({ children }: { children: any }) {
          <body>
             <TrpcProvider>
                <MantineProvider theme={theme} defaultColorScheme='dark'>
-                  {children}
+                  <ModalsProvider>{children}</ModalsProvider>
                </MantineProvider>
             </TrpcProvider>
          </body>

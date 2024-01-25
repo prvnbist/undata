@@ -2373,15 +2373,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/form@npm:^7.3.0":
-  version: 7.3.0
-  resolution: "@mantine/form@npm:7.3.0"
+"@mantine/form@npm:^7.4.2":
+  version: 7.4.2
+  resolution: "@mantine/form@npm:7.4.2"
   dependencies:
     fast-deep-equal: "npm:^3.1.3"
     klona: "npm:^2.0.6"
   peerDependencies:
     react: ^18.2.0
-  checksum: 1f104d2c474413b14a454784d053b2ec3c7645b8399c8ac6b7402e2382d2df8289f7bc42c041f343910202ccf1631d4e89c27554bd9e63a3caa39f16348927d6
+  checksum: e2c7d74df46922d6fdfa303a8d22ed9ff4ae464cf2feffab56a456c1bf366839be4387cfa04de60dd6652496aafd0949421360404096ef5a31f4bd6fbc2cb4ae
   languageName: node
   linkType: hard
 
@@ -2391,6 +2391,18 @@ __metadata:
   peerDependencies:
     react: ^18.2.0
   checksum: 3de186ab186a566eaeda26601db4cc0052280bf7ae23d517ba8ba7e8f2386533de8c9bf230692a2a8caea4d83c457225f25de94271fe1d1d7601ce9206fca631
+  languageName: node
+  linkType: hard
+
+"@mantine/modals@npm:^7.4.2":
+  version: 7.4.2
+  resolution: "@mantine/modals@npm:7.4.2"
+  peerDependencies:
+    "@mantine/core": 7.4.2
+    "@mantine/hooks": 7.4.2
+    react: ^18.2.0
+    react-dom: ^18.2.0
+  checksum: 87c69b704fc685d335474d8da2a6725bdcf488a8e884fd226778346d8d08b602a667667ce7ebe7d1cbae2fed5026fd6fa23ae1069ec17c803a0147123506a677
   languageName: node
   linkType: hard
 
@@ -15646,8 +15658,9 @@ __metadata:
     "@dnd-kit/core": "npm:^6.1.0"
     "@dnd-kit/sortable": "npm:^8.0.0"
     "@mantine/core": "npm:7.3.0"
-    "@mantine/form": "npm:^7.3.0"
+    "@mantine/form": "npm:^7.4.2"
     "@mantine/hooks": "npm:7.3.0"
+    "@mantine/modals": "npm:^7.4.2"
     "@monaco-editor/react": "npm:^4.6.0"
     "@next/bundle-analyzer": "npm:^14.0.1"
     "@next/eslint-plugin-next": "npm:^14.0.1"
