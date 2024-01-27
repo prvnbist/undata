@@ -1,30 +1,36 @@
 'use client'
 
-import { useState } from 'react'
-
 import { useDisclosure } from '@mantine/hooks'
 import { IconAdjustments, IconChartLine, IconTable } from '@tabler/icons-react'
 import { ActionIcon, Container, Drawer, Flex, Space, Stack, Table, Tabs } from '@mantine/core'
 
-import { Column, Row } from '@/types'
+import { Row } from '@/types'
 import useGlobalStore from '@/store/global'
 import { prepareTableData, trpc } from '@/utils'
 
 import { ColumnsSettings, Editor, Results } from './components'
 
 export default function Home() {
-   const [rows, setColumns, setRows] = useGlobalStore(state => [
+   const [rows, setColumns, setRows, setMetadata] = useGlobalStore(state => [
       state.rows,
       state.setColumns,
       state.setRows,
+      state.setMetadata,
    ])
 
    const [opened, { open, close }] = useDisclosure(false)
 
+   trpc.metadata.useQuery(undefined, {
+      retry: 3,
+      queryKey: ['metadata', undefined],
+      onSuccess: data => setMetadata(data),
+   })
+
    const { mutate } = trpc.query.useMutation({
-      onSuccess: data => {
+      onSuccess: ({ results = [], columns: schema }) => {
          prepareTableData(
-            data as Row[],
+            schema,
+            results as Row[],
             rows => setRows(rows),
             columns => setColumns(columns)
          )

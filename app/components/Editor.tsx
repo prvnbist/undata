@@ -3,10 +3,20 @@
 import TextEditor from '@monaco-editor/react'
 import { FormatOptionsWithLanguage, format } from 'sql-formatter'
 
-import { Button, Group } from '@mantine/core'
-import { IconPlayerPlayFilled, IconSparkles } from '@tabler/icons-react'
+import { modals } from '@mantine/modals'
+import { useHover } from '@mantine/hooks'
+import { ActionIcon, Button, Divider, Flex, Grid, Group, Stack, Text } from '@mantine/core'
+import {
+   IconEye,
+   IconInfoCircle,
+   IconPlayerPlayFilled,
+   IconSparkles,
+   IconTable,
+} from '@tabler/icons-react'
 
 import useGlobalStore from '@/store/global'
+
+import TableInfo from './TableInfo'
 
 type EditorProps = {
    onRun: (query: string) => void
@@ -20,9 +30,13 @@ const FORMAT_OPTIONS = {
 } as FormatOptionsWithLanguage
 
 const Editor = ({ onRun }: EditorProps) => {
-   const [query, setQuery] = useGlobalStore(state => [state.query, state.setQuery])
+   const [query, metadata, setQuery] = useGlobalStore(state => [
+      state.query,
+      state.metadata,
+      state.setQuery,
+   ])
    return (
-      <>
+      <Flex direction='column' w='100%' gap={16}>
          <Group justify='end'>
             <Button
                variant='default'
@@ -41,20 +55,71 @@ const Editor = ({ onRun }: EditorProps) => {
                Run
             </Button>
          </Group>
-         <TextEditor
-            height={420}
-            theme='vs-dark'
-            defaultLanguage='sql'
-            options={{
-               fontLigatures: true,
-               fontFamily: 'Fira Code',
-               padding: { top: 16, bottom: 16 },
-            }}
-            value={query}
-            onChange={value => setQuery(value || '')}
-         />
-      </>
+         <Grid>
+            <Grid.Col span={9}>
+               <TextEditor
+                  height={420}
+                  theme='vs-dark'
+                  defaultLanguage='sql'
+                  options={{
+                     fontLigatures: true,
+                     fontFamily: 'Fira Code',
+                     padding: { top: 16, bottom: 16 },
+                  }}
+                  value={query}
+                  onChange={value => setQuery(value || '')}
+               />
+            </Grid.Col>
+            <Grid.Col span={3}>
+               <Stack gap={2} h='100%' bg='dark.8' p={16} style={{ borderRadius: 8 }}>
+                  <Divider my={4} label='Tables' labelPosition='left' />
+                  {metadata.tables.map(item => (
+                     <ListItem item={item} key={item.name} />
+                  ))}
+                  <Divider my={4} label='Views' labelPosition='left' />
+                  {metadata.views.map(item => (
+                     <ListItem item={item} key={item.name} type='view' />
+                  ))}
+               </Stack>
+            </Grid.Col>
+         </Grid>
+      </Flex>
    )
 }
 
 export default Editor
+
+type ListItemProps = {
+   item: { name: string }
+   type?: 'table' | 'view'
+}
+
+const ListItem = ({ item, type = 'table' }: ListItemProps) => {
+   const { hovered, ref } = useHover()
+
+   const openModal = () => {
+      modals.open({
+         title: 'Table Details',
+         children: <TableInfo table={item.name} />,
+      })
+   }
+   return (
+      <Flex align='center' h={28} gap={8} justify='space-between' ref={ref}>
+         <Group gap={8}>
+            {type === 'table' ? <IconTable size={16} /> : <IconEye size={16} />}
+            <Text size='sm'>{item.name}</Text>
+         </Group>
+         {hovered && (
+            <ActionIcon
+               size='sm'
+               color='gray'
+               variant='subtle'
+               title={`${type === 'table' ? 'Table' : 'View'} Info`}
+               onClick={openModal}
+            >
+               <IconInfoCircle size={16} />
+            </ActionIcon>
+         )}
+      </Flex>
+   )
+}

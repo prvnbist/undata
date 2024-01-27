@@ -6,6 +6,7 @@ import type { AppRouter } from '@/app/api/trpc/router'
 export const trpc = createTRPCReact<AppRouter>()
 
 export const prepareTableData = <T extends Row>(
+   schema: Array<{ name: string; type: string }>,
    data: T[],
    setRows: (value: T[]) => void,
    setColumns: (value: Column[]) => void
@@ -22,7 +23,12 @@ export const prepareTableData = <T extends Row>(
       setRows(data)
 
       const firstRow = data[0]
-      const columns = Object.keys(firstRow).map(key => ({ id: key, hidden: false, title: key }))
+      const columns = Object.keys(firstRow).map(key => ({
+         id: key,
+         hidden: false,
+         title: key,
+         type: schema.find(s => s.name === key)?.type,
+      }))
       setColumns(columns)
    }
 }

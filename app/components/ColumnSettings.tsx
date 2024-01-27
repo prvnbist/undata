@@ -1,7 +1,8 @@
 import { useForm } from '@mantine/form'
-import { Button, Group, Input, Stack, Switch } from '@mantine/core'
+import { Button, Group, Input, Select, Stack, Switch } from '@mantine/core'
 
 import { Column } from '@/types'
+import { DATA_TYPES } from '@/constants'
 
 type ColumnSettingsProps = {
    column: Column
@@ -19,8 +20,21 @@ const ColumnSettings = ({ column, onSave }: ColumnSettingsProps) => {
       <form onSubmit={form.onSubmit(values => onSave({ ...column, ...values }))}>
          <Stack>
             <Stack gap={4}>
-               <Input.Label required>Title</Input.Label>
+               <Input.Label>Title</Input.Label>
                <Input placeholder='Enter the title' {...form.getInputProps('title')} />
+            </Stack>
+            <Stack gap={4}>
+               <Input.Label>Type</Input.Label>
+               <Select
+                  disabled
+                  clearable
+                  searchable
+                  data={DATA_TYPES}
+                  value={column.type}
+                  checkIconPosition='right'
+                  placeholder='Select a type'
+                  nothingFoundMessage='No such type'
+               />
             </Stack>
             <Switch label='Hide Column' {...form.getInputProps('hidden', { type: 'checkbox' })} />
             <Group justify='flex-end'>
