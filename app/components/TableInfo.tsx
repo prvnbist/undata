@@ -17,8 +17,12 @@ const TableInfo = ({ table }: { table: string }) => {
       <Stack gap={0}>
          {columns.map((column, index) => (
             <>
-               <Flex key={column.name} {...{ gap: 1, h: '32px', align: 'center' }}>
+               <Flex
+                  key={column.name}
+                  {...{ gap: 1, h: '32px', align: 'center', justify: 'space-between' }}
+               >
                   <Text size='sm'>{column.name}</Text>
+                  <Text size='xs'>{column.type}</Text>
                </Flex>
                {index < columns.length - 1 && <Divider my={2} />}
             </>

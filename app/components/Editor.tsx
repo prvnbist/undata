@@ -5,8 +5,19 @@ import { FormatOptionsWithLanguage, format } from 'sql-formatter'
 
 import { modals } from '@mantine/modals'
 import { useHover } from '@mantine/hooks'
-import { ActionIcon, Button, Divider, Flex, Grid, Group, Stack, Text } from '@mantine/core'
 import {
+   ActionIcon,
+   Button,
+   CopyButton,
+   Divider,
+   Flex,
+   Grid,
+   Group,
+   Stack,
+   Text,
+} from '@mantine/core'
+import {
+   IconCopy,
    IconEye,
    IconInfoCircle,
    IconPlayerPlayFilled,
@@ -37,18 +48,27 @@ const Editor = ({ onRun }: EditorProps) => {
    ])
    return (
       <Flex direction='column' w='100%' gap={16}>
-         <Group justify='end'>
-            <Button
-               variant='default'
+         <Group justify='end' gap={8}>
+            <CopyButton value={query}>
+               {({ copy }) => (
+                  <ActionIcon size='lg' title='Copy' color='gray' onClick={copy} variant='default'>
+                     <IconCopy size={16} />
+                  </ActionIcon>
+               )}
+            </CopyButton>
+            <ActionIcon
+               size='lg'
+               title='Format'
                color='gray'
-               leftSection={<IconSparkles size={16} />}
+               variant='default'
                onClick={() => setQuery(format(query!, FORMAT_OPTIONS))}
             >
-               Format
-            </Button>
+               <IconSparkles size={16} />
+            </ActionIcon>
             <Button
                color='gray'
                variant='default'
+               title='Run Query'
                onClick={() => onRun(query)}
                leftSection={<IconPlayerPlayFilled size={16} />}
             >

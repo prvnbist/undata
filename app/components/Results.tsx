@@ -21,7 +21,7 @@ const cellRenderer = (cell: any, type: string) => {
    if (type === 'bool')
       return (
          <Flex justify='center'>
-            <Checkbox readOnly checked={value} color='teal' />
+            <Checkbox readOnly checked={value} color='teal' size='xs' />
          </Flex>
       )
 
