@@ -9,7 +9,7 @@ import { theme } from 'theme'
 
 import '@mantine/core/styles.css'
 import 'styles/global.css'
-import { TrpcProvider } from '@/utils/provider'
+import { TrpcProvider } from '@/utils/trpc/provider'
 
 export default function RootLayout({ children }: { children: any }) {
    return (

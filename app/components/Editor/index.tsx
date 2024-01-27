@@ -1,44 +1,17 @@
-'use client'
-
+import { format } from 'sql-formatter'
 import TextEditor from '@monaco-editor/react'
-import { FormatOptionsWithLanguage, format } from 'sql-formatter'
 
-import { modals } from '@mantine/modals'
-import { useHover } from '@mantine/hooks'
-import {
-   ActionIcon,
-   Button,
-   CopyButton,
-   Divider,
-   Flex,
-   Grid,
-   Group,
-   Stack,
-   Text,
-} from '@mantine/core'
-import {
-   IconCopy,
-   IconEye,
-   IconInfoCircle,
-   IconPlayerPlayFilled,
-   IconSparkles,
-   IconTable,
-} from '@tabler/icons-react'
+import { IconCopy, IconPlayerPlayFilled, IconSparkles } from '@tabler/icons-react'
+import { ActionIcon, Button, CopyButton, Divider, Flex, Grid, Group, Stack } from '@mantine/core'
 
 import useGlobalStore from '@/store/global'
+import { QUERY_FORMAT_OPTIONS } from '@/constants'
 
-import TableInfo from './TableInfo'
+import TableOrViewItem from './TableOrViewItem'
 
 type EditorProps = {
    onRun: (query: string) => void
 }
-
-const FORMAT_OPTIONS = {
-   tabWidth: 2,
-   keywordCase: 'upper',
-   language: 'postgresql',
-   linesBetweenQueries: 2,
-} as FormatOptionsWithLanguage
 
 const Editor = ({ onRun }: EditorProps) => {
    const [query, metadata, setQuery] = useGlobalStore(state => [
@@ -61,7 +34,7 @@ const Editor = ({ onRun }: EditorProps) => {
                title='Format'
                color='gray'
                variant='default'
-               onClick={() => setQuery(format(query!, FORMAT_OPTIONS))}
+               onClick={() => setQuery(format(query!, QUERY_FORMAT_OPTIONS))}
             >
                <IconSparkles size={16} />
             </ActionIcon>
@@ -94,11 +67,11 @@ const Editor = ({ onRun }: EditorProps) => {
                <Stack gap={2} h='100%' bg='dark.8' p={16} style={{ borderRadius: 8 }}>
                   <Divider my={4} label='Tables' labelPosition='left' />
                   {metadata.tables.map(item => (
-                     <ListItem item={item} key={item.name} />
+                     <TableOrViewItem item={item} key={item.name} />
                   ))}
                   <Divider my={4} label='Views' labelPosition='left' />
                   {metadata.views.map(item => (
-                     <ListItem item={item} key={item.name} type='view' />
+                     <TableOrViewItem item={item} key={item.name} type='view' />
                   ))}
                </Stack>
             </Grid.Col>
@@ -108,38 +81,3 @@ const Editor = ({ onRun }: EditorProps) => {
 }
 
 export default Editor
-
-type ListItemProps = {
-   item: { name: string }
-   type?: 'table' | 'view'
-}
-
-const ListItem = ({ item, type = 'table' }: ListItemProps) => {
-   const { hovered, ref } = useHover()
-
-   const openModal = () => {
-      modals.open({
-         title: 'Table Details',
-         children: <TableInfo table={item.name} />,
-      })
-   }
-   return (
-      <Flex align='center' h={28} gap={8} justify='space-between' ref={ref}>
-         <Group gap={8}>
-            {type === 'table' ? <IconTable size={16} /> : <IconEye size={16} />}
-            <Text size='sm'>{item.name}</Text>
-         </Group>
-         {hovered && (
-            <ActionIcon
-               size='sm'
-               color='gray'
-               variant='subtle'
-               title={`${type === 'table' ? 'Table' : 'View'} Info`}
-               onClick={openModal}
-            >
-               <IconInfoCircle size={16} />
-            </ActionIcon>
-         )}
-      </Flex>
-   )
-}

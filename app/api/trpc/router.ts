@@ -3,23 +3,12 @@ import superjson from 'superjson'
 import { initTRPC } from '@trpc/server'
 
 import db from '@/libs/db'
+import { LIST_TABLES_QUERY, LIST_VIEWS_QUERY } from '@/constants'
+import { buildTableColumnsListQuery, extractTableNames } from '@/utils'
 
 const t = initTRPC.create({
    transformer: superjson,
 })
-
-const LIST_TABLES_QUERY = `select * from pg_catalog.pg_tables where schemaname='public'`
-const LIST_VIEWS_QUERY = `select * from pg_catalog.pg_views where schemaname='public'`
-
-const buildTableColumnsListQuery = (table: string) =>
-   `SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '${table}' order by ordinal_position;`
-
-function extractTableNames(query: string) {
-   const pattern = /\b(?:FROM|JOIN)\s+(?:\w+\.)?(\w+)\b/gi
-   const matches = [...query.matchAll(pattern)]
-   const tableNames = matches.map(match => match[1])
-   return tableNames
-}
 
 export const appRouter = t.router({
    query: t.procedure

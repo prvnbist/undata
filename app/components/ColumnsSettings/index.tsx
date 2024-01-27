@@ -1,6 +1,4 @@
-'use client'
-
-import { ReactNode, useCallback } from 'react'
+import { useCallback } from 'react'
 
 import {
    DndContext,
@@ -11,63 +9,17 @@ import {
    useSensor,
    useSensors,
 } from '@dnd-kit/core'
-import {
-   SortableContext,
-   arrayMove,
-   useSortable,
-   verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
 import { modals } from '@mantine/modals'
-import { ActionIcon, Flex, Stack, Text } from '@mantine/core'
-import { IconAdjustmentsFilled, IconEye, IconEyeOff, IconGripVertical } from '@tabler/icons-react'
+import { ActionIcon, Stack } from '@mantine/core'
+import { IconAdjustmentsFilled, IconEye, IconEyeOff } from '@tabler/icons-react'
 
 import { Column } from '@/types'
 import useGlobalStore from '@/store/global'
 
+import SortableItem from './SortableItem'
 import ColumnSettings from './ColumnSettings'
-
-const SortableItem = (props: { id: string; column: Column; actions: ReactNode }) => {
-   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
-      id: props.id,
-   })
-
-   const style = {
-      transform: CSS.Transform.toString(transform),
-      transition,
-   }
-
-   return (
-      <Flex
-         ref={setNodeRef}
-         style={style}
-         {...attributes}
-         {...listeners}
-         {...{ gap: 1, h: '40px', align: 'center' }}
-         styles={{
-            root: {
-               cursor: 'grab',
-               borderRadius: '4px',
-               border: '1px solid var(--mantine-color-dark-4)',
-            },
-         }}
-      >
-         <Flex w='32px' align='center' justify='center'>
-            <IconGripVertical size={16} stroke={2} />
-         </Flex>
-         <Flex align='center' justify='space-between' w='100%' pr={16}>
-            <Text size='sm'>
-               {props.column.title ?? props.column.id}
-               {props.column.title !== props.column.id && ` (${props.column.id})`}
-            </Text>
-            <Flex align='center' gap={8}>
-               {props.actions}
-            </Flex>
-         </Flex>
-      </Flex>
-   )
-}
 
 const ColumnsSettings = () => {
    const [columns, setColumns] = useGlobalStore(state => [state.columns, state.setColumns])
@@ -128,9 +80,7 @@ const ColumnsSettings = () => {
                      actions={
                         <>
                            <ActionIcon
-                              size='sm'
-                              color='white'
-                              variant='subtle'
+                              {...{ size: 'sm', color: 'white', variant: 'subtle' }}
                               onClick={e => {
                                  e.stopPropagation()
                                  saveColumnSettings({ ...column, hidden: !column.hidden })
@@ -139,9 +89,7 @@ const ColumnsSettings = () => {
                               {column.hidden ? <IconEyeOff size={16} /> : <IconEye size={16} />}
                            </ActionIcon>
                            <ActionIcon
-                              size='sm'
-                              color='white'
-                              variant='subtle'
+                              {...{ size: 'sm', color: 'white', variant: 'subtle' }}
                               onClick={e => {
                                  e.stopPropagation()
                                  openColumnSettings(column)

@@ -1,9 +1,4 @@
-import { createTRPCReact } from '@trpc/react-query'
-
 import { Column, Row } from '@/types'
-import type { AppRouter } from '@/app/api/trpc/router'
-
-export const trpc = createTRPCReact<AppRouter>()
 
 export const prepareTableData = <T extends Row>(
    schema: Array<{ name: string; type: string }>,
@@ -31,4 +26,14 @@ export const prepareTableData = <T extends Row>(
       }))
       setColumns(columns)
    }
+}
+
+export const buildTableColumnsListQuery = (table: string) =>
+   `SELECT * FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '${table}' order by ordinal_position;`
+
+export const extractTableNames = (query: string) => {
+   const pattern = /\b(?:FROM|JOIN)\s+(?:\w+\.)?(\w+)\b/gi
+   const matches = [...query.matchAll(pattern)]
+   const tableNames = matches.map(match => match[1])
+   return tableNames
 }

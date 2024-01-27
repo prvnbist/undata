@@ -5,8 +5,9 @@ import { IconAdjustments, IconChartLine, IconTable } from '@tabler/icons-react'
 import { ActionIcon, Container, Drawer, Flex, Space, Stack, Table, Tabs } from '@mantine/core'
 
 import { Row } from '@/types'
+import { trpc } from '@/utils/trpc'
+import { prepareTableData } from '@/utils'
 import useGlobalStore from '@/store/global'
-import { prepareTableData, trpc } from '@/utils'
 
 import { ColumnsSettings, Editor, Results } from './components'
 
@@ -31,8 +32,8 @@ export default function Home() {
          prepareTableData(
             schema,
             results as Row[],
-            rows => setRows(rows),
-            columns => setColumns(columns)
+            _rows => setRows(_rows),
+            _columns => setColumns(_columns)
          )
       },
    })

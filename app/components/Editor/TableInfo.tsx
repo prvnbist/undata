@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Divider, Flex, Stack, Text } from '@mantine/core'
 
-import { trpc } from '@/utils'
+import { trpc } from '@/utils/trpc'
 
 const TableInfo = ({ table }: { table: string }) => {
    const [columns, setColumns] = useState<Array<{ name: string; type: string }>>([])

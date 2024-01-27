@@ -1,3 +1,5 @@
+import { FormatOptionsWithLanguage } from 'sql-formatter'
+
 const TEXT_DATA_TYPES = ['text', '_text', 'char', '_char', 'varchar']
 
 export const NUMERIC_DATA_TYPES = [
@@ -32,3 +34,13 @@ export const DATE_TIME_TYPES_FORMAT: Record<string, string> = {
    timestamp: 'yyyy-MM-dd hh:mm:ss',
    timestamptz: 'yyyy-MM-dd hh:mm:ssXXX',
 }
+
+export const QUERY_FORMAT_OPTIONS = {
+   tabWidth: 2,
+   keywordCase: 'upper',
+   language: 'postgresql',
+   linesBetweenQueries: 2,
+} as FormatOptionsWithLanguage
+
+export const LIST_TABLES_QUERY = `select * from pg_catalog.pg_tables where schemaname='public'`
+export const LIST_VIEWS_QUERY = `select * from pg_catalog.pg_views where schemaname='public'`
