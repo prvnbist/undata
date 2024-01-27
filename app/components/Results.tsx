@@ -1,6 +1,8 @@
 'use client'
 
-import { Checkbox, Flex, Table } from '@mantine/core'
+import TextEditor from '@monaco-editor/react'
+import { IconArrowUpRight } from '@tabler/icons-react'
+import { ActionIcon, Checkbox, Flex, Popover, Table, Text } from '@mantine/core'
 import {
    createColumnHelper,
    flexRender,
@@ -32,7 +34,37 @@ const cellRenderer = (cell: any, type: string) => {
       return <Flex justify='right'>{format(new Date(value), DATE_TIME_TYPES_FORMAT[type])}</Flex>
    }
 
-   if (['json', 'jsonb'].includes(type)) return JSON.stringify(value)
+   if (['json', 'jsonb'].includes(type))
+      return (
+         <Flex w='180px' justify='space-between' align='center'>
+            <Text size='sm' truncate='end'>
+               {JSON.stringify(value)}
+            </Text>
+            <Popover withinPortal width={340} position='bottom' withArrow shadow='md'>
+               <Popover.Target>
+                  <ActionIcon size='sm' variant='subtle' color='gray'>
+                     <IconArrowUpRight size={14} />
+                  </ActionIcon>
+               </Popover.Target>
+               <Popover.Dropdown>
+                  <TextEditor
+                     height={240}
+                     theme='vs-dark'
+                     defaultLanguage='json'
+                     value={JSON.stringify(value, null, 3)}
+                     options={{
+                        readOnly: true,
+                        lineNumbers: 'off',
+                        fontLigatures: true,
+                        fontFamily: 'Fira Code',
+                        minimap: { enabled: false },
+                        padding: { top: 16, bottom: 16 },
+                     }}
+                  />
+               </Popover.Dropdown>
+            </Popover>
+         </Flex>
+      )
 
    return value
 }
