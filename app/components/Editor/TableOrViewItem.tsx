@@ -1,7 +1,7 @@
 import { modals } from '@mantine/modals'
 import { useHover } from '@mantine/hooks'
-import { ActionIcon, Flex, Group, Text } from '@mantine/core'
-import { IconEye, IconInfoCircle, IconTable } from '@tabler/icons-react'
+import { ActionIcon, Flex, Text } from '@mantine/core'
+import { IconInfoCircle } from '@tabler/icons-react'
 
 import TableInfo from './TableInfo'
 
@@ -20,11 +20,8 @@ const TableOrViewItem = ({ item, type = 'table' }: TableOrViewItemProps) => {
       })
    }
    return (
-      <Flex align='center' h={28} gap={8} justify='space-between' ref={ref}>
-         <Group gap={8}>
-            {type === 'table' ? <IconTable size={16} /> : <IconEye size={16} />}
-            <Text size='sm'>{item.name}</Text>
-         </Group>
+      <Flex align='center' h={32} gap={8} justify='space-between' ref={ref}>
+         <Text size='sm'>{item.name}</Text>
          {hovered && (
             <ActionIcon
                size='sm'

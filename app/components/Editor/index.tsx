@@ -2,19 +2,26 @@ import { useState } from 'react'
 import { format } from 'sql-formatter'
 import TextEditor from '@monaco-editor/react'
 
-import { IconCopy, IconPlayerPlayFilled, IconSparkles } from '@tabler/icons-react'
+import {
+   IconCopy,
+   IconEye,
+   IconPlayerPlayFilled,
+   IconSparkles,
+   IconTable,
+} from '@tabler/icons-react'
 import {
    ActionIcon,
+   Box,
    Button,
    Center,
    Container,
    CopyButton,
-   Divider,
    Flex,
    Grid,
    Group,
    Loader,
-   Stack,
+   ScrollArea,
+   Tabs,
 } from '@mantine/core'
 
 import useGlobalStore from '@/store/global'
@@ -39,6 +46,10 @@ const Editor = ({ onRun }: EditorProps) => {
       state.metadata,
       state.setQuery,
    ])
+
+   const hasTables = !!metadata.tables.length
+   const hasViews = !!metadata.views.length
+   const hasTablesOrViews = hasTables || hasViews
    return (
       <Flex direction='column' w='100%' gap={16}>
          <Group justify='end' gap={8}>
@@ -78,7 +89,7 @@ const Editor = ({ onRun }: EditorProps) => {
             </Button>
          </Group>
          <Grid>
-            <Grid.Col span={9}>
+            <Grid.Col span={hasTablesOrViews ? 9 : 12}>
                <TextEditor
                   height={420}
                   theme='vs-dark'
@@ -98,24 +109,51 @@ const Editor = ({ onRun }: EditorProps) => {
                   }
                />
             </Grid.Col>
-            <Grid.Col span={3}>
-               <Stack gap={2} h='100%' bg='#1e1e1e' p={16} style={{ borderRadius: 8 }}>
-                  {metadata.tables.length > 0 && metadata.views.length > 0 ? (
-                     <>
-                        <Divider my={4} label='Tables' labelPosition='left' />
-                        {metadata.tables.map(item => (
-                           <TableOrViewItem item={item} key={item.name} />
-                        ))}
-                        <Divider my={4} label='Views' labelPosition='left' />
-                        {metadata.views.map(item => (
-                           <TableOrViewItem item={item} key={item.name} type='view' />
-                        ))}
-                     </>
-                  ) : (
-                     <LoaderFn />
-                  )}
-               </Stack>
-            </Grid.Col>
+            {hasTablesOrViews && (
+               <Grid.Col span={3}>
+                  <Box h='100%' bg='#1e1e1e' style={{ overflow: 'hidden', borderRadius: 8 }}>
+                     <Tabs
+                        defaultValue='tables'
+                        styles={{
+                           tab: {
+                              borderRadius: 0,
+                           },
+                        }}
+                     >
+                        <Tabs.List>
+                           {hasTables && (
+                              <Tabs.Tab value='tables' leftSection={<IconTable size={16} />}>
+                                 Tables
+                              </Tabs.Tab>
+                           )}
+                           {hasViews && (
+                              <Tabs.Tab value='views' leftSection={<IconEye size={16} />}>
+                                 Views
+                              </Tabs.Tab>
+                           )}
+                        </Tabs.List>
+                        {hasTables && (
+                           <Tabs.Panel value='tables'>
+                              <ScrollArea py={8} px={16} h={382}>
+                                 {metadata.tables.map(item => (
+                                    <TableOrViewItem item={item} key={item.name} />
+                                 ))}
+                              </ScrollArea>
+                           </Tabs.Panel>
+                        )}
+                        {hasViews && (
+                           <Tabs.Panel value='views'>
+                              <ScrollArea py={8} px={16} h={382}>
+                                 {metadata.views.map(item => (
+                                    <TableOrViewItem item={item} key={item.name} type='view' />
+                                 ))}
+                              </ScrollArea>
+                           </Tabs.Panel>
+                        )}
+                     </Tabs>
+                  </Box>
+               </Grid.Col>
+            )}
          </Grid>
       </Flex>
    )
