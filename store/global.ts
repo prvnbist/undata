@@ -17,7 +17,7 @@ interface GlobalState {
 }
 
 const useGlobalStore = create<GlobalState>(set => ({
-   query: 'select * from public.transactions order by date desc limit 10;',
+   query: 'select * from test;',
    rows: [],
    columns: [],
    metadata: { tables: [], views: [] },
