@@ -1,10 +1,11 @@
 import { z } from 'zod'
 import superjson from 'superjson'
 import { initTRPC } from '@trpc/server'
+import { PostgresError } from 'postgres'
 
 import db from '@/libs/db'
 import { LIST_TABLES_QUERY, LIST_VIEWS_QUERY } from '@/constants'
-import { buildTableColumnsListQuery, extractTableNames } from '@/utils'
+import { buildTableColumnsListQuery, containsForbiddenKeywords, extractTableNames } from '@/utils'
 
 const t = initTRPC.create({
    transformer: superjson,
@@ -19,6 +20,10 @@ export const appRouter = t.router({
       )
       .mutation(async ({ input }) => {
          try {
+            if (containsForbiddenKeywords(input.query)) {
+               return { status: 'ERROR', message: 'Query contains forbidden keywords.' }
+            }
+
             const results = await db.unsafe(input.query)
 
             const tables = extractTableNames(input.query)
@@ -43,10 +48,14 @@ export const appRouter = t.router({
                }
             }
 
-            return { results, columns: tableColumns }
+            return { status: 'SUCCESS', data: { results, columns: tableColumns } }
          } catch (error) {
-            console.log(error)
-            return { results: [], columns: [] }
+            const { name, message } = error as PostgresError
+            return {
+               status: 'ERROR',
+               message:
+                  name === 'PostgresError' ? message : 'Unable to run the query please try again.',
+            }
          }
       }),
    metadata: t.procedure.query(async () => {

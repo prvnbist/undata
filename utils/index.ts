@@ -37,3 +37,10 @@ export const extractTableNames = (query: string) => {
    const tableNames = matches.map(match => match[1])
    return tableNames
 }
+
+const forbiddenKeywords =
+   /\b(ALTER|CREATE|DROP|INSERT|UPDATE|DELETE|GRANT|REVOKE|ANALYZE|VACUUM)\b/i
+
+export const containsForbiddenKeywords = (input: string) => {
+   return forbiddenKeywords.test(input)
+}
