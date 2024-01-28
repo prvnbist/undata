@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Divider, Flex, Stack, Text } from '@mantine/core'
+import { Center, Divider, Flex, Loader, Stack, Text } from '@mantine/core'
 
 import { trpc } from '@/utils/trpc'
 
 const TableInfo = ({ table }: { table: string }) => {
    const [columns, setColumns] = useState<Array<{ name: string; type: string }>>([])
-   trpc.getTableColumns.useQuery(
+   const { isLoading } = trpc.getTableColumns.useQuery(
       { table },
       {
          onSuccess: data => {
@@ -13,6 +13,15 @@ const TableInfo = ({ table }: { table: string }) => {
          },
       }
    )
+
+   if (isLoading) {
+      return (
+         <Center>
+            <Loader color='yellow' size='sm' />;
+         </Center>
+      )
+   }
+
    return (
       <Stack gap={0}>
          {columns.map((column, index) => (

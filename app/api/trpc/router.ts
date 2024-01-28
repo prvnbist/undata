@@ -76,7 +76,7 @@ export const appRouter = t.router({
          try {
             const query = buildTableColumnsListQuery(input.table)
             const columns = await db.unsafe(query)
-            return columns.map(column => ({ name: column.column_name, type: column.data_type }))
+            return columns.map(column => ({ name: column.column_name, type: column.udt_name }))
          } catch (error) {
             console.log(error)
             return []

@@ -19,7 +19,14 @@ const BooleanRenderer = ({ value }: { value: boolean }) => (
    </Flex>
 )
 
-const NumericRenderer = ({ value }: { value: number }) => <Flex justify='right'>{value}</Flex>
+const NumericRenderer = ({ value }: { value: number }) => {
+   const { language } = navigator
+   return (
+      <Flex justify='right'>
+         {language ? new Intl.NumberFormat(language).format(value) : value}
+      </Flex>
+   )
+}
 
 const TimeRenderer = ({ value }: { value: string }) => <Flex justify='right'>{value}</Flex>
 

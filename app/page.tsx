@@ -2,7 +2,7 @@
 
 import { useDisclosure } from '@mantine/hooks'
 import { IconAdjustments, IconChartLine, IconTable } from '@tabler/icons-react'
-import { ActionIcon, Container, Drawer, Flex, Space, Stack, Table, Tabs } from '@mantine/core'
+import { ActionIcon, Container, Drawer, Flex, Stack, Tabs } from '@mantine/core'
 
 import { Row } from '@/types'
 import { trpc } from '@/utils/trpc'
@@ -42,33 +42,41 @@ export default function Home() {
       <Container fluid p={16} h='100vh'>
          <Stack>
             <Editor onRun={query => mutate({ query })} />
-            {rows.length > 0 && (
-               <Tabs defaultValue='results'>
-                  <Tabs.List>
-                     <Tabs.Tab value='results' leftSection={<IconTable size={16} />}>
-                        Results
-                     </Tabs.Tab>
-                     <Tabs.Tab
-                        value='visualization'
-                        leftSection={<IconChartLine size={16} />}
-                        disabled
+
+            <Tabs defaultValue='results'>
+               <Tabs.List>
+                  <Tabs.Tab
+                     value='results'
+                     disabled={rows.length === 0}
+                     leftSection={<IconTable size={16} />}
+                  >
+                     Results
+                  </Tabs.Tab>
+                  <Tabs.Tab
+                     disabled
+                     value='visualization'
+                     leftSection={<IconChartLine size={16} />}
+                  >
+                     Visualization
+                  </Tabs.Tab>
+                  <Flex align='center' justify='center' ml='auto'>
+                     <ActionIcon
+                        color='gray'
+                        onClick={open}
+                        title='Settings'
+                        variant='subtle'
+                        disabled={rows.length === 0}
                      >
-                        Visualization
-                     </Tabs.Tab>
-                     <Flex align='center' justify='center' ml='auto'>
-                        <ActionIcon variant='subtle' color='gray' title='Settings' onClick={open}>
-                           <IconAdjustments size={16} />
-                        </ActionIcon>
-                     </Flex>
-                  </Tabs.List>
-                  <Tabs.Panel value='results'>
-                     <Space h={16} />
-                     <Table.ScrollContainer minWidth={480}>
-                        <Results />
-                     </Table.ScrollContainer>
+                        <IconAdjustments size={16} />
+                     </ActionIcon>
+                  </Flex>
+               </Tabs.List>
+               {rows.length > 0 && (
+                  <Tabs.Panel value='results' pt={16}>
+                     <Results />
                   </Tabs.Panel>
-               </Tabs>
-            )}
+               )}
+            </Tabs>
          </Stack>
          <Drawer
             offset={8}
