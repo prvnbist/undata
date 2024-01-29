@@ -90,7 +90,7 @@ export default function Home() {
                   </Flex>
                </Tabs.List>
                {rows.length > 0 && (
-                  <Tabs.Panel value='results' pt={16}>
+                  <Tabs.Panel value='results' py={16}>
                      <Results />
                   </Tabs.Panel>
                )}

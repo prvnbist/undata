@@ -40,8 +40,8 @@ const Results = () => {
    })
 
    return (
-      <Table.ScrollContainer minWidth={480}>
-         <Table striped highlightOnHover withTableBorder withColumnBorders>
+      <Table.ScrollContainer h={360} minWidth={480}>
+         <Table striped highlightOnHover withTableBorder withColumnBorders stickyHeader>
             <Table.Thead>
                {table.getHeaderGroups().map(headerGroup => (
                   <Table.Tr key={headerGroup.id}>
