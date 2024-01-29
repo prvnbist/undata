@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Flex, Pagination, Space, Table } from '@mantine/core'
+import { Flex, Pagination, Space, Table, Text } from '@mantine/core'
 import {
    createColumnHelper,
    flexRender,
@@ -10,10 +10,14 @@ import {
 import { Row } from '@/types'
 import { chunkRows } from '@/utils'
 import useGlobalStore from '@/store/global'
+import { DATE_DATA_TYPES, NUMERIC_DATA_TYPES, TIME_DATA_TYPES } from '@/constants'
 
 import cellRenderer from './cellRenderer'
 
 const columnHelper = createColumnHelper<Row>()
+
+const isRightAligned = (type: string) =>
+   [...NUMERIC_DATA_TYPES, ...TIME_DATA_TYPES, ...DATE_DATA_TYPES].includes(type)
 
 const Results = () => {
    const [page, setPage] = useState(1)
@@ -26,7 +30,11 @@ const Results = () => {
             .map(column =>
                columnHelper.accessor(column.id, {
                   id: column.id,
-                  header: column.title,
+                  header: () => (
+                     <Text size='sm' ta={isRightAligned(column.type!) ? 'right' : 'left'}>
+                        {column.title}
+                     </Text>
+                  ),
                   ...(column.type && {
                      cell: props => cellRenderer(props, column.type!),
                   }),
