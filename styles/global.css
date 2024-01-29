@@ -5,24 +5,6 @@ body {
    --table-vertical-spacing: 0;
 }
 
-th::after,
-th::before {
-   content: '';
-   position: absolute;
-   left: 0;
-   width: 100%;
-}
-
-th::before {
-   top: 0px;
-   border-top: 1px solid var(--_table-border-color);
-}
-
-th::after {
-   bottom: -1px;
-   border-bottom: 1px solid var(--_table-border-color);
-}
-
 th,
 td {
    height: 28px;
