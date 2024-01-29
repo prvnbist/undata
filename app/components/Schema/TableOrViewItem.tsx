@@ -3,7 +3,7 @@ import { useHover } from '@mantine/hooks'
 import { ActionIcon, Flex, Text } from '@mantine/core'
 import { IconInfoCircle } from '@tabler/icons-react'
 
-import TableInfo from './TableInfo'
+import TableInfo from '../Editor/TableInfo'
 
 type TableOrViewItemProps = {
    item: { name: string }

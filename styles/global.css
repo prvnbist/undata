@@ -14,12 +14,12 @@ th::before {
 }
 
 th::before {
-   top: -1px;
+   top: 0px;
    border-top: 1px solid var(--_table-border-color);
 }
 
 th::after {
-   bottom: 0px;
+   bottom: -1px;
    border-bottom: 1px solid var(--_table-border-color);
 }
 
@@ -35,4 +35,37 @@ td {
 .monaco-editor,
 .overflow-guard {
    border-radius: 8px;
+}
+
+.container {
+   display: grid;
+   grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+   grid-template-rows: 34px 1fr 1fr 1fr 1fr;
+   gap: 16px;
+   grid-template-areas:
+      'header header header header header'
+      'editor editor editor editor schema'
+      'editor editor editor editor schema'
+      'output output output output output'
+      'output output output output output';
+}
+
+.header {
+   gap: 8px;
+   display: flex;
+   grid-area: header;
+   align-items: center;
+   justify-content: end;
+}
+
+.editor {
+   grid-area: editor;
+}
+
+.schema {
+   grid-area: schema;
+}
+
+.output {
+   grid-area: output;
 }
