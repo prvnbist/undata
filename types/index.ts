@@ -7,5 +7,5 @@ export type Column = {
    id: string
    title: string
    type: string | null
-   formatType: 'select' | 'url' | null
+   formatType: 'select' | 'url' | 'image' | null
 }

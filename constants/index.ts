@@ -64,6 +64,7 @@ export const LIST_TABLES_QUERY = "select * from pg_catalog.pg_tables where schem
 export const LIST_VIEWS_QUERY = "select * from pg_catalog.pg_views where schemaname='public'"
 
 export const DATA_FORMAT_TYPES = [
+   { value: 'image', label: 'Image' },
    { value: 'select', label: 'Single Select' },
    { value: 'url', label: 'URL' },
 ]

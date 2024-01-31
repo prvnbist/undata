@@ -1,8 +1,8 @@
 import { format } from 'date-fns'
 import TextEditor from '@monaco-editor/react'
-import { IconArrowUpRight } from '@tabler/icons-react'
+import { IconArrowUpRight, IconMaximize } from '@tabler/icons-react'
 
-import { ActionIcon, Badge, Checkbox, Flex, Popover, Text } from '@mantine/core'
+import { ActionIcon, BackgroundImage, Badge, Checkbox, Flex, Popover, Text } from '@mantine/core'
 
 import { Column } from '@/types'
 import { extractURLName, isURL } from '@/utils'
@@ -43,8 +43,8 @@ const JSONRenderer = ({ value }: { value: string }) => (
       </Text>
       <Popover withinPortal width={340} position='bottom' withArrow shadow='md'>
          <Popover.Target>
-            <ActionIcon size='sm' variant='subtle' color='gray'>
-               <IconArrowUpRight size={14} />
+            <ActionIcon size='sm' variant='subtle' color='gray' title='View JSON'>
+               <IconMaximize size={14} />
             </ActionIcon>
          </Popover.Target>
          <Popover.Dropdown p={0}>
@@ -87,6 +87,15 @@ const URLRenderer = ({ value }: { value: string }) => {
    )
 }
 
+const ImageRenderer = ({ value }: { value: string }) => {
+   if (!value) return null
+   return (
+      <Flex align='center' py={4}>
+         <BackgroundImage src={value} radius='sm' style={{ width: 28, height: 28 }} />
+      </Flex>
+   )
+}
+
 const cellRenderer = (cell: any, type: Column['type'], formatType: Column['formatType']) => {
    const value = cell.getValue()
 
@@ -97,6 +106,8 @@ const cellRenderer = (cell: any, type: Column['type'], formatType: Column['forma
          return <SingleSelectRenderer value={value} />
       case formatType === 'url':
          return <URLRenderer value={value} />
+      case formatType === 'image':
+         return <ImageRenderer value={value} />
 
       case type === 'bool':
          return <BooleanRenderer value={value} />
