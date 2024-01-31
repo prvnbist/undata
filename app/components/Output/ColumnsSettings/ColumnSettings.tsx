@@ -2,6 +2,7 @@ import { useForm } from '@mantine/form'
 import { Button, Group, Input, Select, Stack, Switch } from '@mantine/core'
 
 import { Column } from '@/types'
+import { DATA_FORMAT_TYPES } from '@/constants'
 
 type ColumnSettingsProps = {
    column: Column
@@ -35,11 +36,11 @@ const ColumnSettings = ({ column, onSave }: ColumnSettingsProps) => {
                <Select
                   clearable
                   searchable
+                  data={DATA_FORMAT_TYPES}
                   checkIconPosition='right'
                   placeholder='Select a type'
                   disabled={column.type !== 'text'}
                   nothingFoundMessage='No such type'
-                  data={[{ value: 'select', label: 'Single Select' }]}
                   {...form.getInputProps('formatType')}
                />
             </Stack>

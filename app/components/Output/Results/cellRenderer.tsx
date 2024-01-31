@@ -5,6 +5,7 @@ import { IconArrowUpRight } from '@tabler/icons-react'
 import { ActionIcon, Badge, Checkbox, Flex, Popover, Text } from '@mantine/core'
 
 import { Column } from '@/types'
+import { extractURLName, isURL } from '@/utils'
 import {
    DATE_DATA_TYPES,
    DATE_TYPES_FORMAT,
@@ -68,6 +69,24 @@ const SingleSelectRenderer = ({ value }: { value: string }) => {
    )
 }
 
+const URLRenderer = ({ value }: { value: string }) => {
+   if (!value) return null
+   if (!isURL(value)) return value
+
+   return (
+      <Flex w='180px' justify='space-between' align='center'>
+         <Text size='sm' truncate='end' c='blue' title={value}>
+            {extractURLName(value)}
+         </Text>
+         <a href={value} target='_blank' rel='noopener noreferrer' style={{ height: '22px' }}>
+            <ActionIcon size='sm' variant='subtle' color='blue'>
+               <IconArrowUpRight size={14} />
+            </ActionIcon>
+         </a>
+      </Flex>
+   )
+}
+
 const cellRenderer = (cell: any, type: Column['type'], formatType: Column['formatType']) => {
    const value = cell.getValue()
 
@@ -76,6 +95,8 @@ const cellRenderer = (cell: any, type: Column['type'], formatType: Column['forma
    switch (true) {
       case formatType === 'select':
          return <SingleSelectRenderer value={value} />
+      case formatType === 'url':
+         return <URLRenderer value={value} />
 
       case type === 'bool':
          return <BooleanRenderer value={value} />
