@@ -36,7 +36,7 @@ const Results = () => {
                      </Text>
                   ),
                   ...(column.type && {
-                     cell: props => cellRenderer(props, column.type!),
+                     cell: props => cellRenderer(props, column.type, column.formatType),
                   }),
                })
             ),

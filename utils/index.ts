@@ -1,5 +1,9 @@
 import { Column, Row } from '@/types'
 
+const INITIAL_COLUMN_STATE = {
+   formatType: null,
+}
+
 export const prepareTableData = <T extends Row>(
    schema: Array<{ name: string; type: string }>,
    data: T[],
@@ -8,21 +12,20 @@ export const prepareTableData = <T extends Row>(
 ) => {
    if (Array.isArray(data)) {
       if (data.length === 0) {
-         {
-            setRows([])
-            setColumns([])
-            return
-         }
+         setRows([])
+         setColumns([])
+         return
       }
 
       setRows(data)
 
       const firstRow = data[0]
       const columns = Object.keys(firstRow).map(key => ({
+         ...INITIAL_COLUMN_STATE,
          id: key,
          hidden: false,
          title: key,
-         type: schema.find(s => s.name === key)?.type,
+         type: schema.find(s => s.name === key)?.type ?? null,
       }))
       setColumns(columns)
    }
@@ -41,9 +44,7 @@ export const extractTableNames = (query: string) => {
 const forbiddenKeywords =
    /\b(ALTER|CREATE|DROP|INSERT|UPDATE|DELETE|GRANT|REVOKE|ANALYZE|VACUUM)\b/i
 
-export const containsForbiddenKeywords = (input: string) => {
-   return forbiddenKeywords.test(input)
-}
+export const containsForbiddenKeywords = (input: string) => forbiddenKeywords.test(input)
 
 export function chunkRows<T>(array: T[], size: number): T[][] {
    if (!array.length) {

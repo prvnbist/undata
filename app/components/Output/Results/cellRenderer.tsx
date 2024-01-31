@@ -2,8 +2,9 @@ import { format } from 'date-fns'
 import TextEditor from '@monaco-editor/react'
 import { IconArrowUpRight } from '@tabler/icons-react'
 
-import { ActionIcon, Checkbox, Flex, Popover, Text } from '@mantine/core'
+import { ActionIcon, Badge, Checkbox, Flex, Popover, Text } from '@mantine/core'
 
+import { Column } from '@/types'
 import {
    DATE_DATA_TYPES,
    DATE_TYPES_FORMAT,
@@ -58,10 +59,24 @@ const JSONRenderer = ({ value }: { value: string }) => (
    </Flex>
 )
 
-const cellRenderer = (cell: any, type: string) => {
+const SingleSelectRenderer = ({ value }: { value: string }) => {
+   if (!value) return null
+   return (
+      <Badge variant='default' color='blue' size='sm'>
+         {value}
+      </Badge>
+   )
+}
+
+const cellRenderer = (cell: any, type: Column['type'], formatType: Column['formatType']) => {
    const value = cell.getValue()
 
+   if (!type) return value
+
    switch (true) {
+      case formatType === 'select':
+         return <SingleSelectRenderer value={value} />
+
       case type === 'bool':
          return <BooleanRenderer value={value} />
       case NUMERIC_DATA_TYPES.includes(type):

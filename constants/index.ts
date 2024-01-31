@@ -60,5 +60,5 @@ export const QUERY_FORMAT_OPTIONS = {
    linesBetweenQueries: 2,
 } as FormatOptionsWithLanguage
 
-export const LIST_TABLES_QUERY = `select * from pg_catalog.pg_tables where schemaname='public'`
-export const LIST_VIEWS_QUERY = `select * from pg_catalog.pg_views where schemaname='public'`
+export const LIST_TABLES_QUERY = "select * from pg_catalog.pg_tables where schemaname='public'"
+export const LIST_VIEWS_QUERY = "select * from pg_catalog.pg_views where schemaname='public'"

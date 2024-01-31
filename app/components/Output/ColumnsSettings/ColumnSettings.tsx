@@ -2,18 +2,21 @@ import { useForm } from '@mantine/form'
 import { Button, Group, Input, Select, Stack, Switch } from '@mantine/core'
 
 import { Column } from '@/types'
-import { DATA_TYPES } from '@/constants'
 
 type ColumnSettingsProps = {
    column: Column
    onSave: (values: Column) => void
 }
 
+type FormState = Omit<Column, 'id'>
+
 const ColumnSettings = ({ column, onSave }: ColumnSettingsProps) => {
-   const form = useForm({
+   const form = useForm<FormState>({
       initialValues: {
-         title: column.title,
          hidden: column.hidden,
+         title: column.title,
+         type: column.type,
+         formatType: column.formatType,
       },
    })
    return (
@@ -24,16 +27,20 @@ const ColumnSettings = ({ column, onSave }: ColumnSettingsProps) => {
                <Input placeholder='Enter the title' {...form.getInputProps('title')} />
             </Stack>
             <Stack gap={4}>
-               <Input.Label>Type</Input.Label>
+               <Input.Label>Data Type</Input.Label>
+               <Input placeholder='Enter the title' disabled {...form.getInputProps('type')} />
+            </Stack>
+            <Stack gap={4}>
+               <Input.Label>Format Type</Input.Label>
                <Select
-                  disabled
                   clearable
                   searchable
-                  data={DATA_TYPES}
-                  value={column.type}
                   checkIconPosition='right'
                   placeholder='Select a type'
+                  disabled={column.type !== 'text'}
                   nothingFoundMessage='No such type'
+                  data={[{ value: 'select', label: 'Single Select' }]}
+                  {...form.getInputProps('formatType')}
                />
             </Stack>
             <Switch label='Hide Column' {...form.getInputProps('hidden', { type: 'checkbox' })} />

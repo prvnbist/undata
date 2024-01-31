@@ -3,8 +3,9 @@ export type Row = {
 }
 
 export type Column = {
-   id: string
-   type?: string
-   title: string
    hidden: boolean
+   id: string
+   title: string
+   type: string | null
+   formatType: 'select' | null
 }
