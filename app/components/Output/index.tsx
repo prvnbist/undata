@@ -1,14 +1,28 @@
 import { useDisclosure } from '@mantine/hooks'
 import { ActionIcon, Drawer, Flex, Tabs, Text } from '@mantine/core'
-import { IconAdjustments, IconBug, IconChartLine, IconTable } from '@tabler/icons-react'
+import {
+   IconAdjustments,
+   IconBug,
+   IconChartLine,
+   IconFileExport,
+   IconTable,
+} from '@tabler/icons-react'
 
 import useGlobalStore, { GlobalState } from '@/store/global'
 
 import Results from './Results'
+import ExportResults from './ExportResults'
 import ColumnsSettings from './ColumnsSettings'
 
 const Output = () => {
-   const [opened, { open, close }] = useDisclosure(false)
+   const [
+      isColumnSettingsModalOpen,
+      { open: openColumnSettingsModal, close: closeColumnSettingsModal },
+   ] = useDisclosure(false)
+   const [
+      isExportResultsModalOpen,
+      { open: openExportResultsModal, close: closeExportResultsModal },
+   ] = useDisclosure(false)
 
    const [rows, error] = useGlobalStore(state => [state.rows, state.error])
    const [tab, setTab] = useGlobalStore(state => [state.tab, state.setTab])
@@ -30,13 +44,22 @@ const Output = () => {
                <Tabs.Tab disabled value='visualizations' leftSection={<IconChartLine size={16} />}>
                   Visualization
                </Tabs.Tab>
-               <Flex align='center' justify='center' ml='auto'>
+               <Flex align='center' justify='center' gap={4} ml='auto'>
                   <ActionIcon
                      color='gray'
-                     onClick={open}
+                     title='Export'
+                     variant='subtle'
+                     disabled={rows.length === 0}
+                     onClick={openExportResultsModal}
+                  >
+                     <IconFileExport size={16} />
+                  </ActionIcon>
+                  <ActionIcon
+                     color='gray'
                      title='Settings'
                      variant='subtle'
                      disabled={rows.length === 0}
+                     onClick={openColumnSettingsModal}
                   >
                      <IconAdjustments size={16} />
                   </ActionIcon>
@@ -56,10 +79,20 @@ const Output = () => {
          <Drawer
             offset={8}
             radius='md'
-            opened={opened}
-            onClose={close}
+            position='right'
+            title='Export Results'
+            opened={isExportResultsModalOpen}
+            onClose={closeExportResultsModal}
+         >
+            <ExportResults />
+         </Drawer>
+         <Drawer
+            offset={8}
+            radius='md'
             title='Settings'
             position='right'
+            opened={isColumnSettingsModalOpen}
+            onClose={closeColumnSettingsModal}
          >
             <ColumnsSettings />
          </Drawer>

@@ -7547,6 +7547,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"deeks@npm:3.0.2":
+  version: 3.0.2
+  resolution: "deeks@npm:3.0.2"
+  checksum: 2d90a569f43a01e450e7693951ad4889475b68a3e95c09a8f04b47dd94cb64ba84f7d7e7fd5b3857461b5a38275be037242768e2686afe3e898c3c1ae65cb4de
+  languageName: node
+  linkType: hard
+
 "deep-equal@npm:^2.0.5":
   version: 2.2.2
   resolution: "deep-equal@npm:2.2.2"
@@ -7770,6 +7777,13 @@ __metadata:
   version: 1.0.0
   resolution: "discontinuous-range@npm:1.0.0"
   checksum: 487b105f83c1cc528e25e65d3c4b73958ec79769b7bd0e264414702a23a7e2b282c72982b4bef4af29fcab53f47816c3f0a5c40d85a99a490f4bc35b83dc00f8
+  languageName: node
+  linkType: hard
+
+"doc-path@npm:4.0.2":
+  version: 4.0.2
+  resolution: "doc-path@npm:4.0.2"
+  checksum: 4dde0c449b8bf7e4f1533510bb78a26f75aeec887917056eda19631ccfb966bb110c89d329f23cd19aaa0df97eced0d5cf9ea09178ce4b1bbe7b769a048da9a6
   languageName: node
   linkType: hard
 
@@ -11187,6 +11201,16 @@ __metadata:
   bin:
     jsesc: bin/jsesc
   checksum: f93792440ae1d80f091b65f8ceddf8e55c4bb7f1a09dee5dcbdb0db5612c55c0f6045625aa6b7e8edb2e0a4feabd80ee48616dbe2d37055573a84db3d24f96d9
+  languageName: node
+  linkType: hard
+
+"json-2-csv@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "json-2-csv@npm:5.0.1"
+  dependencies:
+    deeks: "npm:3.0.2"
+    doc-path: "npm:4.0.2"
+  checksum: b1aaf21e4f2c027b113e6832bce78af66b11683c8e88b53450d11e55591b714731f47839c9670a652309873f55e7ac97c45ea1ac649b5d952c4fb3d42dce0bf9
   languageName: node
   linkType: hard
 
@@ -15707,6 +15731,7 @@ __metadata:
     eslint-plugin-testing-library: "npm:^6.1.0"
     jest: "npm:^29.7.0"
     jest-environment-jsdom: "npm:^29.7.0"
+    json-2-csv: "npm:^5.0.1"
     mantine-form-zod-resolver: "npm:^1.0.0"
     monaco-editor: "npm:^0.45.0"
     next: "npm:14.0.1"
