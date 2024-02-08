@@ -2,6 +2,7 @@ import { format } from 'date-fns'
 import TextEditor from '@monaco-editor/react'
 import { IconArrowUpRight, IconMaximize } from '@tabler/icons-react'
 
+import { modals } from '@mantine/modals'
 import { ActionIcon, BackgroundImage, Badge, Checkbox, Flex, Popover, Text } from '@mantine/core'
 
 import { Column } from '@/types'
@@ -89,9 +90,32 @@ const URLRenderer = ({ value }: { value: string }) => {
 
 const ImageRenderer = ({ value }: { value: string }) => {
    if (!value) return null
+
+   const open = () => {
+      modals.open({
+         title: 'Image Preview',
+         children: (
+            <BackgroundImage
+               src={value}
+               radius='sm'
+               style={{
+                  width: '100%',
+                  height: 280,
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+               }}
+            />
+         ),
+      })
+   }
    return (
       <Flex align='center' py={4}>
-         <BackgroundImage src={value} radius='sm' style={{ width: 28, height: 28 }} />
+         <BackgroundImage
+            src={value}
+            radius='sm'
+            onClick={open}
+            style={{ width: 28, height: 28 }}
+         />
       </Flex>
    )
 }
