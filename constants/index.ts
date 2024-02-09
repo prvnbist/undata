@@ -65,6 +65,7 @@ export const LIST_VIEWS_QUERY = "select * from pg_catalog.pg_views where scheman
 
 export const DATA_FORMAT_TYPES = [
    { value: 'image', label: 'Image' },
-   { value: 'select', label: 'Single Select' },
+   { value: 'single_select', label: 'Single Select' },
+   { value: 'multi_select', label: 'Multi Select' },
    { value: 'url', label: 'URL' },
 ]

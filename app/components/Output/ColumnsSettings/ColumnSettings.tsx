@@ -39,9 +39,9 @@ const ColumnSettings = ({ column, onSave }: ColumnSettingsProps) => {
                   data={DATA_FORMAT_TYPES}
                   checkIconPosition='right'
                   placeholder='Select a type'
-                  disabled={column.type !== 'text'}
                   nothingFoundMessage='No such type'
                   {...form.getInputProps('formatType')}
+                  disabled={!['text', '_text'].includes(column.type ?? '')}
                />
             </Stack>
             <Switch label='Hide Column' {...form.getInputProps('hidden', { type: 'checkbox' })} />

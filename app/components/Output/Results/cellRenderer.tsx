@@ -3,7 +3,16 @@ import TextEditor from '@monaco-editor/react'
 import { IconArrowUpRight, IconMaximize } from '@tabler/icons-react'
 
 import { modals } from '@mantine/modals'
-import { ActionIcon, BackgroundImage, Badge, Checkbox, Flex, Popover, Text } from '@mantine/core'
+import {
+   ActionIcon,
+   BackgroundImage,
+   Badge,
+   Checkbox,
+   Flex,
+   Group,
+   Popover,
+   Text,
+} from '@mantine/core'
 
 import { Column } from '@/types'
 import { extractURLName, isURL } from '@/utils'
@@ -30,7 +39,6 @@ const NumericRenderer = ({ value }: { value: number }) => {
       </Flex>
    )
 }
-
 const TimeRenderer = ({ value }: { value: string }) => <Flex justify='right'>{value}</Flex>
 
 const DateRenderer = ({ value, type }: { value: string; type: keyof typeof DATE_TYPES_FORMAT }) => (
@@ -67,6 +75,41 @@ const SingleSelectRenderer = ({ value }: { value: string }) => {
       <Badge variant='default' color='blue' size='sm'>
          {value}
       </Badge>
+   )
+}
+
+const MultiSelectRenderer = ({ value }: { value: string[] }) => {
+   if (!Array.isArray(value) || value.length === 0) return null
+
+   const firstThree = value.slice(0, 3)
+   const remaining = value.slice(3)
+
+   return (
+      <Group w='240px' gap={4} py={3}>
+         {firstThree.map(item => (
+            <Badge variant='default' color='blue' size='sm'>
+               {item}
+            </Badge>
+         ))}
+         {remaining.length > 0 && (
+            <Popover withinPortal width={280} position='bottom-end' shadow='md'>
+               <Popover.Target>
+                  <ActionIcon size='sm' variant='subtle' color='gray' title='View Options'>
+                     <IconMaximize size={14} />
+                  </ActionIcon>
+               </Popover.Target>
+               <Popover.Dropdown p={4} px={4}>
+                  <Flex gap={4}>
+                     {remaining.map(item => (
+                        <Badge variant='default' color='blue' size='sm'>
+                           {item}
+                        </Badge>
+                     ))}
+                  </Flex>
+               </Popover.Dropdown>
+            </Popover>
+         )}
+      </Group>
    )
 }
 
@@ -126,8 +169,10 @@ const cellRenderer = (cell: any, type: Column['type'], formatType: Column['forma
    if (!type) return value
 
    switch (true) {
-      case formatType === 'select':
+      case formatType === 'single_select':
          return <SingleSelectRenderer value={value} />
+      case formatType === 'multi_select':
+         return <MultiSelectRenderer value={value} />
       case formatType === 'url':
          return <URLRenderer value={value} />
       case formatType === 'image':
@@ -138,7 +183,7 @@ const cellRenderer = (cell: any, type: Column['type'], formatType: Column['forma
       case NUMERIC_DATA_TYPES.includes(type):
          return <NumericRenderer value={value} />
       case TIME_DATA_TYPES.includes(type):
-         return <TimeRenderer value={value} />
+         return <TimeRenderer value={value} type={type} />
       case DATE_DATA_TYPES.includes(type):
          return <DateRenderer value={value} type={type} />
       case JSON_DATA_TYPES.includes(type):
