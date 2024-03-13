@@ -1,15 +1,41 @@
-import { MantineProvider, Text, Title } from '@mantine/core'
+import { IconPlus } from '@tabler/icons-react'
 
-import { theme } from './theme'
+import { modals, ModalsProvider } from '@mantine/modals'
+import { Button, Container, MantineProvider, Space, Title } from '@mantine/core'
+
 import '@fontsource-variable/inter'
 import '@fontsource-variable/unbounded'
 import '@mantine/core/styles.css'
+import '@mantine/dropzone/styles.css'
+
+import { theme } from '@/theme'
+import { AddCellModal, Cells } from '@/components'
 
 export default function App() {
 	return (
 		<MantineProvider theme={theme} defaultColorScheme='dark'>
-			<Title order={2}>Hello World!</Title>
-			<Text>hi there!</Text>
+			<ModalsProvider>
+				<Container pt={80}>
+					<Title order={2}>Greetings, user!</Title>
+					<Space h={24} />
+					<Cells />
+					<Space h={16} />
+					<Button
+						variant='default'
+						fullWidth
+						rightSection={<IconPlus size={18} />}
+						onClick={() => {
+							modals.open({
+								size: 'lg',
+								title: 'Add Cell',
+								children: <AddCellModal />,
+							})
+						}}
+					>
+						Add Cell
+					</Button>
+				</Container>
+			</ModalsProvider>
 		</MantineProvider>
 	)
 }
