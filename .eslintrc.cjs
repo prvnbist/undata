@@ -1,20 +1,14 @@
 module.exports = {
-   extends: ['mantine', 'plugin:@next/next/recommended', 'plugin:jest/recommended'],
-   plugins: ['testing-library', 'jest'],
-   overrides: [
-      {
-         files: ['**/?(*.)+(spec|test).[jt]s?(x)'],
-         extends: ['plugin:testing-library/react'],
-      },
-   ],
-   parserOptions: {
-      project: './tsconfig.json',
-   },
-   rules: {
-      'react/react-in-jsx-scope': 'off',
-      'import/extensions': 'off',
-      '@typescript-eslint/semi': 'off',
-      'jsx-quotes': 0,
-      'react/jsx-indent-props': 0,
-   },
+	extends: ['mantine'],
+	parserOptions: {
+		project: './tsconfig.json',
+	},
+	rules: {
+		'react/react-in-jsx-scope': 'off',
+		'import/extensions': 'off',
+		'no-tabs': 'off',
+		'@typescript-eslint/semi': 'off',
+		'react/jsx-indent-props': 'off',
+		'jsx-quotes': 'off',
+	},
 }
