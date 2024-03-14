@@ -1,6 +1,21 @@
 import { useMemo, useState } from 'react'
-import { IconTrash } from '@tabler/icons-react'
-import { ActionIcon, Input, Pagination, Paper, Space, Stack, Table, Title } from '@mantine/core'
+import {
+	IconArrowsSort,
+	IconSortAscending,
+	IconSortDescending,
+	IconTrash,
+} from '@tabler/icons-react'
+import {
+	ActionIcon,
+	Group,
+	Input,
+	Pagination,
+	Paper,
+	Space,
+	Stack,
+	Table,
+	Text,
+} from '@mantine/core'
 
 import type { Cell } from '@/store'
 import useGlobalStore from '@/store'
@@ -19,9 +34,45 @@ const Cell = ({ cell, index }: { index: number; cell: Cell }) => {
 	const updateCell = useGlobalStore(state => state.updateCell)
 	const deleteCell = useGlobalStore(state => state.deleteCell)
 
-	const rows = [...cell.data.rows.values()]
+	const [sort, setSort] = useState<{ column: string; direction: 'ASC' | 'DESC' } | null>(null)
 
-	const chunkedRows = useMemo(() => chunk(rows, 10), [rows])
+	const chunkedRows = useMemo(() => {
+		let rows = [...cell.data.rows]
+
+		if (sort) {
+			const column = cell.data.columns.get(sort.column)!
+			rows = rows.sort((a, b) => {
+				const x = a[sort.column]
+				const y = b[sort.column]
+
+				if (column.data_type === 'date') {
+					return sort.direction === 'ASC'
+						? new Date(x).getTime() - new Date(y).getTime()
+						: new Date(y).getTime() - new Date(x).getTime()
+				}
+
+				if (['number', 'boolean'].includes(column.data_type)) {
+					return sort.direction === 'ASC' ? x - y : y - x
+				}
+
+				return sort.direction === 'ASC'
+					? String(x).localeCompare(y)
+					: String(y).localeCompare(x)
+			})
+		}
+
+		return chunk(rows, 10)
+	}, [sort, cell.data])
+
+	const handleSort = (key: string) => {
+		setSort(current => {
+			if (!current || current.column !== key) return { column: key, direction: 'ASC' }
+
+			if (current.direction === 'ASC') return { column: key, direction: 'DESC' }
+
+			return null
+		})
+	}
 
 	return (
 		<Paper shadow='xs' withBorder p='md' style={{ position: 'relative' }}>
@@ -63,14 +114,31 @@ const Cell = ({ cell, index }: { index: number; cell: Cell }) => {
 				>
 					<Table.Thead>
 						<Table.Tr>
-							{[...cell.data.columns.values()].map(c => (
-								<Table.Td
-									key={c.id}
-									ta={['number', 'date'].includes(c.data_type) ? 'right' : 'left'}
-								>
-									{c.title}
-								</Table.Td>
-							))}
+							{[...cell.data.columns.values()].map(c => {
+								const isSortApplied = sort?.column === c.id
+								return (
+									<Table.Th key={c.id}>
+										<Group justify='space-between'>
+											<Text size='sm'>{c.title}</Text>
+											<ActionIcon
+												size='sm'
+												onClick={() => handleSort(c.id)}
+												opacity={isSortApplied ? 1 : 0.4}
+												variant={isSortApplied ? 'light' : 'subtle'}
+												color={isSortApplied ? 'yellow.4' : 'gray'}
+											>
+												{isSortApplied && sort.direction === 'ASC' && (
+													<IconSortAscending size={16} />
+												)}
+												{isSortApplied && sort.direction === 'DESC' && (
+													<IconSortDescending size={16} />
+												)}
+												{!isSortApplied && <IconArrowsSort size={16} />}
+											</ActionIcon>
+										</Group>
+									</Table.Th>
+								)
+							})}
 						</Table.Tr>
 					</Table.Thead>
 					<Table.Tbody>
@@ -95,7 +163,7 @@ const Cell = ({ cell, index }: { index: number; cell: Cell }) => {
 				withEdges
 				value={activePage}
 				onChange={setPage}
-				total={Math.ceil(rows.length / 10)}
+				total={Math.ceil(cell.data.rows.length / 10)}
 			/>
 		</Paper>
 	)
