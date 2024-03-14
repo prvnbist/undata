@@ -8,10 +8,12 @@ import Cell from './Cell'
 const Cells = () => {
 	const cells = useGlobalStore(state => state.cells)
 
-	if (cells.length === 0) return null
+	if (cells.size === 0) return null
+
+	const list = [...cells.values()]
 	return (
 		<Stack gap='md'>
-			{cells.map((cell, index) => (
+			{list.map((cell, index) => (
 				<Cell key={cell.id} index={index} cell={cell} />
 			))}
 		</Stack>

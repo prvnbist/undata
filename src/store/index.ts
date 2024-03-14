@@ -21,26 +21,31 @@ export interface Cell {
 }
 
 interface GlobalStore {
-	cells: Cell[]
+	cells: Map<string, Cell>
 	addCell: (cell: Cell) => void
-	updateCell: (index: number, payload: Partial<Cell>) => void
+	updateCell: (id: string, payload: Partial<Cell>) => void
 	deleteCell: (id: string) => void
 }
 
 const useGlobalStore = create<GlobalStore>(set => ({
-	cells: [],
+	cells: new Map(),
 	addCell: (cell: Cell) =>
-		set(state => ({ cells: [...state.cells, { ...cell, index: state.cells.length + 1 }] })),
-	updateCell: (index: number, payload: Partial<Cell>) =>
 		set(state => {
-			const _cells = state.cells
-			_cells[index] = { ..._cells[index], ...payload }
-			return { cells: [..._cells] }
+			const _cells = new Map(state.cells)
+			_cells.set(cell.id, cell)
+			return { cells: _cells }
+		}),
+	updateCell: (id: string, payload: Partial<Cell>) =>
+		set(state => {
+			const _cells = new Map(state.cells)
+			_cells.set(id, { ...(_cells.get(id) as Cell), ...payload })
+			return { cells: _cells }
 		}),
 	deleteCell: (id: string) =>
 		set(state => {
-			const _cells = state.cells
-			return { cells: _cells.filter(c => c.id !== id) }
+			const _cells = new Map(state.cells)
+			_cells.delete(id)
+			return { cells: _cells }
 		}),
 }))
 

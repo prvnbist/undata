@@ -91,7 +91,7 @@ const Cell = ({ cell, index }: { index: number; cell: Cell }) => {
 				variant='unstyled'
 				value={cell.title}
 				placeholder='Enter your cell title'
-				onChange={e => updateCell(index, { title: e.target.value })}
+				onChange={e => updateCell(cell.id, { title: e.target.value })}
 				styles={{
 					input: {
 						fontSize: 'var(--mantine-font-size-lg)',
