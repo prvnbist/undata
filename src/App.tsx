@@ -1,7 +1,7 @@
 import { IconPlus } from '@tabler/icons-react'
 
 import { modals, ModalsProvider } from '@mantine/modals'
-import { Button, Container, MantineProvider, Space, Title } from '@mantine/core'
+import { Button, Container, Divider, MantineProvider, Space, Title } from '@mantine/core'
 
 import '@fontsource-variable/inter'
 import '@fontsource-variable/unbounded'
@@ -16,24 +16,29 @@ export default function App() {
 		<MantineProvider theme={theme} defaultColorScheme='dark'>
 			<ModalsProvider>
 				<Container pt={80}>
-					<Title order={2}>Greetings, user!</Title>
+					<Title order={2}>Greetings👋🏽</Title>
 					<Space h={24} />
 					<Cells />
 					<Space h={16} />
-					<Button
-						variant='default'
-						fullWidth
-						rightSection={<IconPlus size={18} />}
-						onClick={() => {
-							modals.open({
-								size: 'lg',
-								title: 'Add Cell',
-								children: <AddCellModal />,
-							})
-						}}
-					>
-						Add Cell
-					</Button>
+					<Divider
+						labelPosition='center'
+						label={
+							<Button
+								size='xs'
+								variant='subtle'
+								rightSection={<IconPlus size={18} />}
+								onClick={() => {
+									modals.open({
+										size: 'xl',
+										title: 'Add Cell',
+										children: <AddCellModal />,
+									})
+								}}
+							>
+								Add Cell
+							</Button>
+						}
+					/>
 				</Container>
 			</ModalsProvider>
 		</MantineProvider>

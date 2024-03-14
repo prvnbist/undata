@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 
 import { FileWithPath } from '@mantine/dropzone'
-import { Center, Input, Table, Text } from '@mantine/core'
+import { Center, Input, Select, Table, Text } from '@mantine/core'
 
-import { Column, Source } from '@/store'
+import type { Column, DataType, Source } from '@/store'
 
 interface DataConfigurationProps {
 	file: FileWithPath
@@ -12,6 +12,13 @@ interface DataConfigurationProps {
 	setData: (data: { [key in string]: any }[]) => void
 	setColumns: (columns: Map<string, Column>) => void
 }
+
+const DATA_TYPES = [
+	{ value: 'boolean', label: 'Boolean' },
+	{ value: 'date', label: 'Date' },
+	{ value: 'number', label: 'Number' },
+	{ value: 'text', label: 'Text' },
+]
 
 const DataConfiguration = ({
 	file,
@@ -42,7 +49,7 @@ const DataConfiguration = ({
 
 					keys.forEach(key => {
 						if (!_columns.has(key)) {
-							_columns.set(key, { id: key, title: key })
+							_columns.set(key, { id: key, title: key, data_type: 'text' })
 						}
 					})
 
@@ -56,9 +63,10 @@ const DataConfiguration = ({
 		}
 	}, [source, file])
 
-	const onChange = (key: string, value: string) => {
+	const onChange = (id: string, payload: Partial<Column>) => {
 		const _columns = new Map(columns)
-		_columns.set(key, { id: key, title: value })
+		// @ts-ignore
+		_columns.set(id, { id, ..._columns.get(id), ...payload })
 		setColumns(_columns)
 	}
 
@@ -86,7 +94,15 @@ const DataConfiguration = ({
 						<Table.Td>
 							<Input
 								value={column.title}
-								onChange={e => onChange(column.id, e.target.value)}
+								onChange={e => onChange(column.id, { title: e.target.value })}
+							/>
+						</Table.Td>
+						<Table.Td>
+							<Select
+								data={DATA_TYPES}
+								placeholder='Select data type'
+								value={column.data_type}
+								onChange={value => onChange(column.id, { data_type: value as DataType })}
 							/>
 						</Table.Td>
 					</Table.Tr>

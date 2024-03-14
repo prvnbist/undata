@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Stack } from '@mantine/core'
 
 import useGlobalStore from '@/store'
@@ -10,11 +11,11 @@ const Cells = () => {
 	if (cells.length === 0) return null
 	return (
 		<Stack gap='md'>
-			{cells.map(cell => (
-				<Cell key={cell.id} cell={cell} />
+			{cells.map((cell, index) => (
+				<Cell key={cell.id} index={index} cell={cell} />
 			))}
 		</Stack>
 	)
 }
 
-export default Cells
+export default memo(Cells)

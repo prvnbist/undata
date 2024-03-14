@@ -10,5 +10,6 @@ module.exports = {
 		'@typescript-eslint/semi': 'off',
 		'react/jsx-indent-props': 'off',
 		'jsx-quotes': 'off',
+		'max-len': 'off',
 	},
 }

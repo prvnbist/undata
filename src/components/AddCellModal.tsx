@@ -23,7 +23,12 @@ const AddCellModal = () => {
 	const nextStep = () => {
 		if (active === 2) {
 			closeAllModals()
-			addCell({ id: uuidv4(), source: source!, data: { rows: data, columns } })
+			addCell({
+				id: uuidv4(),
+				title: 'Cell Title',
+				source: source!,
+				data: { rows: data, columns },
+			})
 			return
 		}
 		setActive(current => (current < 3 ? current + 1 : current))
