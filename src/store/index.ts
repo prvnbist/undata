@@ -18,6 +18,10 @@ export interface Cell {
 		columns: Map<string, Column>
 		rows: { [key in string]: any }[]
 	}
+	sort: null | {
+		column: string
+		direction: 'ASC' | 'DESC'
+	}
 }
 
 interface GlobalStore {

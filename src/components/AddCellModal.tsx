@@ -24,6 +24,7 @@ const AddCellModal = () => {
 		if (active === 2) {
 			closeAllModals()
 			addCell({
+				sort: null,
 				id: uuidv4(),
 				title: 'Cell Title',
 				source: source!,

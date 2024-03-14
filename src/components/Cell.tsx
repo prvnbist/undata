@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
 	IconArrowsSort,
 	IconSortAscending,
@@ -29,12 +29,16 @@ function chunk<T>(array: T[], size: number): T[][] {
 	return [head, ...chunk(tail, size)]
 }
 
-const Cell = ({ cell, index }: { index: number; cell: Cell }) => {
+const Cell = ({ cell }: { index: number; cell: Cell }) => {
 	const [activePage, setPage] = useState(1)
 	const updateCell = useGlobalStore(state => state.updateCell)
 	const deleteCell = useGlobalStore(state => state.deleteCell)
 
 	const [sort, setSort] = useState<{ column: string; direction: 'ASC' | 'DESC' } | null>(null)
+
+	useEffect(() => {
+		updateCell(cell.id, { sort })
+	}, [sort])
 
 	const chunkedRows = useMemo(() => {
 		let rows = [...cell.data.rows]
