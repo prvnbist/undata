@@ -64,15 +64,25 @@ const Cell = ({ cell, index }: { index: number; cell: Cell }) => {
 					<Table.Thead>
 						<Table.Tr>
 							{[...cell.data.columns.values()].map(c => (
-								<Table.Td key={c.id}>{c.title}</Table.Td>
+								<Table.Td
+									key={c.id}
+									ta={['number', 'date'].includes(c.data_type) ? 'right' : 'left'}
+								>
+									{c.title}
+								</Table.Td>
 							))}
 						</Table.Tr>
 					</Table.Thead>
 					<Table.Tbody>
-						{chunkedRows[activePage - 1].map((row, index) => (
-							<Table.Tr key={index}>
-								{[...cell.data.columns.keys()].map(key => (
-									<Table.Td key={key}>{row[key]}</Table.Td>
+						{chunkedRows[activePage - 1].map((row, i) => (
+							<Table.Tr key={i}>
+								{[...cell.data.columns.values()].map(c => (
+									<Table.Td
+										key={c.id}
+										ta={['number', 'date'].includes(c.data_type) ? 'right' : 'left'}
+									>
+										{row[c.id]}
+									</Table.Td>
 								))}
 							</Table.Tr>
 						))}
