@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
 	IconArrowsSort,
+	IconCheck,
+	IconFile,
 	IconSortAscending,
 	IconSortDescending,
 	IconTrash,
@@ -36,6 +38,8 @@ const Cell = ({ cell }: { index: number; cell: Cell }) => {
 
 	const [view, setView] = useState<View>(cell.view ?? 'TABLE')
 
+	const [title, setTitle] = useState(cell.title ?? '')
+
 	useEffect(() => {
 		updateCell(cell.id, { view })
 	}, [view])
@@ -52,20 +56,36 @@ const Cell = ({ cell }: { index: number; cell: Cell }) => {
 					<IconTrash size={16} />
 				</ActionIcon>
 			</Stack>
-			<Group w='100%' justify='space-between'>
-				<Input
-					size='xs'
-					variant='unstyled'
-					value={cell.title}
-					placeholder='Enter your cell title'
-					onChange={e => updateCell(cell.id, { title: e.target.value })}
-					styles={{
-						input: {
-							fontSize: 'var(--mantine-font-size-lg)',
-							fontFamily: "'Unbounded Variable', sans-serif",
-						},
-					}}
-				/>
+			<Flex w='100%' justify='space-between'>
+				<Group gap={2} flex={1}>
+					<Flex w={32} align='center' justify='center'>
+						{cell.title !== title ? (
+							<ActionIcon
+								title='Save Title'
+								variant='subtle'
+								onClick={() => updateCell(cell.id, { title })}
+							>
+								<IconCheck size={16} />
+							</ActionIcon>
+						) : (
+							<IconFile size={24} />
+						)}
+					</Flex>
+					<Input
+						size='xs'
+						flex={1}
+						value={title}
+						variant='unstyled'
+						placeholder='Enter your cell title'
+						onChange={e => setTitle(e.target.value)}
+						styles={{
+							input: {
+								fontSize: 'var(--mantine-font-size-lg)',
+								fontFamily: "'Unbounded Variable', sans-serif",
+							},
+						}}
+					/>
+				</Group>
 				<SegmentedControl
 					size='xs'
 					value={view}
@@ -76,7 +96,7 @@ const Cell = ({ cell }: { index: number; cell: Cell }) => {
 						{ value: 'CHART', label: 'Chart' },
 					]}
 				/>
-			</Group>
+			</Flex>
 			<Space h={16} />
 			{view === 'TABLE' && <TableView cell={cell} />}
 			{view === 'CHART' && <ChartView cell={cell} />}

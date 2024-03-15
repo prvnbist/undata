@@ -27,7 +27,7 @@ const AddCellModal = () => {
 			closeAllModals()
 			addCell({
 				id: uuidv4(),
-				title: 'Cell Title',
+				title: '',
 				source: source!,
 				view: 'TABLE',
 				data: { rows: data, columns },
