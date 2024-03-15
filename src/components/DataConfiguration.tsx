@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { csv2json } from 'json-2-csv'
 
 import { FileWithPath } from '@mantine/dropzone'
 import { Center, Input, Select, Table, Text } from '@mantine/core'
@@ -20,6 +21,19 @@ const DATA_TYPES = [
 	{ value: 'text', label: 'Text' },
 ]
 
+const prepareColumns = (data: { [key in string]: any }[]) => {
+	const columns: Map<string, Column> = new Map([])
+	const keys = Object.keys(data[0])
+
+	keys.forEach(key => {
+		if (!columns.has(key)) {
+			columns.set(key, { id: key, title: key, data_type: 'text' })
+		}
+	})
+
+	return columns
+}
+
 const DataConfiguration = ({
 	file,
 	source,
@@ -33,29 +47,39 @@ const DataConfiguration = ({
 		setError(null)
 		setData([])
 
-		if (source === 'JSON') {
+		if (['JSON', 'CSV'].includes(source)) {
 			const reader = new FileReader()
 
 			reader.onloadend = evt => {
-				try {
-					const content = JSON.parse((evt.target?.result as string) ?? '')
+				const content = (evt.target?.result as string) ?? ''
+				if (source === 'JSON') {
+					try {
+						const parsed = JSON.parse(content)
 
-					if (!Array.isArray(content) || content.length === 0) return
+						if (!Array.isArray(parsed) || parsed.length === 0) return
 
-					setData(content)
+						setData(parsed)
 
-					const _columns: Map<string, Column> = new Map([])
-					const keys = Object.keys(content[0])
+						const _columns = prepareColumns(parsed)
+						setColumns(_columns)
+					} catch (err) {
+						setError(
+							'Unable to parse JSON file, please make sure the file has valid JSON data'
+						)
+					}
+				} else if (source === 'CSV') {
+					try {
+						const parsed = csv2json(content)
 
-					keys.forEach(key => {
-						if (!_columns.has(key)) {
-							_columns.set(key, { id: key, title: key, data_type: 'text' })
-						}
-					})
+						if (!Array.isArray(parsed) || parsed.length === 0) return
 
-					setColumns(_columns)
-				} catch (err) {
-					setError('Unable to parse JSON file, please make sure the file has valid JSON data')
+						setData(parsed)
+
+						const _columns = prepareColumns(parsed)
+						setColumns(_columns)
+					} catch (err) {
+						setError('Unable to parse CSV file, please make sure the file has valid CSV data')
+					}
 				}
 			}
 
@@ -74,7 +98,7 @@ const DataConfiguration = ({
 		return (
 			<Center p='xl' w='70%' mx='auto'>
 				<Text c='red.4' ta='center'>
-					Unable to parse JSON file, please make sure the file has valid JSON data.{error}
+					{error}
 				</Text>
 			</Center>
 		)

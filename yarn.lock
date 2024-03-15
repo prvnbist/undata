@@ -6405,6 +6405,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"deeks@npm:3.1.0":
+  version: 3.1.0
+  resolution: "deeks@npm:3.1.0"
+  checksum: 10c0/3173ca28466cf31d550248c034c5466d93c5aecb8ee8ca547a2c9f471e62af4ebed7456c3310503be901d982867071b4411030a6b724528739895aee1dc2b482
+  languageName: node
+  linkType: hard
+
 "deep-eql@npm:^4.1.3":
   version: 4.1.3
   resolution: "deep-eql@npm:4.1.3"
@@ -6606,6 +6613,13 @@ __metadata:
   dependencies:
     path-type: "npm:^4.0.0"
   checksum: 10c0/dcac00920a4d503e38bb64001acb19df4efc14536ada475725e12f52c16777afdee4db827f55f13a908ee7efc0cb282e2e3dbaeeb98c0993dd93d1802d3bf00c
+  languageName: node
+  linkType: hard
+
+"doc-path@npm:4.1.0":
+  version: 4.1.0
+  resolution: "doc-path@npm:4.1.0"
+  checksum: 10c0/134a272a0c41c5f03083fbe7d12fba88615734f15d75e5c1e59e6d9d41e6ad2c5d2ec442282a55ceab45695c4b31aaf6194de1db57ea840e10e77a5c8dd65fa4
   languageName: node
   linkType: hard
 
@@ -9256,6 +9270,16 @@ __metadata:
   bin:
     jsesc: bin/jsesc
   checksum: 10c0/f93792440ae1d80f091b65f8ceddf8e55c4bb7f1a09dee5dcbdb0db5612c55c0f6045625aa6b7e8edb2e0a4feabd80ee48616dbe2d37055573a84db3d24f96d9
+  languageName: node
+  linkType: hard
+
+"json-2-csv@npm:^5.5.0":
+  version: 5.5.0
+  resolution: "json-2-csv@npm:5.5.0"
+  dependencies:
+    deeks: "npm:3.1.0"
+    doc-path: "npm:4.1.0"
+  checksum: 10c0/0fba7fb72e9d52e06d943fbc07c90bd8d5ea5f929260bfe449b76afd894168694c30bb935bb60fcc48a9342cc30254cc40bc2ead294786ca2f40634467490edd
   languageName: node
   linkType: hard
 
@@ -12917,6 +12941,7 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^4.6.0"
     identity-obj-proxy: "npm:^3.0.0"
     jsdom: "npm:^24.0.0"
+    json-2-csv: "npm:^5.5.0"
     postcss: "npm:^8.4.35"
     postcss-preset-mantine: "npm:1.13.0"
     postcss-simple-vars: "npm:^7.0.1"

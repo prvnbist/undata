@@ -67,4 +67,34 @@ const JSONSource = ({
 	return <FileUpload accept={['application/json']} onFileSelect={setFile} />
 }
 
-export { JSONSource }
+const CSVSource = ({
+	file,
+	setFile,
+}: {
+	file: FileWithPath | null
+	setFile: (file: FileWithPath | null) => void
+}) => {
+	if (file) {
+		return (
+			<Paper shadow='xs' radius='sm' withBorder p='md'>
+				<Group justify='space-between'>
+					<Group gap={4}>
+						<IconFile size={18} />
+						<Text>{file.name}</Text>
+					</Group>
+					<ActionIcon
+						color='red.4'
+						variant='subtle'
+						title='Remove File'
+						onClick={() => setFile(null)}
+					>
+						<IconTrash size={16} />
+					</ActionIcon>
+				</Group>
+			</Paper>
+		)
+	}
+	return <FileUpload accept={['text/csv']} onFileSelect={setFile} />
+}
+
+export { JSONSource, CSVSource }

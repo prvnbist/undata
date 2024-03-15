@@ -7,8 +7,13 @@ import { Button, Group, Select, Stepper } from '@mantine/core'
 
 import useGlobalStore, { Column, Source } from '@/store'
 
-import { JSONSource } from './Sources'
+import { CSVSource, JSONSource } from './Sources'
 import DataConfiguration from './DataConfiguration'
+
+const SOURCES = [
+	{ value: 'JSON', label: 'JSON File' },
+	{ value: 'CSV', label: 'CSV File' },
+]
 
 const AddCellModal = () => {
 	const [active, setActive] = useState(0)
@@ -61,13 +66,14 @@ const AddCellModal = () => {
 				<Stepper.Step label='Source'>
 					<Select
 						value={source}
+						data={SOURCES}
 						placeholder='Select data source'
 						onChange={value => setSource(value as Source)}
-						data={[{ value: 'JSON', label: 'JSON File' }]}
 					/>
 				</Stepper.Step>
 				<Stepper.Step label='Data Ingress'>
 					{source === 'JSON' && <JSONSource file={file} setFile={setFile} />}
+					{source === 'CSV' && <CSVSource file={file} setFile={setFile} />}
 				</Stepper.Step>
 				<Stepper.Step label='Configuration'>
 					{!!source && !!file && (

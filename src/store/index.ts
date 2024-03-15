@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type Source = 'JSON'
+export type Source = 'JSON' | 'CSV'
 
 export type DataType = 'number' | 'date' | 'boolean' | 'text'
 

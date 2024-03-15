@@ -36,6 +36,8 @@ function chunk<T>(array: T[], size: number): T[][] {
 	return [head, ...chunk(tail, size)]
 }
 
+const CHART_HEIGHT = 339
+
 const Cell = ({ cell }: { index: number; cell: Cell }) => {
 	const updateCell = useGlobalStore(state => state.updateCell)
 	const deleteCell = useGlobalStore(state => state.deleteCell)
@@ -140,6 +142,7 @@ const ChartSettings = ({ xAxis, setXAxis, yAxis, setYAxis, columns }: IChartSett
 					value={xAxis}
 					clearable={false}
 					allowDeselect={false}
+					placeholder='Select a column'
 					onChange={value => setXAxis(value as string)}
 					data={options.filter(o => !yAxis.includes(o.value))}
 				/>
@@ -167,7 +170,7 @@ interface IChart {
 const Chart = ({ xAxis, yAxis, data }: IChart) => {
 	if (!xAxis) {
 		return (
-			<Center h={300}>
+			<Center h={CHART_HEIGHT}>
 				<Text c='red.4'>Please select x axis column</Text>
 			</Center>
 		)
@@ -175,7 +178,7 @@ const Chart = ({ xAxis, yAxis, data }: IChart) => {
 
 	if (yAxis.length === 0) {
 		return (
-			<Center h={300}>
+			<Center h={CHART_HEIGHT}>
 				<Text c='red.4'>Please select y axis column/s</Text>
 			</Center>
 		)
@@ -183,10 +186,17 @@ const Chart = ({ xAxis, yAxis, data }: IChart) => {
 
 	const series = yAxis.map((c, index) => ({
 		name: c,
-		color: `blue.${index + 3}`,
+		color: `blue.${index + 4}`,
 	}))
 	return (
-		<LineChart w='100%' h={300} data={data} dataKey={xAxis} series={series} curveType='linear' />
+		<LineChart
+			w='100%'
+			h={CHART_HEIGHT}
+			data={data}
+			dataKey={xAxis}
+			series={series}
+			curveType='linear'
+		/>
 	)
 }
 
