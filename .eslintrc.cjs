@@ -11,5 +11,6 @@ module.exports = {
 		'react/jsx-indent-props': 'off',
 		'jsx-quotes': 'off',
 		'max-len': 'off',
+		'arrow-body-style': 'off',
 	},
 }

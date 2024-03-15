@@ -7,6 +7,7 @@ import '@fontsource-variable/inter'
 import '@fontsource-variable/unbounded'
 import '@mantine/core/styles.css'
 import '@mantine/dropzone/styles.css'
+import '@mantine/charts/styles.css'
 
 import { theme } from '@/theme'
 import { AddCellModal, Cells } from '@/components'
@@ -15,7 +16,7 @@ export default function App() {
 	return (
 		<MantineProvider theme={theme} defaultColorScheme='dark'>
 			<ModalsProvider>
-				<Container pt={80}>
+				<Container pt={80} size='lg'>
 					<Title order={2}>Greetings👋🏽</Title>
 					<Space h={24} />
 					<Cells />

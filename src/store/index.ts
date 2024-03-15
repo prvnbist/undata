@@ -4,6 +4,8 @@ export type Source = 'JSON'
 
 export type DataType = 'number' | 'date' | 'boolean' | 'text'
 
+export type View = 'CHART' | 'TABLE'
+
 export interface Column {
 	id: string
 	title: string
@@ -12,15 +14,20 @@ export interface Column {
 
 export interface Cell {
 	id: string
+	view: View
 	source: Source
 	title: string
 	data: {
 		columns: Map<string, Column>
 		rows: { [key in string]: any }[]
 	}
-	sort: null | {
+	sort?: null | {
 		column: string
 		direction: 'ASC' | 'DESC'
+	}
+	chart?: {
+		xAxis: string | null
+		yAxis: string[]
 	}
 }
 

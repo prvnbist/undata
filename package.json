@@ -21,6 +21,7 @@
   "dependencies": {
     "@fontsource-variable/inter": "^5.0.17",
     "@fontsource-variable/unbounded": "^5.0.19",
+    "@mantine/charts": "^7.6.2",
     "@mantine/core": "7.6.1",
     "@mantine/dropzone": "^7.6.2",
     "@mantine/hooks": "7.6.1",
@@ -28,6 +29,7 @@
     "@tabler/icons-react": "^3.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "recharts": "2",
     "uuid": "^9.0.1",
     "zustand": "^4.5.2"
   },

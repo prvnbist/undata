@@ -18,7 +18,7 @@ const FileUpload = ({
 	<Dropzone
 		accept={accept}
 		multiple={false}
-		maxSize={5 * 1024 ** 2}
+		maxSize={1024 ** 2}
 		onDrop={files => onFileSelect(files[0])}
 	>
 		<Stack justify='center' align='center' gap='md' mih={220} style={{ pointerEvents: 'none' }}>
@@ -30,7 +30,7 @@ const FileUpload = ({
 					Drag file here or click to select a file
 				</Text>
 				<Text size='sm' c='dimmed' inline mt={7}>
-					File should not exceed 5mb
+					File should not exceed 1mb
 				</Text>
 			</Stack>
 		</Stack>
