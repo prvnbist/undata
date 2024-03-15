@@ -1,6 +1,7 @@
-import { ActionIcon, Group, Paper, Stack, Text } from '@mantine/core'
-import { Dropzone, FileWithPath } from '@mantine/dropzone'
 import { IconFile, IconPhoto, IconTrash, IconUpload, IconX } from '@tabler/icons-react'
+
+import { Dropzone, FileWithPath } from '@mantine/dropzone'
+import { ActionIcon, Group, Paper, Stack, Text } from '@mantine/core'
 
 const ICON_STATES = {
 	accept: <IconUpload size={64} style={{ color: 'var(--mantine-color-blue-6)' }} stroke={1.5} />,
@@ -8,13 +9,12 @@ const ICON_STATES = {
 	idle: <IconPhoto size={64} style={{ color: 'var(--mantine-color-dimmed)' }} stroke={1.5} />,
 }
 
-const FileUpload = ({
-	accept,
-	onFileSelect,
-}: {
+interface IFileUpload {
 	onFileSelect: (file: FileWithPath) => void
 	accept: { [key: string]: string[] } | string[]
-}) => (
+}
+
+const FileUpload = ({ accept, onFileSelect }: IFileUpload) => (
 	<Dropzone
 		accept={accept}
 		multiple={false}
@@ -37,13 +37,12 @@ const FileUpload = ({
 	</Dropzone>
 )
 
-const JSONSource = ({
-	file,
-	setFile,
-}: {
+interface IJSONSource {
 	file: FileWithPath | null
 	setFile: (file: FileWithPath | null) => void
-}) => {
+}
+
+const JSONSource = ({ file, setFile }: IJSONSource) => {
 	if (file) {
 		return (
 			<Paper shadow='xs' radius='sm' withBorder p='md'>
@@ -67,13 +66,12 @@ const JSONSource = ({
 	return <FileUpload accept={['application/json']} onFileSelect={setFile} />
 }
 
-const CSVSource = ({
-	file,
-	setFile,
-}: {
+interface ICSVSource {
 	file: FileWithPath | null
 	setFile: (file: FileWithPath | null) => void
-}) => {
+}
+
+const CSVSource = ({ file, setFile }: ICSVSource) => {
 	if (file) {
 		return (
 			<Paper shadow='xs' radius='sm' withBorder p='md'>

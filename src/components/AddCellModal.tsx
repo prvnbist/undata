@@ -5,15 +5,12 @@ import { closeAllModals } from '@mantine/modals'
 import { FileWithPath } from '@mantine/dropzone'
 import { Button, Group, Select, Stepper } from '@mantine/core'
 
-import useGlobalStore, { Column, Source } from '@/store'
+import { SOURCES } from '@/constants'
+import useGlobalStore from '@/store'
+import type { Column, Source } from '@/types'
 
 import { CSVSource, JSONSource } from './Sources'
 import DataConfiguration from './DataConfiguration'
-
-const SOURCES = [
-	{ value: 'JSON', label: 'JSON File' },
-	{ value: 'CSV', label: 'CSV File' },
-]
 
 const AddCellModal = () => {
 	const [active, setActive] = useState(0)

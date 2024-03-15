@@ -4,7 +4,9 @@ import { csv2json } from 'json-2-csv'
 import { FileWithPath } from '@mantine/dropzone'
 import { Center, Input, Select, Table, Text } from '@mantine/core'
 
-import type { Column, DataType, Source } from '@/store'
+import { DATA_TYPES } from '@/constants'
+import { prepareColumns } from '@/utils'
+import type { Column, DataType, Source } from '@/types'
 
 interface DataConfigurationProps {
 	file: FileWithPath
@@ -12,26 +14,6 @@ interface DataConfigurationProps {
 	columns: Map<string, Column>
 	setData: (data: { [key in string]: any }[]) => void
 	setColumns: (columns: Map<string, Column>) => void
-}
-
-const DATA_TYPES = [
-	{ value: 'boolean', label: 'Boolean' },
-	{ value: 'date', label: 'Date' },
-	{ value: 'number', label: 'Number' },
-	{ value: 'text', label: 'Text' },
-]
-
-const prepareColumns = (data: { [key in string]: any }[]) => {
-	const columns: Map<string, Column> = new Map([])
-	const keys = Object.keys(data[0])
-
-	keys.forEach(key => {
-		if (!columns.has(key)) {
-			columns.set(key, { id: key, title: key, data_type: 'text' })
-		}
-	})
-
-	return columns
 }
 
 const DataConfiguration = ({
