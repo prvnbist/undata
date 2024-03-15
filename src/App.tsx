@@ -10,6 +10,7 @@ import '@mantine/dropzone/styles.css'
 import '@mantine/charts/styles.css'
 
 import { theme } from '@/theme'
+import { greetings } from '@/utils'
 import { AddCellModal, Cells } from '@/components'
 
 export default function App() {
@@ -17,7 +18,7 @@ export default function App() {
 		<MantineProvider theme={theme} defaultColorScheme='dark'>
 			<ModalsProvider>
 				<Container pt={80} size='lg'>
-					<Title order={2}>Greetings👋🏽</Title>
+					<Title order={2}>{greetings()}</Title>
 					<Space h={24} />
 					<Cells />
 					<Space h={16} />

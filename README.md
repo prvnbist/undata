@@ -9,7 +9,7 @@ A data visualization tools that operates in a notebook fashion.
 ### Screenshots
 |Add Cell|Table View|Chart View|
 |--|--|--|
-|![](public/screeshots/add_cell.png)|![](public/screeshots/table_view.png)|![](public/screeshots/chart_view.png)|
+|![](public/screenshots/add_cell.png)|![](public/screenshots/table_view.png)|![](public/screenshots/chart_view.png)|
 
 ### Stack
 
