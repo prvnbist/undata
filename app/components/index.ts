@@ -1,6 +1,0 @@
-export { default as Editor } from './Editor'
-export { default as Header } from './Header'
-export { default as Output } from './Output'
-export { default as Results } from './Output/Results'
-export { default as Schema } from './Schema'
-export { default as ColumnsSettings } from './Output/ColumnsSettings'

@@ -1,3 +1,6 @@
+*.js
 *.cjs
 *.mjs
-*.js
+*.d.ts
+*.d.mts
+vite.config.ts

@@ -1,16 +1,12 @@
-import type { StorybookConfig } from '@storybook/nextjs'
+import type { StorybookConfig } from '@storybook/react-vite'
 
 const config: StorybookConfig = {
-   stories: ['../components/**/*.(stories|story).@(js|jsx|ts|tsx)'],
-   addons: [
-      '@storybook/addon-essentials',
-      'storybook-dark-mode',
-      '@storybook/addon-styling-webpack',
-   ],
-   framework: {
-      name: '@storybook/nextjs',
-      options: {},
-   },
+	stories: ['../src/**/*.mdx', '../src/**/*.story.@(js|jsx|ts|tsx)'],
+	addons: ['@storybook/addon-essentials', 'storybook-dark-mode'],
+	framework: {
+		name: '@storybook/react-vite',
+		options: {},
+	},
 }
 
 export default config
