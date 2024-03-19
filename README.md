@@ -9,7 +9,7 @@ A data visualization tools that operates in a notebook fashion.
 ### Screenshots
 |Add Cell|Table View|Chart View|
 |--|--|--|
-|![](public/screenshots/add_cell.png)|![](public/screenshots/table_view.png)|![](public/screenshots/chart_view.png)|
+|![](https://res.cloudinary.com/prvnbist/image/upload/v1710577775/chart_view_wgbzht.png)|![](https://res.cloudinary.com/prvnbist/image/upload/v1710577775/table_view_itwok4.png)|![](https://res.cloudinary.com/prvnbist/image/upload/v1710577775/chart_view_wgbzht.png)|
 
 ### Stack
 
