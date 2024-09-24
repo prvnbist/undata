@@ -17,7 +17,7 @@ import { NUMERIC_DATA_TYPES, TIME_DATA_TYPES, DATE_DATA_TYPES } from 'constants/
 const columnHelper = createColumnHelper<Row>()
 
 const isRightAligned = (type: string) =>
-	[...NUMERIC_DATA_TYPES, ...TIME_DATA_TYPES, ...DATE_DATA_TYPES].includes(type)
+	type in NUMERIC_DATA_TYPES || type in TIME_DATA_TYPES || type in DATE_DATA_TYPES
 
 const Results = () => {
 	const [page, setPage] = useState(1)
@@ -36,7 +36,7 @@ const Results = () => {
 							</Text>
 						),
 						...(column.data_type && {
-							cell: props => cellRenderer(props, column.data_type, column.format_type),
+							cell: props => cellRenderer(props, column.data_type),
 						}),
 					})
 				),

@@ -7,7 +7,7 @@ export const extractColumns = (data: Record<string, any>) => {
 
 	for (const key of keys) {
 		if (!columns.has(key)) {
-			columns.set(key, { key, title: key, data_type: 'text', hidden: false, format_type: null })
+			columns.set(key, { key, title: key, data_type: 'text', hidden: false })
 		}
 	}
 
