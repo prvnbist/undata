@@ -1,4 +1,4 @@
-import { Container, Flex, Paper, Space } from '@mantine/core'
+import { Container, Flex, Space } from '@mantine/core'
 
 import { Export, Settings } from 'components'
 
@@ -12,9 +12,7 @@ export default async function Index() {
 				<Settings />
 			</Flex>
 			<Space h={16} />
-			<Paper withBorder>
-				<Output />
-			</Paper>
+			<Output />
 		</Container>
 	)
 }

@@ -69,20 +69,15 @@ const JSONRenderer = ({ value }: { value: string }) => (
 	</Flex>
 )
 
-const SingleSelectRenderer = ({ value }: { value: string }) => {
-	if (!value) return null
-	return (
-		<Badge variant="default" color="blue" size="sm">
-			{value}
-		</Badge>
-	)
-}
+const TagRenderer = ({ value }: { value: any[] }) => {
+	let list: Array<any> = []
 
-const MultiSelectRenderer = ({ value }: { value: string[] }) => {
-	if (!Array.isArray(value) || value.length === 0) return null
+	if (!Array.isArray(value)) list = [value]
 
-	const firstThree = value.slice(0, 3)
-	const remaining = value.slice(3)
+	if (list.length === 0) return null
+
+	const firstThree = list.slice(0, 3)
+	const remaining = list.slice(3)
 
 	return (
 		<Group w="240px" gap={4} py={3}>
@@ -163,30 +158,29 @@ const ImageRenderer = ({ value }: { value: string }) => {
 	)
 }
 
-const cellRenderer = (cell: any, type: Column['data_type'], format_type: Column['format_type']) => {
+const cellRenderer = (cell: any, type: Column['data_type']) => {
 	const value = cell.getValue()
 
 	if (!type) return value
 
 	switch (true) {
-		case format_type === 'single_select':
-			return <SingleSelectRenderer value={value} />
-		case format_type === 'multi_select':
-			return <MultiSelectRenderer value={value} />
-		case format_type === 'url':
+		case type === 'text':
+			return value
+		case type === 'tag':
+			return <TagRenderer value={value} />
+		case type === 'url':
 			return <URLRenderer value={value} />
-		case format_type === 'image':
+		case type === 'image':
 			return <ImageRenderer value={value} />
-
-		case type === 'bool':
+		case type === 'boolean':
 			return <BooleanRenderer value={value} />
-		case NUMERIC_DATA_TYPES.includes(type):
+		case type in NUMERIC_DATA_TYPES:
 			return <NumericRenderer value={value} />
-		case TIME_DATA_TYPES.includes(type):
+		case type in TIME_DATA_TYPES:
 			return <TimeRenderer value={value} />
-		case DATE_DATA_TYPES.includes(type):
+		case type in DATE_DATA_TYPES:
 			return <DateRenderer value={value} type={type} />
-		case JSON_DATA_TYPES.includes(type):
+		case type in JSON_DATA_TYPES:
 			return <JSONRenderer value={value} />
 		default:
 			return value

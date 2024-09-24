@@ -10,9 +10,8 @@ export type Source = 'csv' | null
 export type Column = {
 	key: string
 	title: string
-	data_type: string | null
 	hidden: boolean
-	format_type: 'single_select' | 'multi_select' | 'url' | 'image' | null
+	data_type: 'text' | 'number' | 'boolean' | 'tag' | 'url' | 'image' | null
 }
 
 export type Row = Record<Column['key'], string | boolean | number | null>

@@ -1,34 +1,46 @@
 import type { editor } from 'monaco-editor'
 
-const TEXT_DATA_TYPES = ['text', '_text', 'char', '_char', 'varchar']
+const TEXT_DATA_TYPES = [{ value: 'text', label: 'Text' }]
 
-export const NUMERIC_DATA_TYPES = [
-	'int2',
-	'_int2',
-	'int4',
-	'int8',
-	'float4',
-	'_float4',
-	'float8',
-	'_float8',
-	'numeric',
+export const NUMERIC_DATA_TYPES: Record<'number', { value: 'number'; label: string }> = {
+	number: { value: 'number', label: 'Number' },
+}
+
+export const TIME_DATA_TYPES: Record<
+	'time' | 'timetz',
+	{ value: 'time' | 'timetz'; label: string }
+> = {
+	time: { value: 'time', label: 'Time' },
+	timetz: { value: 'timetz', label: 'Time With Timezone' },
+}
+
+export const DATE_DATA_TYPES: Record<
+	'date' | 'timestamp' | 'timestamptz',
+	{ value: 'date' | 'timestamp' | 'timestamptz'; label: string }
+> = {
+	date: { value: 'date', label: 'Date' },
+	timestamp: { value: 'timestamp', label: 'Timestamp' },
+	timestamptz: { value: 'timestamptz', label: 'Timestamp With Timezone' },
+}
+
+export const JSON_DATA_TYPES = { json: { value: 'json', label: 'JSON' } }
+
+export const CUSTOM_DATA_TYPES = [
+	{ value: 'link', label: 'Link' },
+	{ value: 'image', label: 'Image' },
+	{ value: 'tag', label: 'Tag' },
 ]
 
-export const TIME_DATA_TYPES = ['time', 'timetz']
-
-export const DATE_DATA_TYPES = ['date', 'timestamp', 'timestamptz']
-
-export const JSON_DATA_TYPES = ['json', 'jsonb']
+export const BOOLEAN_DATA_TYPES = [{ value: 'boolean', label: 'Boolean' }]
 
 export const DATA_TYPES = [
-	'uuid',
-	'bool',
-	'_bool',
 	...TEXT_DATA_TYPES,
-	...NUMERIC_DATA_TYPES,
-	...JSON_DATA_TYPES,
-	...TIME_DATA_TYPES,
-	...DATE_DATA_TYPES,
+	...BOOLEAN_DATA_TYPES,
+	...Object.values(NUMERIC_DATA_TYPES),
+	...Object.values(TIME_DATA_TYPES),
+	...Object.values(DATE_DATA_TYPES),
+	...Object.values(JSON_DATA_TYPES),
+	...CUSTOM_DATA_TYPES,
 ]
 
 export const TIME_TYPES_FORMAT: Record<string, string> = {
@@ -51,10 +63,3 @@ export const JSON_TEXT_EDITOR_OPTIONS: editor.IStandaloneEditorConstructionOptio
 	minimap: { enabled: false },
 	padding: { top: 16, bottom: 16 },
 }
-
-export const DATA_FORMAT_TYPES = [
-	{ value: 'image', label: 'Image' },
-	{ value: 'single_select', label: 'Single Select' },
-	{ value: 'multi_select', label: 'Multi Select' },
-	{ value: 'url', label: 'URL' },
-]
