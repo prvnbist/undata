@@ -35,7 +35,13 @@ const NumericRenderer = ({ value }: { value: number }) => {
 	const { language } = navigator
 	return (
 		<Flex justify="right">
-			{language ? new Intl.NumberFormat(language).format(value) : value}
+			<Text ff="monospace" size="sm">
+				{language
+					? new Intl.NumberFormat(language, {
+							minimumFractionDigits: 2,
+						}).format(value)
+					: value}
+			</Text>
 		</Flex>
 	)
 }
@@ -165,7 +171,11 @@ const cellRenderer = (cell: any, type: Column['data_type']) => {
 
 	switch (true) {
 		case type === 'text':
-			return value
+			return (
+				<Text size="sm" style={{ textWrap: 'nowrap' }}>
+					{value}
+				</Text>
+			)
 		case type === 'tag':
 			return <TagRenderer value={value} />
 		case type === 'url':

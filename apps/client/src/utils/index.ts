@@ -14,15 +14,6 @@ export const extractColumns = (data: Record<string, any>) => {
 	return columns
 }
 
-export function chunkRows<T>(array: T[], size: number): T[][] {
-	if (!array.length) {
-		return []
-	}
-	const head = array.slice(0, size)
-	const tail = array.slice(size)
-	return [head, ...chunkRows(tail, size)]
-}
-
 const URL_REGEX = /^(?:(https?:\/\/)?(?:www\.)?)?([\w-]+(\.[\w-]+)+\/?)([^\s]*)$/
 
 export const isURL = (input: string) => URL_REGEX.test(input)
