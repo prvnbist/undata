@@ -25,7 +25,7 @@ const CSVReader = ({
 			const content = (evt.target?.result as string) ?? ''
 
 			try {
-				const parsed = csv2json(content) as Array<Row>
+				const parsed = csv2json(content, { preventCsvInjection: true }) as Array<Row>
 
 				if (!Array.isArray(parsed) || parsed.length === 0) return
 

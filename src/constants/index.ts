@@ -26,7 +26,7 @@ export const DATE_DATA_TYPES: Record<
 export const JSON_DATA_TYPES = { json: { value: 'json', label: 'JSON' } }
 
 export const CUSTOM_DATA_TYPES = [
-	{ value: 'link', label: 'Link' },
+	{ value: 'url', label: 'Link' },
 	{ value: 'image', label: 'Image' },
 	{ value: 'tag', label: 'Tag' },
 ]
@@ -41,7 +41,7 @@ export const DATA_TYPES = [
 	...Object.values(DATE_DATA_TYPES),
 	...Object.values(JSON_DATA_TYPES),
 	...CUSTOM_DATA_TYPES,
-]
+].sort((a, b) => a.label.localeCompare(b.label))
 
 export const TIME_TYPES_FORMAT: Record<string, string> = {
 	time: 'hh:mm:ss',

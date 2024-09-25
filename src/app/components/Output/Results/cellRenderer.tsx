@@ -1,6 +1,7 @@
 import { format } from 'date-fns'
+import { useEffect, useState } from 'react'
 import TextEditor from '@monaco-editor/react'
-import { IconArrowUpRight, IconMaximize } from '@tabler/icons-react'
+import { IconArrowUpRight, IconDots, IconMaximize } from '@tabler/icons-react'
 
 import { modals } from '@mantine/modals'
 import {
@@ -36,15 +37,12 @@ const NumericRenderer = ({ value }: { value: number }) => {
 	return (
 		<Flex justify="right">
 			<Text ff="monospace" size="sm">
-				{language
-					? new Intl.NumberFormat(language, {
-							minimumFractionDigits: 2,
-						}).format(value)
-					: value}
+				{language ? new Intl.NumberFormat(language).format(value) : value}
 			</Text>
 		</Flex>
 	)
 }
+
 const TimeRenderer = ({ value }: { value: string }) => <Flex justify="right">{value}</Flex>
 
 const DateRenderer = ({
@@ -79,10 +77,26 @@ const JSONRenderer = ({ value }: { value: string }) => (
 	</Flex>
 )
 
-const TagRenderer = ({ value }: { value: any[] }) => {
-	let list: Array<any> = []
+const generateTags = (input: any) => {
+	if (Array.isArray(input)) return input
 
-	if (!Array.isArray(value)) list = [value]
+	let output: any
+
+	try {
+		output = JSON.parse(input.replace(/'/g, '"'))
+	} catch (error) {}
+
+	if (Array.isArray(output)) return output
+
+	return [input]
+}
+
+const TagRenderer = ({ value }: { value: string | Array<any> }) => {
+	const [list, setList] = useState<Array<any>>(generateTags(value))
+
+	useEffect(() => {
+		setList(generateTags(value))
+	}, [value])
 
 	if (list.length === 0) return null
 
@@ -100,7 +114,7 @@ const TagRenderer = ({ value }: { value: any[] }) => {
 				<Popover withinPortal width={280} position="bottom-end" shadow="md">
 					<Popover.Target>
 						<ActionIcon size="sm" variant="subtle" color="gray" title="View Options">
-							<IconMaximize size={14} />
+							<IconDots size={14} />
 						</ActionIcon>
 					</Popover.Target>
 					<Popover.Dropdown p={4} px={4}>
@@ -123,15 +137,15 @@ const URLRenderer = ({ value }: { value: string }) => {
 	if (!isURL(value)) return value
 
 	return (
-		<Flex w="180px" justify="space-between" align="center">
-			<Text size="sm" truncate="end" c="blue" title={value}>
-				{extractURLName(value)}
-			</Text>
+		<Flex w="180px" gap="sm" align="center">
 			<a href={value} target="_blank" rel="noopener noreferrer" style={{ height: '22px' }}>
 				<ActionIcon size="sm" variant="subtle" color="blue">
 					<IconArrowUpRight size={14} />
 				</ActionIcon>
 			</a>
+			<Text size="sm" truncate="end" c="blue" title={value}>
+				{extractURLName(value)}
+			</Text>
 		</Flex>
 	)
 }
