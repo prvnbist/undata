@@ -1,42 +1,38 @@
 {
 	"name": "undata",
 	"version": "0.1.0",
+	"private": true,
+	"type": "module",
 	"scripts": {
-		"dev": "next dev --turbo",
-		"build": "next build",
-		"start": "next start",
-		"lint": "biome lint ./src",
-		"format": "biome format --write .",
-		"precommit": "pnpm format && pnpm lint"
+		"dev": "vp dev",
+		"build": "vp build",
+		"preview": "vp preview",
+		"test": "vp test",
+		"lint": "vp lint",
+		"format": "vp fmt",
+		"check": "vp check",
+		"precommit": "vp check"
 	},
 	"dependencies": {
-		"@dnd-kit/core": "^6.1.0",
-		"@dnd-kit/sortable": "^8.0.0",
-		"@dnd-kit/utilities": "^3.2.2",
-		"@mantine/core": "^7.10.0",
-		"@mantine/dropzone": "^7.10.0",
-		"@mantine/form": "^7.10.0",
-		"@mantine/hooks": "^7.10.0",
-		"@mantine/modals": "^7.10.0",
-		"@monaco-editor/react": "^4.6.0",
-		"@tabler/icons-react": "^3.5.0",
-		"@tanstack/react-table": "^8.17.3",
-		"date-fns": "^3.6.0",
-		"json-2-csv": "^5.5.1",
-		"monaco-editor": "^0.48.0",
-		"next": "^14.1.1",
-		"react": "^18.2.0",
-		"react-dom": "^18.2.0",
-		"zustand": "^4.5.2"
+		"@tanstack/react-router": "1.170.46",
+		"@tanstack/react-start": "1.169.5",
+		"react": "19.3.1",
+		"react-dom": "19.3.1"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^1.9.2",
-		"@types/node": "^20.11.24",
-		"@types/react": "^18.2.61",
-		"@types/react-dom": "^18.2.19",
-		"postcss": "^8.4.38",
-		"postcss-preset-mantine": "^1.15.0",
-		"postcss-simple-vars": "^7.0.1",
-		"typescript": "^5.3.3"
+		"@tailwindcss/vite": "4.3.5",
+		"@types/node": "24.0.0",
+		"@types/react": "19.2.0",
+		"@types/react-dom": "19.2.0",
+		"@vitejs/plugin-react": "6.3.0",
+		"tailwindcss": "4.3.5",
+		"typescript": "5.9.3",
+		"vite": "npm:@voidzero-dev/vite-plus-core@8.3.8000",
+		"vite-plus": "1.7.0"
+	},
+	"pnpm": {
+		"overrides": {
+			"vite": "npm:@voidzero-dev/vite-plus-core@8.3.8000"
+		}
 	}
 }
