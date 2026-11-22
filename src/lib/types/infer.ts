@@ -1,5 +1,6 @@
 import type { DataType } from '@/lib/constants'
 import type { RawTable } from '@/lib/import/types'
+import { parseList } from '@/lib/tags'
 
 import { parse } from './parse'
 
@@ -46,11 +47,7 @@ const BOOLEAN_WORDS = new Set(['true', 'false', 'yes', 'no'])
 const isLink = (text: string) => /^https?:\/\//i.test(text) && parse('url', text).ok
 
 // A list written with quotes of either kind, like ['a', 'b'].
-const isTagList = (text: string) => {
-	if (!/^\[.*\]$/s.test(text)) return false
-	const result = parse('tag', text)
-	return result.ok && Array.isArray(result.value) && text !== '[]'
-}
+const isTagList = (text: string) => parseList(text) !== null
 
 type Candidate = { type: DataType; test: (text: string) => boolean }
 

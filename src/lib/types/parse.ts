@@ -8,18 +8,10 @@ const ok = <T>(value: T): ParseResult<T> => ({ ok: true, value })
 const bad: ParseResult<never> = { ok: false }
 
 const NUMBER = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/
-const BOOLEANS: Record<string, boolean> = {
-	true: true,
-	t: true,
-	yes: true,
-	y: true,
-	'1': true,
-	false: false,
-	f: false,
-	no: false,
-	n: false,
-	'0': false,
-}
+const BOOLEANS = new Map([
+	...['true', 't', 'yes', 'y', '1'].map(word => [word, true] as const),
+	...['false', 'f', 'no', 'n', '0'].map(word => [word, false] as const),
+])
 
 const TIME = String.raw`(\d{2}):(\d{2})(?::(\d{2}(?:\.\d+)?))?`
 const ZONE = String.raw`(Z|[+-]\d{2}(?::?\d{2})?)`
@@ -31,7 +23,11 @@ const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/
 const STAMP = new RegExp(String.raw`^(\d{4})-(\d{2})-(\d{2})[T ]${TIME}$`)
 const STAMP_ZONED = new RegExp(String.raw`^(\d{4})-(\d{2})-(\d{2})[T ]${TIME}${ZONE}$`)
 
-const daysIn = (year: number, month: number) => new Date(Date.UTC(year, month, 0)).getUTCDate()
+// Date.UTC reads years 0 to 99 as 1900 to 1999, so the year is set separately.
+const utcDay = (year: number, month: number, day: number) =>
+	new Date(0).setUTCFullYear(year, month - 1, day)
+
+const daysIn = (year: number, month: number) => new Date(utcDay(year, month + 1, 0)).getUTCDate()
 
 const validDate = (year: number, month: number, day: number) =>
 	month >= 1 && month <= 12 && day >= 1 && day <= daysIn(year, month)
@@ -73,7 +69,7 @@ const parseDate = (text: string): ParseResult<number> => {
 	const match = DATE_ONLY.exec(text)
 	if (!match) return bad
 	const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])]
-	return validDate(year, month, day) ? ok(Date.UTC(year, month - 1, day)) : bad
+	return validDate(year, month, day) ? ok(utcDay(year, month, day)) : bad
 }
 
 // Without a zone the wall-clock time is read as UTC, so sorting needs no local zone. With one, the
@@ -85,7 +81,7 @@ const parseStamp = (text: string, zoned: boolean): ParseResult<number> => {
 	const seconds = secondsOfDay(match[4]!, match[5]!, match[6])
 	const offset = zoned ? offsetSeconds(match[7]!) : 0
 	if (seconds === null || offset === null || !validDate(year, month, day)) return bad
-	return ok(Date.UTC(year, month - 1, day) + Math.round((seconds - offset) * 1000))
+	return ok(utcDay(year, month, day) + Math.round((seconds - offset) * 1000))
 }
 
 const parseJson = (text: string): ParseResult<unknown> => {
@@ -106,10 +102,7 @@ const parseLink = (text: string): ParseResult<string> => {
 
 	try {
 		const url = new URL(hasScheme ? text : `https://${text}`)
-		const dotted = url.hostname.includes('.') || url.hostname.startsWith('[')
-		return (url.protocol === 'http:' || url.protocol === 'https:') && dotted && url.hostname
-			? ok(url.href)
-			: bad
+		return url.protocol === 'http:' || url.protocol === 'https:' ? ok(url.href) : bad
 	} catch {
 		return bad
 	}
@@ -134,10 +127,14 @@ export const parse = (type: DataType, input: string): ParseResult<unknown> => {
 	switch (type) {
 		case 'number': {
 			const value = Number(text)
-			return NUMBER.test(text) && Number.isFinite(value) ? ok(value) : bad
+			if (!NUMBER.test(text) || !Number.isFinite(value)) return bad
+			// An integer a double cannot hold is an id, and reading it as a number would lose digits. With
+			// an exponent it is a measurement, and was never exact to the digit.
+			const lossy = Number.isInteger(value) && !Number.isSafeInteger(value) && !/e/i.test(text)
+			return lossy ? bad : ok(value)
 		}
 		case 'boolean': {
-			const value = BOOLEANS[text.toLowerCase()]
+			const value = BOOLEANS.get(text.toLowerCase())
 			return value === undefined ? bad : ok(value)
 		}
 		case 'time':

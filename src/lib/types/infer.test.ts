@@ -75,6 +75,17 @@ describe('inferType', () => {
 	})
 })
 
+describe('tag lists', () => {
+	test('brackets alone do not make a list', () => {
+		expect(inferType(['[abc]', '[def]'])).toBe('text')
+		expect(inferType(['[ERROR] failed'])).toBe('text')
+	})
+
+	test('an empty list does not stop a column of lists from being tags', () => {
+		expect(inferType(["['a']", '[]'])).toBe('tag')
+	})
+})
+
 describe('sampleValues', () => {
 	const column = Array.from({ length: 100_000 }, (_, i) => String(i))
 

@@ -186,4 +186,33 @@ describe('parse', () => {
 			expect(parse('tag', '[]')).toEqual(ok([]))
 		})
 	})
+
+	describe('regressions', () => {
+		test.each(['constructor', '__proto__', 'toString'])('%s is not a boolean', text =>
+			expect(parse('boolean', text)).toEqual(bad)
+		)
+
+		test('an integer a double cannot hold is malformed, not rounded', () => {
+			expect(parse('number', '12345678901234567890')).toEqual(bad)
+			expect(parse('number', '9007199254740993')).toEqual(bad)
+			expect(parse('number', '9007199254740991')).toEqual(ok(9007199254740991))
+			expect(parse('number', '1e20')).toEqual(ok(1e20))
+		})
+
+		test('the first century is not the twentieth', () => {
+			const year1 = new Date(0)
+			year1.setUTCFullYear(1, 0, 1)
+			expect(parse('date', '0001-01-01')).toEqual(ok(year1.getTime()))
+			expect(parse('date', '0004-02-29').ok).toBe(true)
+			expect(parse('timestamp', '0001-01-01 00:00')).toEqual(ok(year1.getTime()))
+		})
+
+		test('a link with a scheme may have a one-word host', () => {
+			expect(parse('url', 'http://localhost:3000/a')).toEqual(ok('http://localhost:3000/a'))
+		})
+
+		test('a quoted list is still a list when an apostrophe is inside double quotes', () => {
+			expect(parse('tag', '["it\'s"]')).toEqual(ok(["it's"]))
+		})
+	})
 })
