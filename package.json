@@ -49,5 +49,6 @@
 		"typescript": "5.9.3",
 		"vite": "npm:@voidzero-dev/vite-plus-core@8.3.8000",
 		"vite-plus": "1.7.0"
-	}
+	},
+	"packageManager": "pnpm@12.21.0"
 }
