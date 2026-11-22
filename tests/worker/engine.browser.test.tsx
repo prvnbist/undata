@@ -129,3 +129,44 @@ describe('querying', () => {
 		await expect(opening).rejects.toMatchObject({ code: 'superseded' })
 	})
 })
+
+describe('filters', () => {
+	const regex = (value: string) => ({
+		...defaultView(['c0', 'c1']),
+		filters: [{ columnId: 'c0', op: 'regex' as const, value }],
+	})
+
+	test('narrow the rows that are returned', async () => {
+		await client.open(file('a,b\n3,x\n1,y\n2,z\n'))
+		const { queryId, rowCount, dropped } = await client.query({
+			...regex('[12]'),
+			sort: [{ columnId: 'c0', desc: false }],
+		})
+		expect({ rowCount, dropped }).toEqual({ rowCount: 2, dropped: [] })
+		expect((await client.rows(queryId, 0, 9, ['c1'])).map(r => r.text[0])).toEqual(['y', 'z'])
+	})
+
+	test('an invalid pattern is a typed error and leaves the engine working', async () => {
+		await client.open(file('a,b\n3,x\n'))
+		await expect(client.query(regex('('))).rejects.toMatchObject({ code: 'invalid-filter' })
+		expect(await client.query(defaultView(['c0']))).toMatchObject({ rowCount: 1 })
+	})
+
+	test('a pattern that never finishes is dropped and the dataset stays as it was', async () => {
+		client.terminate()
+		client = createEngineClient({ regexTimeoutMs: 300 })
+		await client.open(file(`a,b\n${'a'.repeat(60)}!,x\n1,y\n`))
+		await client.setColumns([{ id: 'c1', title: 'renamed', type: 'number' }])
+
+		const view = regex('^(a+)+$')
+		const result = await client.query({ ...view, search: 'y' })
+		expect(result).toMatchObject({ rowCount: 1, dropped: view.filters })
+		expect(await client.rows(result.queryId, 0, 1, ['c0', 'c1'])).toMatchObject([
+			{ text: ['1', 'y'] },
+		])
+		expect(await client.setColumns([])).toMatchObject([
+			{ type: 'text' },
+			{ type: 'number', title: 'renamed', malformed: 2 },
+		])
+	})
+})

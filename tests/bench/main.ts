@@ -71,6 +71,20 @@ const run = async () => {
 		],
 	}
 
+	Object.assign(cases, {
+		'search, one match in the last column': { search: 'TEXT 999' },
+		'search, common letters, no match': { search: 'qqq some' },
+		'search, digits': { search: '12345' },
+		'filter contains': { filters: [{ columnId: 'c7', op: 'contains', value: 'text 99' }] },
+		'filter regex': { filters: [{ columnId: 'c6', op: 'regex', value: 'p/\\d+7$' }] },
+		'filter any of': { filters: [{ columnId: 'c2', op: 'anyOf', values: ['City1', 'City2'] }] },
+		'filter number': { filters: [{ columnId: 'c3', op: 'gt', value: '9000' }] },
+		'filter and sort': {
+			filters: [{ columnId: 'c3', op: 'gt', value: '5000' }],
+			sort: [{ columnId: 'c1', desc: true }],
+		},
+	} satisfies Record<string, Partial<ViewState>>)
+
 	const p95: Record<string, string> = {}
 	for (const [name, changes] of Object.entries(cases)) p95[name] = await measure(changes)
 

@@ -1,3 +1,4 @@
+import { filterRows } from './filter'
 import { sortRows } from './sort'
 import type { Dataset } from './store'
 import type { ViewState } from './view'
@@ -6,6 +7,6 @@ import type { ViewState } from './view'
 export type QueryResult = { order: Uint32Array | null; rowCount: number }
 
 export const runQuery = (dataset: Dataset, view: ViewState): QueryResult => {
-	const order = sortRows(dataset, null, view.sort)
+	const order = sortRows(dataset, filterRows(dataset, view), view.sort)
 	return { order, rowCount: order?.length ?? dataset.rowCount }
 }

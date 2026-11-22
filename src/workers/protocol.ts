@@ -5,6 +5,8 @@ import type { ColumnSetup, ViewState } from '@/lib/engine/view'
 export type EngineErrorCode =
 	| ImportErrorCode
 	| 'no-dataset'
+	// A filter cannot run on its column: a broken pattern, or an operand that is not of the type.
+	| 'invalid-filter'
 	// A newer query replaced this request before it ran.
 	| 'superseded'
 	// The worker died, or a task failed in a way nobody planned for.

@@ -1,4 +1,5 @@
 /// <reference lib="webworker" />
+import { InvalidFilter } from '@/lib/engine/filter'
 import { runQuery } from '@/lib/engine/query'
 import type { QueryResult } from '@/lib/engine/query'
 import { createScheduler, PRIORITY } from '@/lib/engine/scheduler'
@@ -23,8 +24,8 @@ const scheduler = createScheduler(run => {
 	channel.port2.postMessage(null)
 })
 
-const crashed = (error: unknown): EngineError => ({
-	code: 'crashed',
+const toError = (error: unknown): EngineError => ({
+	code: error instanceof InvalidFilter ? 'invalid-filter' : 'crashed',
 	message: error instanceof Error ? error.message : String(error),
 })
 
@@ -48,7 +49,7 @@ const schedule = <K extends CallName>(
 				if (value === null) superseded(id)
 				else send({ id, kind: 'done', value })
 			} catch (error) {
-				fail(id, crashed(error))
+				fail(id, toError(error))
 			}
 		},
 		...(replaceable ? { superseded: () => superseded(id) } : {}),
@@ -93,14 +94,10 @@ const open = async ({ id, blob, options, setup }: Request<'open'>) => {
 	})
 }
 
-self.onmessage = ({ data }: MessageEvent<EngineRequest>) => {
+const handle = (data: Exclude<EngineRequest, { type: 'open' }>) => {
 	const { id } = data
 
 	switch (data.type) {
-		case 'open':
-			open(data).catch((error: unknown) => fail(id, crashed(error)))
-			return
-
 		case 'query':
 			scheduler.supersede()
 			schedule<'query'>(id, { priority: PRIORITY.query, replaceable: true }, dataset => {
@@ -122,5 +119,21 @@ self.onmessage = ({ data }: MessageEvent<EngineRequest>) => {
 				dataset.setColumns(data.setup)
 				return dataset.info()
 			})
+	}
+}
+
+// Requests that arrive while a file is being read wait for it, in order. The client relies on this to
+// carry on after a restart.
+let opening: Promise<void> | null = null
+
+self.onmessage = ({ data }: MessageEvent<EngineRequest>) => {
+	if (data.type === 'open') {
+		opening = open(data)
+			.catch((error: unknown) => fail(data.id, toError(error)))
+			.finally(() => (opening = null))
+	} else if (opening) {
+		void opening.then(() => handle(data))
+	} else {
+		handle(data)
 	}
 }
