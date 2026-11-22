@@ -170,3 +170,28 @@ describe('filters', () => {
 		])
 	})
 })
+
+describe('stats', () => {
+	test('cover the rows of the view', async () => {
+		await client.open(file('a,b\n1,x\n2,y\n30,x\n'))
+		const { queryId } = await client.query({
+			...defaultView(['c0', 'c1']),
+			filters: [{ columnId: 'c1', op: 'anyOf', values: ['x'] }],
+		})
+		expect(await client.stats(queryId, 'c0')).toMatchObject({
+			rows: 2,
+			distinct: 2,
+			range: { min: '1', max: '30', mean: 15.5 },
+		})
+	})
+
+	test('stats for an older view are dropped when a newer query arrives', async () => {
+		await client.open(file('a,b\n1,x\n2,y\n'))
+		const { queryId } = await client.query(defaultView(['c0']))
+		const old = client.stats(queryId, 'c0')
+		const query = client.query(defaultView(['c0']))
+
+		await expect(old).rejects.toMatchObject({ code: 'superseded' })
+		await expect(query).resolves.toMatchObject({ rowCount: 2 })
+	})
+})

@@ -2,6 +2,8 @@ import type { DataType } from '@/lib/constants'
 import type { RawTable } from '@/lib/import/types'
 import { parse } from '@/lib/types/parse'
 
+import type { Dictionary } from './dictionary'
+
 // What a cell is under its column's type. Derived from the text, never stored with the dataset.
 export const STATUS = { empty: 0, ok: 1, malformed: 2 } as const
 
@@ -23,6 +25,7 @@ export type EngineColumn = {
 	keys: Float64Array | null
 	// Where each value stands among the distinct values. Filled in by the first sort on the column.
 	ranks: { ranks: Uint32Array; count: number } | null
+	dictionary: Dictionary | null
 }
 
 export type RowWindow = {
@@ -98,6 +101,7 @@ export const createDataset = (table: RawTable, types: DataType[]) => {
 			status,
 			keys,
 			ranks: null,
+			dictionary: null,
 		}
 	})
 	const byId = new Map(columns.map(column => [column.info.id, column]))

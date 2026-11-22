@@ -3,6 +3,7 @@ import { InvalidFilter } from '@/lib/engine/filter'
 import { runQuery } from '@/lib/engine/query'
 import type { QueryResult } from '@/lib/engine/query'
 import { createScheduler, PRIORITY } from '@/lib/engine/scheduler'
+import { columnStats } from '@/lib/engine/stats'
 import { createDataset } from '@/lib/engine/store'
 import type { Dataset } from '@/lib/engine/store'
 import { openBlob } from '@/lib/import/open'
@@ -111,6 +112,12 @@ const handle = (data: Exclude<EngineRequest, { type: 'open' }>) => {
 				current?.id === data.queryId
 					? dataset.window(current.order, data.start, data.end, data.columnIds)
 					: null
+			)
+			return
+
+		case 'stats':
+			schedule<'stats'>(id, { priority: PRIORITY.stats, replaceable: true }, dataset =>
+				current?.id === data.queryId ? columnStats(dataset, current.order, data.columnId) : null
 			)
 			return
 

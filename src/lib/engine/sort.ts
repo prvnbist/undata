@@ -1,3 +1,4 @@
+import { dictionaryOf } from './dictionary'
 import { STATUS } from './store'
 import type { Dataset, EngineColumn } from './store'
 import type { SortKey } from './view'
@@ -34,25 +35,13 @@ const repeats = (text: string[]) => {
 	return seen.size < sample / 2
 }
 
-const ranksFromDictionary = ({ text, status }: EngineColumn): Ranks => {
-	const ids = new Map<string, number>()
-	const idOf = new Uint32Array(text.length)
-	for (let i = 0; i < text.length; i++) {
-		if (status[i] !== STATUS.ok) continue
-		const value = text[i]!
-		let id = ids.get(value)
-		if (id === undefined) ids.set(value, (id = ids.size))
-		idOf[i] = id
-	}
+const ranksFromDictionary = (column: EngineColumn): Ranks => {
+	const { codes, values } = dictionaryOf(column)
+	const order = allRows(values.length).sort((a, b) => compareText(values[a]!, values[b]!))
+	const rankOf = new Uint32Array(values.length)
+	for (let i = 0; i < order.length; i++) rankOf[order[i]!] = i
 
-	const rankOf = new Uint32Array(ids.size)
-	;[...ids.keys()].sort(compareText).forEach((value, rank) => (rankOf[ids.get(value)!] = rank))
-
-	const ranks = idOf
-	for (let i = 0; i < ranks.length; i++) {
-		if (status[i] === STATUS.ok) ranks[i] = rankOf[ranks[i]!]!
-	}
-	return { ranks, count: ids.size }
+	return { ranks: codes.map(code => rankOf[code]!), count: values.length }
 }
 
 type Ranks = { ranks: Uint32Array; count: number }

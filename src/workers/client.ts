@@ -133,6 +133,7 @@ export const createEngineClient = ({ regexTimeoutMs = 10_000 }: EngineClientOpti
 		query,
 		rows: (queryId: number, start: number, end: number, columnIds: string[]) =>
 			call('rows', { queryId, start, end, columnIds }),
+		stats: (queryId: number, columnId: string) => call('stats', { queryId, columnId }),
 		async setColumns(setup: ColumnSetup[]) {
 			const columns = await call('setColumns', { setup })
 			if (source) source.setup = columns.map(toSetup)

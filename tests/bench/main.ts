@@ -43,6 +43,13 @@ const run = async () => {
 	const lastRowMs = await timed(() => client.rows(queryId, rows - 1, rows, ids))
 	const [last] = await client.rows(queryId, rows - 1, rows, ids)
 
+	const freshStatsPerColumnMs: Record<string, number> = {}
+	const freshStatsMs = await timed(async () => {
+		for (const column of opened.columns) {
+			freshStatsPerColumnMs[column.header] = await timed(() => client.stats(queryId, column.id))
+		}
+	})
+
 	// The round trip the user waits for: run the view, then fetch the first screen of it.
 	const REPEATS = 20
 	const measure = async (changes: Partial<ViewState>) => {
@@ -78,6 +85,9 @@ const run = async () => {
 		'filter contains': { filters: [{ columnId: 'c7', op: 'contains', value: 'text 99' }] },
 		'filter regex': { filters: [{ columnId: 'c6', op: 'regex', value: 'p/\\d+7$' }] },
 		'filter any of': { filters: [{ columnId: 'c2', op: 'anyOf', values: ['City1', 'City2'] }] },
+		'filter any of, every value distinct': {
+			filters: [{ columnId: 'c1', op: 'anyOf', values: ['Person 1', 'Person 999'] }],
+		},
 		'filter number': { filters: [{ columnId: 'c3', op: 'gt', value: '9000' }] },
 		'filter and sort': {
 			filters: [{ columnId: 'c3', op: 'gt', value: '5000' }],
@@ -88,6 +98,19 @@ const run = async () => {
 	const p95: Record<string, string> = {}
 	for (const [name, changes] of Object.entries(cases)) p95[name] = await measure(changes)
 
+	// Every column at once, as the headers will ask, before and after their dictionaries exist.
+	const allStats = async () => {
+		const { queryId } = await client.query(view)
+		await Promise.all(ids.map(columnId => client.stats(queryId, columnId)))
+	}
+	const statsMs = { afterSorts: await timed(allStats), again: await timed(allStats) }
+
+	// A query that arrives while stats are being worked out.
+	const { queryId: busy } = await client.query(view)
+	const dropped = ids.map(columnId => client.stats(busy, columnId).catch(() => {}))
+	const queryDuringStatsMs = await timed(() => client.query({ ...view, search: 'zz' }))
+	await Promise.all(dropped)
+
 	return {
 		kind,
 		fileMB: Math.round(file.size / 1e6),
@@ -97,6 +120,10 @@ const run = async () => {
 		importToRowsMs,
 		lastRowMs,
 		p95,
+		freshStatsMs,
+		freshStatsPerColumnMs,
+		statsMs,
+		queryDuringStatsMs,
 		longestMainThreadMs: Math.round(Math.max(0, ...longTasks.map(task => task.duration))),
 	}
 }

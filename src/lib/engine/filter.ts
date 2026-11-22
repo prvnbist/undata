@@ -1,6 +1,7 @@
 import type { DataType } from '@/lib/constants'
 import { parse } from '@/lib/types/parse'
 
+import { createInterner, dictionaryOf } from './dictionary'
 import { parseRegex, textMatcher } from './match'
 import { isKeyed, STATUS } from './store'
 import type { Dataset, EngineColumn } from './store'
@@ -55,19 +56,27 @@ export const checkFilter = (type: DataType, test: FilterTest): string | null => 
 	}
 }
 
+// Looks each distinct value up once instead of every row's.
+const membership = (column: EngineColumn, wanted: string[]): RowTest => {
+	const { codes, values } = dictionaryOf(column)
+	const set = createInterner()
+	for (const value of wanted) set.intern(value)
+	const hits = Uint8Array.from(values, value => (set.has(value) ? 1 : 0))
+	return row => hits[codes[row]!] === 1
+}
+
 // A NaN key, which is a row with no value, fails every comparison.
-const rowTest = ({ text, status, keys, info }: EngineColumn, test: FilterTest): RowTest => {
+const rowTest = (column: EngineColumn, test: FilterTest): RowTest => {
+	const { text, status, keys, info } = column
 	const key = (value: string) => operand(info.type, value)!
 	const of = keys!
 
 	switch (test.op) {
-		case 'anyOf': {
-			const values = new Set(test.values)
-			return row => values.has(text[row]!)
-		}
+		case 'anyOf':
+			return membership(column, test.values)
 		case 'noneOf': {
-			const values = new Set(test.values)
-			return row => !values.has(text[row]!)
+			const has = membership(column, test.values)
+			return row => !has(row)
 		}
 		case 'contains': {
 			const matches = textMatcher(test.value)

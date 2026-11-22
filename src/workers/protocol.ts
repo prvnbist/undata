@@ -1,4 +1,5 @@
 import type { ImportErrorCode, ImportOptions, ImportWarning } from '@/lib/import/types'
+import type { ColumnStats } from '@/lib/engine/stats'
 import type { ColumnInfo, RowWindow } from '@/lib/engine/store'
 import type { ColumnSetup, ViewState } from '@/lib/engine/view'
 
@@ -41,6 +42,7 @@ export type EngineCalls = {
 		request: { queryId: number; start: number; end: number; columnIds: string[] }
 		response: RowWindow[]
 	}
+	stats: { request: { queryId: number; columnId: string }; response: ColumnStats }
 	setColumns: { request: { setup: ColumnSetup[] }; response: ColumnInfo[] }
 }
 
