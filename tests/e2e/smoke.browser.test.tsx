@@ -97,6 +97,71 @@ test('paginates the results and clamps "Go to page"', async () => {
 	await expect.element(page.getByText('Page 2 of 3')).toBeVisible()
 })
 
+test('hiding a column in Settings removes it from the table', async () => {
+	await loadFixture()
+	mount('/')
+
+	await expect.element(page.getByRole('table')).toBeVisible()
+	const headers = () => [...document.querySelectorAll('thead th')].map(th => th.textContent)
+	expect(headers()).toContain('age')
+
+	await page.getByRole('button', { name: 'Settings' }).click()
+	await page.getByRole('button', { name: 'Hide age' }).click()
+
+	await expect.poll(headers).not.toContain('age')
+	await expect.element(page.getByRole('button', { name: 'Show age' })).toBeVisible()
+	expect(useProject.getState().columns.get('age')?.hidden).toBe(true)
+
+	await page.getByRole('button', { name: 'Show age' }).click()
+	await expect.poll(headers).toContain('age')
+})
+
+test('dragging a column in Settings reorders the table', async () => {
+	await loadFixture()
+	mount('/')
+
+	await expect.element(page.getByRole('table')).toBeVisible()
+	const headers = () => [...document.querySelectorAll('thead th')].map(th => th.textContent)
+	expect(headers().slice(0, 2)).toEqual(['name', 'age'])
+
+	await page.getByRole('button', { name: 'Settings' }).click()
+	await expect.element(page.getByRole('button', { name: 'Hide name' })).toBeVisible()
+
+	const item = (key: string) =>
+		page
+			.getByRole('button', { name: `Hide ${key}` })
+			.element()
+			.closest('[role="button"]')!
+	const source = item('name')
+	const from = source.getBoundingClientRect()
+	const to = item('age').getBoundingClientRect()
+
+	// dnd-kit needs a pointer that moves in steps past the 5px activation distance.
+	const x = from.left + 16
+	const pointer = (type: string, target: EventTarget, y: number) =>
+		target.dispatchEvent(
+			new PointerEvent(type, {
+				bubbles: true,
+				cancelable: true,
+				clientX: x,
+				clientY: y,
+				button: 0,
+				isPrimary: true,
+				pointerId: 1,
+			})
+		)
+	const startY = from.top + from.height / 2
+	const endY = to.top + to.height * 0.9
+	pointer('pointerdown', source, startY)
+	for (let step = 1; step <= 6; step++) {
+		pointer('pointermove', document, startY + ((endY - startY) * step) / 6)
+		await new Promise(resolve => setTimeout(resolve, 20))
+	}
+	pointer('pointerup', document, endY)
+
+	await expect.poll(() => headers().slice(0, 2)).toEqual(['age', 'name'])
+})
+
 test('Export and Settings are disabled without rows', async () => {
 	useProject.setState({ metadata: { source: 'csv' } })
 	mount('/')
