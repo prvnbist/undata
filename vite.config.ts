@@ -45,10 +45,10 @@ export default defineConfig({
 		semi: false,
 		trailingComma: 'es5',
 		arrowParens: 'avoid',
-		ignorePatterns: ['legacy/**', 'src/routeTree.gen.ts', 'pnpm-lock.yaml', '**/*.md'],
+		ignorePatterns: ['src/routeTree.gen.ts', 'pnpm-lock.yaml', '**/*.md'],
 	},
 	lint: {
-		ignorePatterns: ['legacy/**', 'src/routeTree.gen.ts', 'dist/**'],
+		ignorePatterns: ['src/routeTree.gen.ts', 'dist/**'],
 		options: { typeAware: true, typeCheck: true },
 	},
 })
