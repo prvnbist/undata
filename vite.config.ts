@@ -48,7 +48,7 @@ export default defineConfig({
 		ignorePatterns: ['src/routeTree.gen.ts', 'pnpm-lock.yaml', '**/*.md'],
 	},
 	lint: {
-		ignorePatterns: ['src/routeTree.gen.ts', 'dist/**'],
+		ignorePatterns: ['src/routeTree.gen.ts', 'dist/**', 'dist-bench/**'],
 		options: { typeAware: true, typeCheck: true },
 	},
 })
