@@ -5,12 +5,20 @@ import { afterEach, beforeEach, expect, test, vi } from 'vite-plus/test'
 import { page, userEvent } from 'vite-plus/test/browser'
 
 import { routeTree } from '@/routeTree.gen'
+import { extractColumns } from '@/lib/columns'
 import { useProject } from '@/store/project'
+import type { Row } from '@/store/project'
 import sampleCsv from '../fixtures/sample.csv?raw'
 
 // The root route renders the whole document, so the app is mounted on `document` itself.
 // Mounting it inside a <div> would nest <html> in <body>, which React reports as an error.
 let root: Root
+
+async function loadFixture() {
+	const { csv2json } = await import('json-2-csv')
+	const rows = csv2json(sampleCsv) as Array<Row>
+	useProject.getState().initProject('csv', extractColumns(rows[0]!), rows)
+}
 
 function mount(path: string) {
 	const router = createRouter({
@@ -57,10 +65,44 @@ test('uploading a CSV creates the project and lands on /', async () => {
 	await expect.element(page.getByText('sample.csv')).toBeVisible()
 	await page.getByRole('button', { name: 'Create Project' }).click()
 
-	await expect.element(page.getByText('Results (placeholder)')).toBeVisible()
+	await expect.element(page.getByRole('table')).toBeVisible()
 	expect(router.state.location.pathname).toBe('/')
 	expect(useProject.getState().rows).toHaveLength(25)
-	expect([...useProject.getState().columns.keys()]).toContain('name')
+
+	const headers = [...useProject.getState().columns.values()].map(column => column.title)
+	expect(headers).toContain('name')
+	expect([...document.querySelectorAll('thead th')].map(th => th.textContent)).toEqual(headers)
+	// Page size is 10.
+	expect(document.querySelectorAll('tbody tr')).toHaveLength(10)
+})
+
+test('paginates the results and clamps "Go to page"', async () => {
+	await loadFixture()
+	mount('/')
+
+	await expect.element(page.getByText('Page 1 of 3')).toBeVisible()
+	await expect.element(page.getByRole('button', { name: 'First page' })).toBeDisabled()
+	await expect.element(page.getByRole('button', { name: 'Previous page' })).toBeDisabled()
+	await expect.element(page.getByRole('button', { name: 'Next page' })).toBeEnabled()
+
+	await page.getByRole('button', { name: 'Last page' }).click()
+	await expect.element(page.getByText('Page 3 of 3')).toBeVisible()
+	expect(document.querySelectorAll('tbody tr')).toHaveLength(5)
+	await expect.element(page.getByRole('button', { name: 'Next page' })).toBeDisabled()
+	await expect.element(page.getByRole('button', { name: 'Last page' })).toBeDisabled()
+
+	await userEvent.fill(page.getByLabelText('Go to page'), '99')
+	await expect.element(page.getByText('Page 3 of 3')).toBeVisible()
+	await userEvent.fill(page.getByLabelText('Go to page'), '2')
+	await expect.element(page.getByText('Page 2 of 3')).toBeVisible()
+})
+
+test('Export and Settings are disabled without rows', async () => {
+	useProject.setState({ metadata: { source: 'csv' } })
+	mount('/')
+
+	await expect.element(page.getByRole('button', { name: 'Export' })).toBeDisabled()
+	await expect.element(page.getByRole('button', { name: 'Settings' })).toBeDisabled()
 })
 
 test('a file that is not a CSV is rejected', async () => {
