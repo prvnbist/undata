@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { IconAdjustmentsFilled, IconEye, IconEyeOff } from '@tabler/icons-react'
 import {
 	DndContext,
@@ -11,6 +11,7 @@ import {
 import type { DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
+import { ColumnSettingDialog } from './ColumnSettingDialog'
 import { SortableItem } from './SortableItem'
 import { Button } from '@/components/ui/button'
 import { useProject } from '@/store/project'
@@ -22,6 +23,9 @@ function ColumnsSettings() {
 	// Select the stored references only; the array is derived below.
 	const columnMap = useProject(state => state.columns)
 	const setColumns = useProject(state => state.setColumns)
+
+	// Only the key is stored, so the dialog always reads the latest column from the store.
+	const [editingKey, setEditingKey] = useState<string | null>(null)
 
 	const columns = useMemo(() => [...columnMap.values()], [columnMap])
 	const keys = useMemo(() => columns.map(column => column.key), [columns])
@@ -43,43 +47,50 @@ function ColumnsSettings() {
 		setColumns(toMap(columns.map(item => (item.key === column.key ? column : item))))
 	}
 
+	const editing = editingKey ? (columnMap.get(editingKey) ?? null) : null
+
 	return (
-		<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-			<SortableContext strategy={verticalListSortingStrategy} items={keys}>
-				<div className="flex flex-col gap-2">
-					{columns.map(column => (
-						<SortableItem
-							key={column.key}
-							column={column}
-							actions={
-								<>
-									<Button
-										variant="ghost"
-										size="icon-sm"
-										aria-label={`${column.hidden ? 'Show' : 'Hide'} ${column.key}`}
-										onClick={event => {
-											event.stopPropagation()
-											save({ ...column, hidden: !column.hidden })
-										}}
-									>
-										{column.hidden ? <IconEyeOff size={16} /> : <IconEye size={16} />}
-									</Button>
-									{/* Opens the column dialog (T9). */}
-									<Button
-										variant="ghost"
-										size="icon-sm"
-										aria-label={`Settings for ${column.key}`}
-										onClick={event => event.stopPropagation()}
-									>
-										<IconAdjustmentsFilled size={16} />
-									</Button>
-								</>
-							}
-						/>
-					))}
-				</div>
-			</SortableContext>
-		</DndContext>
+		<>
+			<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+				<SortableContext strategy={verticalListSortingStrategy} items={keys}>
+					<div className="flex flex-col gap-2">
+						{columns.map(column => (
+							<SortableItem
+								key={column.key}
+								column={column}
+								actions={
+									<>
+										<Button
+											variant="ghost"
+											size="icon-sm"
+											aria-label={`${column.hidden ? 'Show' : 'Hide'} ${column.key}`}
+											onClick={event => {
+												event.stopPropagation()
+												save({ ...column, hidden: !column.hidden })
+											}}
+										>
+											{column.hidden ? <IconEyeOff size={16} /> : <IconEye size={16} />}
+										</Button>
+										<Button
+											variant="ghost"
+											size="icon-sm"
+											aria-label={`Settings for ${column.key}`}
+											onClick={event => {
+												event.stopPropagation()
+												setEditingKey(column.key)
+											}}
+										>
+											<IconAdjustmentsFilled size={16} />
+										</Button>
+									</>
+								}
+							/>
+						))}
+					</div>
+				</SortableContext>
+			</DndContext>
+			<ColumnSettingDialog column={editing} onSave={save} onClose={() => setEditingKey(null)} />
+		</>
 	)
 }
 

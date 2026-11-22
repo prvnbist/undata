@@ -162,6 +162,35 @@ test('dragging a column in Settings reorders the table', async () => {
 	await expect.poll(() => headers().slice(0, 2)).toEqual(['age', 'name'])
 })
 
+test('the column dialog renames a column and changes its type', async () => {
+	await loadFixture()
+	mount('/')
+	await expect.element(page.getByRole('table')).toBeVisible()
+
+	await page.getByRole('button', { name: 'Settings' }).click()
+	await page.getByRole('button', { name: 'Settings for age' }).click()
+	await expect.element(page.getByText('Column Settings: age')).toBeVisible()
+
+	await userEvent.fill(page.getByLabelText('Title'), 'Years')
+	await page.getByRole('combobox').click()
+	await userEvent.fill(page.getByLabelText('Search'), 'zzz')
+	await expect.element(page.getByText('No such type')).toBeVisible()
+	await userEvent.fill(page.getByLabelText('Search'), 'numb')
+	await page.getByRole('option', { name: 'Number' }).click()
+	await page.getByRole('button', { name: 'Submit' }).click()
+
+	await expect.element(page.getByText('Column Settings: age')).not.toBeInTheDocument()
+	const age = useProject.getState().columns.get('age')
+	expect(age).toMatchObject({ title: 'Years', data_type: 'number', hidden: false })
+	const header = [...document.querySelectorAll('thead th')].find(th => th.textContent === 'Years')
+	expect(header?.firstElementChild?.className).toContain('text-right')
+
+	// Reopening shows the saved values.
+	await page.getByRole('button', { name: 'Settings for age' }).click()
+	await expect.element(page.getByLabelText('Title')).toHaveValue('Years')
+	await expect.element(page.getByRole('combobox')).toHaveTextContent('Number')
+})
+
 test('Export and Settings are disabled without rows', async () => {
 	useProject.setState({ metadata: { source: 'csv' } })
 	mount('/')
