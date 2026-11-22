@@ -1,4 +1,5 @@
 // Serves dist-bench, opens it in headless Chromium, and prints the result. Run with `pnpm bench`.
+import { execFileSync } from 'node:child_process'
 import { createReadStream, existsSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { extname, join, normalize } from 'node:path'
@@ -34,8 +35,25 @@ await page.goto(`http://localhost:${server.address().port}/?rows=${rows}&kind=${
 await page.waitForFunction(() => window.__bench, null, { timeout: 15 * 60_000, polling: 1000 })
 const result = await page.evaluate(() => window.__bench)
 
-// Workers are separate targets, so their heap is read over a raw DevTools connection. The bench
-// worker is the one still alive and holding the whole imported table.
+// Workers are separate targets, so their heap is read over a raw DevTools connection. The engine
+// worker is still alive and holds the whole imported table.
+// All of Chromium's processes together, just after the work.
+const pids = execFileSync('ps', ['-axo', 'pid=,ppid=,rss='], { encoding: 'utf8' })
+	.trim()
+	.split('\n')
+	.map(line => line.trim().split(/\s+/).map(Number))
+const tree = new Set([process.pid])
+for (let grew = true; grew;) {
+	grew = false
+	for (const [pid, ppid] of pids) {
+		if (tree.has(ppid) && !tree.has(pid)) grew = !!tree.add(pid)
+	}
+}
+tree.delete(process.pid)
+result.chromiumRssMB = Math.round(
+	pids.reduce((sum, [pid, , rss]) => (tree.has(pid) ? sum + rss : sum), 0) / 1000
+)
+
 const { webSocketDebuggerUrl } = await (await fetch('http://localhost:9333/json/version')).json()
 const socket = new WebSocket(webSocketDebuggerUrl)
 await new Promise(resolve => socket.addEventListener('open', resolve))
@@ -54,9 +72,7 @@ const send = (method, params = {}, sessionId) =>
 
 const { targetInfos } = await send('Target.getTargets')
 const worker = targetInfos.find(
-	target =>
-		target.type === 'worker' &&
-		(target.url.includes('bench.worker') || target.url.includes('json.worker'))
+	target => target.type === 'worker' && target.url.includes('engine.worker')
 )
 if (worker) {
 	const { sessionId } = await send('Target.attachToTarget', {

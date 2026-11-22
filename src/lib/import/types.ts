@@ -1,3 +1,5 @@
+import type { DetectError, Encoding } from './detect'
+
 // What every importer produces. Cells are the exact source text, and a type is only ever an
 // interpretation of that text applied later, so nothing here converts a value.
 
@@ -64,4 +66,17 @@ export type RawTable = {
 	columns: RawColumn[]
 	rowCount: number
 	warnings: ImportWarning[]
+}
+
+// Everything needed to read the same bytes into the same table again. Saved with the dataset.
+export type ImportOptions =
+	| { format: 'delimited'; delimiter: string; encoding: Encoding; hasHeader: boolean }
+	| { format: 'json' | 'ndjson'; encoding: Encoding }
+
+export type ImportErrorCode = DetectError | 'invalid-json' | 'no-records' | 'unreadable'
+
+export type ImportError = {
+	code: ImportErrorCode
+	message: string
+	position: { line: number; column: number } | null
 }
