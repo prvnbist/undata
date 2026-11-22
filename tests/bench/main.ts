@@ -1,12 +1,17 @@
 import { createEngineClient } from '@/workers/client'
 import { makeFixture } from './fixture'
+import { runJsonBench } from './json-main'
 
 type Longtask = { duration: number }
 
 const params = new URLSearchParams(location.search)
 const rows = Number(params.get('rows') ?? 1_000_000)
 
+const kind = params.get('kind')
+
 const run = async () => {
+	if (kind === 'json' || kind === 'ndjson') return runJsonBench(rows, kind)
+
 	const file = makeFixture(rows)
 
 	// Building the file is one long task. Yielding ends it, so only the engine's effect is observed.

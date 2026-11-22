@@ -8,6 +8,7 @@ import { chromium } from 'playwright'
 const root = join(process.cwd(), 'dist-bench')
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css' }
 const rows = process.env.BENCH_ROWS ?? '1000000'
+const kind = process.env.BENCH_KIND ?? 'csv'
 
 const server = createServer((req, res) => {
 	const path = normalize(new URL(req.url, 'http://x').pathname)
@@ -29,7 +30,7 @@ const browser = await chromium.launch({ args: ['--remote-debugging-port=9333'] }
 const page = await browser.newPage()
 page.on('pageerror', error => console.error('page error:', error.message))
 
-await page.goto(`http://localhost:${server.address().port}/?rows=${rows}`)
+await page.goto(`http://localhost:${server.address().port}/?rows=${rows}&kind=${kind}`)
 await page.waitForFunction(() => window.__bench, null, { timeout: 15 * 60_000, polling: 1000 })
 const result = await page.evaluate(() => window.__bench)
 
@@ -53,7 +54,9 @@ const send = (method, params = {}, sessionId) =>
 
 const { targetInfos } = await send('Target.getTargets')
 const worker = targetInfos.find(
-	target => target.type === 'worker' && target.url.includes('bench.worker')
+	target =>
+		target.type === 'worker' &&
+		(target.url.includes('bench.worker') || target.url.includes('json.worker'))
 )
 if (worker) {
 	const { sessionId } = await send('Target.attachToTarget', {
