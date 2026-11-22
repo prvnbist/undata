@@ -230,6 +230,40 @@ test('renders number, boolean, time, date and url cells', async () => {
 	expect(cell('website').textContent).toBe('ada')
 })
 
+test('renders tag, json and image cells', async () => {
+	await loadFixture()
+	const { columns, rows, initProject } = useProject.getState()
+	const types = { tags: 'tag', meta: 'json', avatar: 'image' } as const
+	rows[0]!.tags = "['a','b','c','d','e']"
+	initProject(
+		'csv',
+		new Map(
+			[...columns].map(([key, column]) => [
+				key,
+				key in types ? { ...column, data_type: types[key as keyof typeof types] } : column,
+			])
+		),
+		rows
+	)
+	mount('/')
+	await expect.element(page.getByRole('table')).toBeVisible()
+
+	const cell = (key: string) =>
+		document.querySelectorAll('tbody tr:first-child td')[[...columns.keys()].indexOf(key)]!
+
+	// Tags: three badges, the rest behind the dots button.
+	expect(cell('tags').querySelectorAll('[data-slot="badge"]')).toHaveLength(3)
+	await page.getByRole('button', { name: 'View Options' }).click()
+	await expect.element(page.getByText('e', { exact: true })).toBeVisible()
+
+	// JSON: the text is shown. The editor is only loaded when the popover opens.
+	expect(cell('meta').textContent).toContain('"role":"dev"')
+
+	// Image: the thumbnail opens a dialog.
+	await page.getByRole('button', { name: 'Open image preview' }).first().click()
+	await expect.element(page.getByRole('heading', { name: 'Image Preview' })).toBeVisible()
+})
+
 test('Export and Settings are disabled without rows', async () => {
 	useProject.setState({ metadata: { source: 'csv' } })
 	mount('/')
