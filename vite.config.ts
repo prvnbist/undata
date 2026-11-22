@@ -24,7 +24,7 @@ export default defineConfig({
 					include: ['tests/**/*.browser.test.tsx'],
 					// Lazy chunks pull these in late. Without this, Vite re-optimises mid-run and reloads.
 					optimizeDeps: {
-						include: ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
+						include: ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities', 'date-fns'],
 					},
 					browser: {
 						enabled: true,

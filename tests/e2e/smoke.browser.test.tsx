@@ -6,6 +6,7 @@ import { page, userEvent } from 'vite-plus/test/browser'
 
 import { routeTree } from '@/routeTree.gen'
 import { extractColumns } from '@/lib/columns'
+import { processDataForExport, serialize } from '@/lib/export'
 import { useProject } from '@/store/project'
 import type { Row } from '@/store/project'
 import sampleCsv from '../fixtures/sample.csv?raw'
@@ -40,6 +41,7 @@ afterEach(() => {
 	root.unmount()
 	expect(console.error).not.toHaveBeenCalled()
 	expect(console.warn).not.toHaveBeenCalled()
+	vi.restoreAllMocks()
 })
 
 test('redirects / and unknown paths to /setup when there is no project', async () => {
@@ -262,6 +264,75 @@ test('renders tag, json and image cells', async () => {
 	// Image: the thumbnail opens a dialog.
 	await page.getByRole('button', { name: 'Open image preview' }).first().click()
 	await expect.element(page.getByRole('heading', { name: 'Image Preview' })).toBeVisible()
+})
+
+test('exports CSV and JSON without hidden columns, and can use titles', async () => {
+	await loadFixture()
+	const { columns, setColumns } = useProject.getState()
+	setColumns(
+		new Map(
+			[...columns].map(([key, column]) => [
+				key,
+				key === 'age'
+					? { ...column, hidden: true }
+					: key === 'name'
+						? { ...column, title: 'Full name' }
+						: column,
+			])
+		)
+	)
+
+	const blobs: Blob[] = []
+	const names: string[] = []
+	vi.spyOn(URL, 'createObjectURL').mockImplementation(blob => {
+		blobs.push(blob as Blob)
+		return 'blob:test'
+	})
+	vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+	vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+		this: HTMLAnchorElement
+	) {
+		names.push(this.download)
+	})
+
+	mount('/')
+	await expect.element(page.getByRole('table')).toBeVisible()
+
+	await page.getByRole('button', { name: 'Export' }).click()
+	await expect.element(page.getByText('Export Results')).toBeVisible()
+	// Hidden columns are listed, but dimmed and unchecked; renamed ones show the key too.
+	await expect.element(page.getByText('Full name (name)')).toBeVisible()
+	expect(document.querySelectorAll('ol li.opacity-50')).toHaveLength(1)
+	expect(document.querySelectorAll('ol li')).toHaveLength(columns.size)
+
+	await page.getByRole('tab', { name: 'CSV' }).click()
+	await page.getByRole('button', { name: 'Export' }).last().click()
+	expect(names[0]).toMatch(/^undata_export_\d{4}-\d{2}-\d{2}\.csv$/)
+	const csv = await blobs[0]!.text()
+	const header = csv.split('\n')[0]!
+	expect(header.startsWith('name,active,')).toBe(true)
+	expect(header.split(',')).not.toContain('age')
+	expect(csv).toBe(
+		serialize(
+			processDataForExport(
+				[...useProject.getState().columns.values()],
+				useProject.getState().rows,
+				{
+					useTitle: false,
+				}
+			),
+			'csv'
+		)
+	)
+
+	await page.getByRole('tab', { name: 'JSON' }).click()
+	await page.getByLabelText('Use custom title as column name').click()
+	await page.getByRole('button', { name: 'Export' }).last().click()
+	expect(names[1]).toMatch(/\.json$/)
+	const json = JSON.parse(await blobs[1]!.text()) as Array<Record<string, unknown>>
+	expect(json).toHaveLength(25)
+	expect(Object.keys(json[0]!)).toContain('Full name')
+	expect(Object.keys(json[0]!)).not.toContain('age')
 })
 
 test('Export and Settings are disabled without rows', async () => {
