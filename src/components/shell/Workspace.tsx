@@ -1,4 +1,4 @@
-import { RowsPreview } from '@/components/grid/RowsPreview'
+import { DataGrid } from '@/components/grid/DataGrid'
 import { useWorkspace } from '@/store/workspace'
 
 export function Workspace() {
@@ -14,7 +14,7 @@ export function Workspace() {
 			<header className="border-b px-4 py-2">
 				<h1 className="text-lg">{dataset.name}</h1>
 			</header>
-			<RowsPreview />
+			<DataGrid />
 		</main>
 	)
 }

@@ -15,7 +15,9 @@ const server = createServer((req, res) => {
 	const path = normalize(new URL(req.url, 'http://x').pathname)
 	const file = join(
 		root,
-		path.startsWith('/tests') || path.startsWith('/assets') ? path : '/tests/bench/index.html'
+		path.startsWith('/tests') || path.startsWith('/assets')
+			? path
+			: `/tests/bench/${kind === 'grid' ? 'grid' : 'index'}.html`
 	)
 	if (!file.startsWith(root) || !existsSync(file)) {
 		res.writeHead(404).end()
@@ -28,7 +30,7 @@ const server = createServer((req, res) => {
 }).listen(0)
 
 const browser = await chromium.launch({ args: ['--remote-debugging-port=9333'] })
-const page = await browser.newPage()
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
 page.on('pageerror', error => console.error('page error:', error.message))
 
 await page.goto(`http://localhost:${server.address().port}/?rows=${rows}&kind=${kind}`)

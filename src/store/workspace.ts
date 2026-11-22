@@ -29,6 +29,8 @@ export type WorkspaceState = {
 	phase: Phase
 	dataset: DatasetMeta | null
 	view: ViewState
+	// Widths worked out from the first rows, for columns the view gives none.
+	fitted: Record<string, number>
 	query: CurrentQuery | null
 	querying: boolean
 	queryError: EngineError | null
@@ -38,6 +40,7 @@ export const initialWorkspace: WorkspaceState = {
 	phase: { kind: 'idle' },
 	dataset: null,
 	view: defaultView([]),
+	fitted: {},
 	query: null,
 	querying: false,
 	queryError: null,

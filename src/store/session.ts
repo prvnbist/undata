@@ -1,3 +1,4 @@
+import { fitColumn } from '@/components/grid/layout'
 import { defaultView } from '@/lib/engine/view'
 import type { ColumnSetup, ViewState } from '@/lib/engine/view'
 import type { ImportOptions } from '@/lib/import/types'
@@ -5,6 +6,9 @@ import { createEngineClient, isEngineError } from '@/workers/client'
 import type { EngineClient } from '@/workers/client'
 import type { EngineError } from '@/workers/protocol'
 import { initialWorkspace, workspace } from './workspace'
+
+// How many rows a column's first width is worked out from.
+const FIT_ROWS = 50
 
 // The engine and the bytes of the open dataset. They are not state: nothing renders from them.
 let client: EngineClient | null = null
@@ -61,10 +65,21 @@ export const importDataset = ({
 			})
 			const initial = view ?? defaultView(opened.columns.map(column => column.id))
 			const { queryId, rowCount } = await own.query(initial)
+			const ids = opened.columns.map(column => column.id)
+			const sample = await own.rows(queryId, 0, FIT_ROWS, ids)
 			if (own !== client) return
 
 			workspace.set({
 				phase: { kind: 'ready', id, name },
+				fitted: Object.fromEntries(
+					opened.columns.map((column, i) => [
+						column.id,
+						fitColumn(
+							column,
+							sample.map(row => row.text[i]!)
+						),
+					])
+				),
 				dataset: { id, name, size: blob.size, ...opened },
 				view: initial,
 				query: { id: queryId, rowCount },

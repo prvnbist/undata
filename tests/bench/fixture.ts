@@ -33,3 +33,12 @@ export const makeJsonFixture = (rows: number, kind: 'json' | 'ndjson') => {
 	if (kind === 'json') parts.push('\n]')
 	return new File(parts, `fixture.${kind}`, { type: 'application/json' })
 }
+
+// Wide rather than tall: 200 columns of 20,000 rows.
+export const makeWideFixture = (rows = 20_000, columns = 200) => {
+	const line = (cell: (column: number) => string) =>
+		Array.from({ length: columns }, (_, i) => cell(i)).join(',') + '\n'
+	const parts = [line(i => `column ${i}`)]
+	for (let row = 0; row < rows; row++) parts.push(line(i => `${row * i}`))
+	return new File(parts, 'wide.csv', { type: 'text/csv' })
+}

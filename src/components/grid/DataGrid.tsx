@@ -1,0 +1,192 @@
+import { memo, useMemo, useRef } from 'react'
+import type { ReactNode } from 'react'
+
+import { cn } from 'cn'
+import { useWorkspace } from '@/store/workspace'
+import { HEADER_HEIGHT, ROW_HEIGHT, gutterWidth, visibleColumns } from './layout'
+import type { GridColumn } from './layout'
+import { BLOCK_SIZE } from './rowCache'
+import type { Block } from './rowCache'
+import { columnOffsets, rowRange, spanRange } from './scaledScroll'
+import { useGridScroll } from './useGridScroll'
+import { useRowWindow } from './useRowWindow'
+
+// More than this is never readable in a cell, and a whole document in one is slow to lay out.
+const MAX_CELL_TEXT = 500
+
+type Span = { start: number; before: number; width: number }
+
+// A row of cells, of which only those in `span` exist. The gap before them holds their place.
+function Cells({ span, children }: { span: Span; children: ReactNode }) {
+	return (
+		<>
+			<div role="presentation" className="shrink-0" style={{ width: span.before }} />
+			{children}
+		</>
+	)
+}
+
+const GridRow = memo(function GridRow({
+	index,
+	block,
+	columns,
+	span,
+	gutter,
+}: {
+	index: number
+	block: Block | undefined
+	columns: GridColumn[]
+	span: Span
+	gutter: number
+}) {
+	const at = index % BLOCK_SIZE
+	const source = block?.rows[at]
+
+	return (
+		<div
+			role="row"
+			aria-rowindex={index + 2}
+			className="flex border-b hover:bg-accent/30"
+			style={{ height: ROW_HEIGHT, width: span.width }}
+		>
+			<div
+				role="rowheader"
+				aria-colindex={1}
+				className="sticky left-0 z-10 flex shrink-0 items-center justify-end border-r bg-background px-2 font-mono text-xs text-muted-foreground"
+				style={{ width: gutter }}
+			>
+				{source === undefined ? '' : source + 1}
+			</div>
+			<Cells span={span}>
+				{columns.map(({ info, size }, i) => (
+					<div
+						key={info.id}
+						role="gridcell"
+						aria-colindex={span.start + i + 2}
+						className="flex shrink-0 items-center overflow-hidden border-r px-3 text-sm whitespace-nowrap"
+						style={{ width: size }}
+					>
+						<span className="truncate">
+							{block?.columns.get(info.id)?.text[at]?.slice(0, MAX_CELL_TEXT)}
+						</span>
+					</div>
+				))}
+			</Cells>
+		</div>
+	)
+})
+
+export function DataGrid() {
+	const dataset = useWorkspace(state => state.dataset)
+	const view = useWorkspace(state => state.view.columns)
+	const query = useWorkspace(state => state.query)
+	const fitted = useWorkspace(state => state.fitted)
+	const scroller = useRef<HTMLDivElement>(null)
+
+	const rowCount = query?.rowCount ?? 0
+	const gutter = gutterWidth(dataset?.rowCount ?? 0)
+	const columns = useMemo(
+		() => visibleColumns(dataset?.columns ?? [], view, fitted),
+		[dataset, view, fitted]
+	)
+	const offsets = useMemo(() => columnOffsets(columns.map(column => column.size)), [columns])
+
+	const { viewport, position, scale } = useGridScroll(scroller, {
+		contentHeight: rowCount * ROW_HEIGHT,
+		headerHeight: HEADER_HEIGHT,
+		gutter,
+	})
+
+	const rows = rowRange({
+		top: position.top,
+		viewport: viewport.height,
+		rowHeight: ROW_HEIGHT,
+		rowCount,
+		overscan: 6,
+	})
+	const { start: first, end: last } = spanRange(
+		offsets,
+		position.left,
+		Math.max(0, viewport.width - gutter),
+		2
+	)
+	const shown = useMemo(() => columns.slice(first, last), [columns, first, last])
+	const ids = useMemo(() => shown.map(column => column.info.id), [shown])
+	const cache = useRowWindow(query, rows, ids)
+
+	const total = gutter + offsets[offsets.length - 1]!
+	const span = useMemo<Span>(
+		() => ({ start: first, before: offsets[first]!, width: total }),
+		[first, offsets, total]
+	)
+
+	return (
+		<div
+			ref={scroller}
+			role="grid"
+			aria-label="Rows"
+			aria-rowcount={rowCount + 1}
+			aria-colcount={columns.length + 1}
+			className="relative min-h-0 flex-1 overflow-auto [overflow-anchor:none]"
+		>
+			<div
+				role="presentation"
+				className="relative"
+				style={{ height: HEADER_HEIGHT + scale.bodyHeight, width: total }}
+			>
+				<div role="rowgroup" className="sticky top-0 z-20 bg-card">
+					<div
+						role="row"
+						aria-rowindex={1}
+						className="flex border-b"
+						style={{ height: HEADER_HEIGHT, width: total }}
+					>
+						<div
+							role="columnheader"
+							aria-colindex={1}
+							aria-label="Row number"
+							className="sticky left-0 z-10 shrink-0 border-r bg-card"
+							style={{ width: gutter }}
+						/>
+						<Cells span={span}>
+							{shown.map(({ info, size }, i) => (
+								<div
+									key={info.id}
+									role="columnheader"
+									aria-colindex={first + i + 2}
+									className={cn('flex shrink-0 items-center border-r px-3 text-sm')}
+									style={{ width: size }}
+								>
+									<span className="truncate" title={info.title}>
+										{info.title}
+									</span>
+								</div>
+							))}
+						</Cells>
+					</div>
+				</div>
+				<div
+					role="rowgroup"
+					className="absolute left-0"
+					style={{
+						// Rows sit where the scrollbar is, so a squeezed body still shows them in full.
+						top: HEADER_HEIGHT + rows.start * ROW_HEIGHT - position.top + position.scroll,
+					}}
+				>
+					{Array.from({ length: rows.end - rows.start }, (_, i) => rows.start + i).map(
+						index => (
+							<GridRow
+								key={index}
+								index={index}
+								block={cache.block(index)}
+								columns={shown}
+								span={span}
+								gutter={gutter}
+							/>
+						)
+					)}
+				</div>
+			</div>
+		</div>
+	)
+}
