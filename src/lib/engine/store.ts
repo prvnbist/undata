@@ -21,6 +21,8 @@ export type EngineColumn = {
 	status: Uint8Array
 	// Parsed values for the types that have an order other than their text, NaN where there is none.
 	keys: Float64Array | null
+	// Where each value stands among the distinct values. Filled in by the first sort on the column.
+	ranks: { ranks: Uint32Array; count: number } | null
 }
 
 export type RowWindow = {
@@ -95,6 +97,7 @@ export const createDataset = (table: RawTable, types: DataType[]) => {
 			kinds: raw.kinds ?? null,
 			status,
 			keys,
+			ranks: null,
 		}
 	})
 	const byId = new Map(columns.map(column => [column.info.id, column]))
@@ -117,6 +120,7 @@ export const createDataset = (table: RawTable, types: DataType[]) => {
 				const { status, keys, empty, malformed } = interpret(column.text, type)
 				column.status = status
 				column.keys = keys
+				column.ranks = null
 				column.info = { ...column.info, title, type, empty, malformed }
 			}
 		},

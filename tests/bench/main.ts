@@ -1,4 +1,5 @@
 import { defaultView } from '@/lib/engine/view'
+import type { ViewState } from '@/lib/engine/view'
 import { createEngineClient } from '@/workers/client'
 import { makeFixture, makeJsonFixture } from './fixture'
 
@@ -42,6 +43,37 @@ const run = async () => {
 	const lastRowMs = await timed(() => client.rows(queryId, rows - 1, rows, ids))
 	const [last] = await client.rows(queryId, rows - 1, rows, ids)
 
+	// The round trip the user waits for: run the view, then fetch the first screen of it.
+	const REPEATS = 20
+	const measure = async (changes: Partial<ViewState>) => {
+		const times: number[] = []
+		for (let i = 0; i < REPEATS; i++) {
+			times.push(
+				await timed(async () => {
+					const result = await client.query({ ...view, ...changes })
+					await client.rows(result.queryId, 0, 50, ids)
+				})
+			)
+		}
+		const [first] = times
+		const sorted = times.toSorted((a, b) => a - b)
+		return `${sorted[Math.ceil(REPEATS * 0.95) - 1]} (first ${first}, max ${sorted.at(-1)})`
+	}
+
+	const cases: Record<string, Partial<ViewState>> = {}
+	for (const column of opened.columns) {
+		cases[`sort ${column.header}`] = { sort: [{ columnId: column.id, desc: false }] }
+	}
+	cases['sort city, name'] = {
+		sort: [
+			{ columnId: 'c2', desc: false },
+			{ columnId: 'c1', desc: true },
+		],
+	}
+
+	const p95: Record<string, string> = {}
+	for (const [name, changes] of Object.entries(cases)) p95[name] = await measure(changes)
+
 	return {
 		kind,
 		fileMB: Math.round(file.size / 1e6),
@@ -50,6 +82,7 @@ const run = async () => {
 		lastRowOk: last?.text[0] === String(rows - 1),
 		importToRowsMs,
 		lastRowMs,
+		p95,
 		longestMainThreadMs: Math.round(Math.max(0, ...longTasks.map(task => task.duration))),
 	}
 }
