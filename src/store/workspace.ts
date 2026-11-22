@@ -39,6 +39,8 @@ export type WorkspaceState = {
 	query: CurrentQuery | null
 	querying: boolean
 	queryError: EngineError | null
+	// Something to tell the user once.
+	notice: string | null
 }
 
 export const initialWorkspace: WorkspaceState = {
@@ -49,6 +51,7 @@ export const initialWorkspace: WorkspaceState = {
 	query: null,
 	querying: false,
 	queryError: null,
+	notice: null,
 }
 
 // UI state and the view only. Rows stay in the engine, and `session.ts` is what talks to it.

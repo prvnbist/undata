@@ -6,6 +6,7 @@ import '@fontsource-variable/bricolage-grotesque'
 // Only weight 500 is loaded, so all monospace text renders at 500.
 import '@fontsource/ibm-plex-mono/500.css'
 
+import { AppFrame } from '@/components/shell/AppFrame'
 import { ErrorScreen } from '@/components/shell/ErrorScreen'
 import appCss from '../styles.css?url'
 
@@ -22,6 +23,7 @@ export const Route = createRootRoute({
 		links: [{ rel: 'stylesheet', href: appCss }],
 	}),
 	shellComponent: RootDocument,
+	component: AppFrame,
 	errorComponent: ErrorScreen,
 })
 
