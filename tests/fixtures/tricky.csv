@@ -1,0 +1,4 @@
+id,zip,addr.city,note
+12345678901234567890,01234,Paris,"line one
+line two"
+007,+4915,"São Paulo",plain
