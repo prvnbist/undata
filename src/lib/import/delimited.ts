@@ -1,5 +1,6 @@
 import Papa from 'papaparse'
 
+import { createTitles, isBlankHeader, placeholderTitle } from './titles'
 import type { ImportWarning, RawColumn, RawTable, WarningCode } from './types'
 
 export type DelimitedOptions = {
@@ -23,7 +24,7 @@ const isBlank = (record: string[]) => record.length === 1 && record[0] === ''
 // tasks/plan.md, and each is counted instead of being silently fixed.
 export const createDelimitedBuilder = ({ hasHeader }: DelimitedOptions) => {
 	const columns: RawColumn[] = []
-	const titles = new Set<string>()
+	const uniqueTitle = createTitles()
 	const warnings = new Map<WarningCode, ImportWarning>()
 
 	let rows = 0
@@ -42,18 +43,11 @@ export const createDelimitedBuilder = ({ hasHeader }: DelimitedOptions) => {
 		else warnings.set(code, { code, count, firstRow: row })
 	}
 
-	const uniqueTitle = (base: string) => {
-		let title = base
-		for (let n = 2; titles.has(title); n++) title = `${base} (${n})`
-		titles.add(title)
-		return title
-	}
-
 	// `labelled` is true only for a real header row, which is the only place a blank or repeated
 	// header is the file's doing. Columns found later, or with no header row, are just numbered.
 	const addColumn = (header: string, position: number, row: number, labelled: boolean) => {
-		const blank = header.trim() === ''
-		const base = blank ? `Column ${position + 1}` : header
+		const blank = isBlankHeader(header)
+		const base = blank ? placeholderTitle(position) : header
 		const title = uniqueTitle(base)
 
 		if (labelled && blank) warn('blank-headers', row)
