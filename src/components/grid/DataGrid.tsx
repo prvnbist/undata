@@ -52,7 +52,7 @@ const GridRow = memo(function GridRow({
 			<div
 				role="rowheader"
 				aria-colindex={1}
-				className="sticky left-0 z-10 flex shrink-0 items-center justify-end border-r bg-background px-2 font-mono text-xs text-muted-foreground"
+				className="sticky left-0 z-10 flex shrink-0 items-center justify-end border-r bg-background px-2 font-mono text-xs text-foreground/70"
 				style={{ width: gutter }}
 			>
 				{source === undefined ? '' : source + 1}

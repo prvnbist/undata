@@ -37,6 +37,15 @@ export const openFile = async (file: File) => {
 	return router
 }
 
+// For files too large to send to the browser: they are made in the page instead.
+export const openHere = (file: File) => {
+	const input = page.getByLabelText('Data file').element() as HTMLInputElement
+	const transfer = new DataTransfer()
+	transfer.items.add(file)
+	input.files = transfer.files
+	input.dispatchEvent(new Event('change', { bubbles: true }))
+}
+
 // Every test runs against a clean app and fails on anything React or the app complains about.
 export const useApp = () => {
 	beforeEach(() => {

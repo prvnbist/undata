@@ -6,6 +6,9 @@ import type { ViewState } from '@/lib/engine/view'
 import type { ImportOptions, ImportWarning } from '@/lib/import/types'
 import type { EngineError, Progress } from '@/workers/protocol'
 
+// A file can also be turned away before the engine sees it.
+export type ImportFailure = Omit<EngineError, 'code'> & { code: EngineError['code'] | 'too-large' }
+
 export type DatasetMeta = {
 	id: string
 	name: string
@@ -18,8 +21,10 @@ export type DatasetMeta = {
 
 export type Phase =
 	| { kind: 'idle' }
+	// Large enough to ask before reading it.
+	| { kind: 'confirming'; id: string; name: string; size: number }
 	| { kind: 'importing'; id: string; name: string; progress: Progress | null }
-	| { kind: 'failed'; id: string; name: string; error: EngineError }
+	| { kind: 'failed'; id: string; name: string; error: ImportFailure }
 	| { kind: 'ready'; id: string; name: string }
 
 // What the engine last answered for the view, which can be a moment behind it.
