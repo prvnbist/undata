@@ -191,6 +191,45 @@ test('the column dialog renames a column and changes its type', async () => {
 	await expect.element(page.getByRole('combobox')).toHaveTextContent('Number')
 })
 
+test('renders number, boolean, time, date and url cells', async () => {
+	await loadFixture()
+	const { columns, setColumns } = useProject.getState()
+	const types = {
+		age: 'number',
+		active: 'boolean',
+		start_time: 'time',
+		joined: 'date',
+		website: 'url',
+	} as const
+	setColumns(
+		new Map(
+			[...columns].map(([key, column]) => [
+				key,
+				key in types ? { ...column, data_type: types[key as keyof typeof types] } : column,
+			])
+		)
+	)
+	mount('/')
+	await expect.element(page.getByRole('table')).toBeVisible()
+
+	const firstRow = () =>
+		[...document.querySelectorAll('tbody tr:first-child td')].map(td => td as HTMLElement)
+	const cell = (key: string) => firstRow()[[...columns.keys()].indexOf(key)]!
+
+	expect(cell('age').textContent).toBe('20')
+	expect(cell('age').querySelector('.justify-end')).not.toBeNull()
+	expect(cell('active').querySelector('[role="checkbox"]')?.getAttribute('aria-checked')).toBe(
+		'true'
+	)
+	expect(cell('start_time').textContent).toBe('09:00:00')
+	expect(cell('joined').textContent).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+	const link = cell('website').querySelector('a')!
+	expect(link.getAttribute('href')).toBe('https://example.com/people/ada')
+	expect(link.getAttribute('target')).toBe('_blank')
+	expect(link.getAttribute('rel')).toBe('noopener noreferrer')
+	expect(cell('website').textContent).toBe('ada')
+})
+
 test('Export and Settings are disabled without rows', async () => {
 	useProject.setState({ metadata: { source: 'csv' } })
 	mount('/')
