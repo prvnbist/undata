@@ -1,4 +1,4 @@
-import { memo, useLayoutEffect, useMemo, useRef } from 'react'
+import { memo, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
 
 import { CELL_KINDS } from '@/lib/import/types'
@@ -157,6 +157,21 @@ export function DataGrid() {
 			? active
 			: null
 	const body = useRef<HTMLDivElement>(null)
+
+	// Asked for from elsewhere, such as the command palette.
+	const goTo = useWorkspace(state => state.goTo)
+	const { show } = keyboard
+	const topRow = Math.floor(position.top / ROW_HEIGHT)
+	const placed = useRef<number | null>(null)
+	useEffect(() => {
+		if (!goTo || placed.current === goTo.nonce) return
+		const col = columns.findIndex(column => column.info.id === goTo.columnId)
+		// A column being shown again is not in the list until the view catches up.
+		if (col === -1) return
+		placed.current = goTo.nonce
+		show({ row: active?.row ?? Math.min(topRow, Math.max(0, rowCount - 1)), col })
+		scroller.current?.focus({ preventScroll: true })
+	}, [goTo, columns, show, active, topRow, rowCount])
 
 	// Links and buttons in cells are worked with Enter on the cell, so the grid stays one tab stop.
 	useLayoutEffect(() => {

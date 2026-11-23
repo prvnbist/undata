@@ -102,10 +102,9 @@ export const useGridKeyboard = ({
 	// Tabbing in starts at the first cell, or where it was.
 	const onFocus = (event: React.FocusEvent<HTMLElement>) => {
 		if (event.target !== event.currentTarget) return
-		if (!active) {
-			const first = clampCell({ row: 0, col: 0 }, bounds)
-			if (first) setActive(first)
-		}
+		const first = clampCell({ row: 0, col: 0 }, bounds)
+		// Whatever was just made active, by a click or from elsewhere, wins.
+		if (first) setActive(current => current ?? first)
 	}
 
 	// A click makes that cell the active one.
@@ -115,5 +114,5 @@ export const useGridKeyboard = ({
 		setActive({ row: Number(cell.dataset.row), col: Number(cell.dataset.col) })
 	}
 
-	return { active, onKeyDown, onFocus, onPointerDown }
+	return { active, show, onKeyDown, onFocus, onPointerDown }
 }

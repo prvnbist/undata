@@ -1,5 +1,6 @@
 import { Outlet } from '@tanstack/react-router'
 
+import { CommandPalette } from './CommandPalette'
 import { GlobalDrop } from './GlobalDrop'
 import { Toast } from './Toast'
 import { usePasteImport } from './usePasteImport'
@@ -12,6 +13,7 @@ export function AppFrame() {
 		<>
 			<Outlet />
 			<GlobalDrop />
+			<CommandPalette />
 			<Toast />
 		</>
 	)

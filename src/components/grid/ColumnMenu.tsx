@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import type { RefObject } from 'react'
 import type { FormEvent } from 'react'
 import {
 	IconArrowBarToLeft,
@@ -68,10 +69,13 @@ function RenameDialog({
 	column,
 	open,
 	onOpenChange,
+	returnTo,
 }: {
 	column: ColumnInfo
 	open: boolean
 	onOpenChange: (open: boolean) => void
+	// Opened from a menu item that is gone by then, so focus goes back to the menu's button.
+	returnTo: RefObject<HTMLButtonElement | null>
 }) {
 	const submit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault()
@@ -84,7 +88,13 @@ function RenameDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-sm">
+			<DialogContent
+				className="sm:max-w-sm"
+				onCloseAutoFocus={event => {
+					event.preventDefault()
+					returnTo.current?.focus()
+				}}
+			>
 				<DialogHeader>
 					<DialogTitle>Rename column</DialogTitle>
 					<DialogDescription>
@@ -123,6 +133,7 @@ export function ColumnMenu({
 	sortCount: number
 }) {
 	const [renaming, setRenaming] = useState(false)
+	const trigger = useRef<HTMLButtonElement>(null)
 	const others = sortCount - (sorted ? 1 : 0)
 
 	return (
@@ -130,6 +141,7 @@ export function ColumnMenu({
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button
+						ref={trigger}
 						variant="ghost"
 						size="icon-xs"
 						aria-label={`Column menu for ${column.title}`}
@@ -194,7 +206,12 @@ export function ColumnMenu({
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
-			<RenameDialog column={column} open={renaming} onOpenChange={setRenaming} />
+			<RenameDialog
+				column={column}
+				open={renaming}
+				onOpenChange={setRenaming}
+				returnTo={trigger}
+			/>
 		</>
 	)
 }

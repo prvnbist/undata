@@ -43,6 +43,10 @@ export type WorkspaceState = {
 	querying: boolean
 	queryError: EngineError | null
 	saved: SaveState
+	// Whether the export dialog is open, so the palette can open it too.
+	exporting: boolean
+	// A column to bring into view and make active. `nonce` tells one request from the next.
+	goTo: { columnId: string; nonce: number } | null
 	// Something to tell the user once.
 	notice: string | null
 }
@@ -56,6 +60,8 @@ export const initialWorkspace: WorkspaceState = {
 	querying: false,
 	queryError: null,
 	saved: null,
+	exporting: false,
+	goTo: null,
 	notice: null,
 }
 

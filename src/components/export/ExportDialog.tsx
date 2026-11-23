@@ -11,9 +11,10 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
+import { useReturnFocus } from '@/components/ui/useReturnFocus'
 import type { ExportOptions } from '@/lib/engine/export'
 import { download, exportDataset, exportName } from '@/store/session'
-import { useWorkspace } from '@/store/workspace'
+import { useWorkspace, workspace } from '@/store/workspace'
 
 const inEnglish = new Intl.NumberFormat('en')
 const rows = (count: number) => `${inEnglish.format(count)} ${count === 1 ? 'row' : 'rows'}`
@@ -74,7 +75,9 @@ export function ExportDialog() {
 	const total = useWorkspace(state => state.dataset?.rowCount ?? 0)
 	const shown = useWorkspace(state => state.query?.rowCount ?? 0)
 	const hidden = useWorkspace(state => state.view.columns.filter(c => c.hidden).length)
-	const [open, setOpen] = useState(false)
+	const open = useWorkspace(state => state.exporting)
+	const setOpen = (exporting: boolean) => workspace.set({ exporting })
+	const returnFocus = useReturnFocus(open)
 	const [settings, setSettings] = useState(DEFAULTS)
 	const [busy, setBusy] = useState(false)
 	const [error, setError] = useState<string | null>(null)
@@ -109,7 +112,7 @@ export function ExportDialog() {
 				Export
 			</Button>
 			<Dialog open={open} onOpenChange={setOpen}>
-				<DialogContent className="sm:max-w-md">
+				<DialogContent className="sm:max-w-md" onCloseAutoFocus={event => returnFocus(event)}>
 					<DialogHeader>
 						<DialogTitle>Export</DialogTitle>
 						<DialogDescription>
