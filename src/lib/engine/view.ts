@@ -41,3 +41,43 @@ export const defaultView = (columnIds: string[]): ViewState => ({
 	grouping: null,
 	columns: columnIds.map(id => ({ id, hidden: false, size: null })),
 })
+
+// A click on a header. Alone it makes the column the only key, going ascending, descending, then
+// unsorted. With `add` it changes or appends that one key and leaves the others as they are.
+export const cycleSort = (sort: SortKey[], columnId: string, add: boolean): SortKey[] => {
+	const current = sort.find(key => key.columnId === columnId)
+	const next: SortKey | null = !current
+		? { columnId, desc: false }
+		: current.desc
+			? null
+			: { columnId, desc: true }
+
+	if (!add) {
+		const alone = sort.length === 1 && current
+		if (!alone) return [{ columnId, desc: false }]
+		return next ? [next] : []
+	}
+	if (!current) return [...sort, next!]
+	return next
+		? sort.map(key => (key.columnId === columnId ? next : key))
+		: sort.filter(key => key.columnId !== columnId)
+}
+
+// A direction chosen from the menu. Null removes the column from the sort.
+export const setSort = (
+	sort: SortKey[],
+	columnId: string,
+	desc: boolean | null,
+	add: boolean
+): SortKey[] => {
+	if (desc === null) return sort.filter(key => key.columnId !== columnId)
+	if (!add) return [{ columnId, desc }]
+	return sort.some(key => key.columnId === columnId)
+		? sort.map(key => (key.columnId === columnId ? { columnId, desc } : key))
+		: [...sort, { columnId, desc }]
+}
+
+export const setHidden = (view: ViewState, columnId: string, hidden: boolean): ViewState => ({
+	...view,
+	columns: view.columns.map(column => (column.id === columnId ? { ...column, hidden } : column)),
+})

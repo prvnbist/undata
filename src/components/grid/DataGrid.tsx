@@ -1,10 +1,10 @@
 import { memo, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
 
-import { cn } from 'cn'
 import { CELL_KINDS } from '@/lib/import/types'
 import { useWorkspace } from '@/store/workspace'
 import { Cell } from './Cell'
+import { ColumnHeader } from './ColumnHeader'
 import { HEADER_HEIGHT, ROW_HEIGHT, gutterWidth, visibleColumns } from './layout'
 import type { GridColumn } from './layout'
 import { BLOCK_SIZE } from './rowCache'
@@ -86,6 +86,7 @@ const GridRow = memo(function GridRow({
 export function DataGrid() {
 	const dataset = useWorkspace(state => state.dataset)
 	const view = useWorkspace(state => state.view.columns)
+	const sort = useWorkspace(state => state.view.sort)
 	const query = useWorkspace(state => state.query)
 	const fitted = useWorkspace(state => state.fitted)
 	const scroller = useRef<HTMLDivElement>(null)
@@ -157,17 +158,13 @@ export function DataGrid() {
 						/>
 						<Cells span={span}>
 							{shown.map(({ info, size }, i) => (
-								<div
+								<ColumnHeader
 									key={info.id}
-									role="columnheader"
-									aria-colindex={first + i + 2}
-									className={cn('flex shrink-0 items-center border-r px-3 text-sm')}
-									style={{ width: size }}
-								>
-									<span className="truncate" title={info.title}>
-										{info.title}
-									</span>
-								</div>
+									column={info}
+									size={size}
+									colIndex={first + i + 2}
+									sort={sort}
+								/>
 							))}
 						</Cells>
 					</div>
