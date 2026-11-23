@@ -1,3 +1,4 @@
+import { ExportDialog } from '@/components/export/ExportDialog'
 import { ColumnsPopover } from '@/components/grid/ColumnsPopover'
 import { DataGrid } from '@/components/grid/DataGrid'
 import { useWorkspace } from '@/store/workspace'
@@ -15,6 +16,7 @@ export function Workspace() {
 			<header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
 				<h1 className="min-w-0 flex-1 truncate text-lg">{name}</h1>
 				<ColumnsPopover />
+				<ExportDialog />
 			</header>
 			<DataGrid />
 			<StatusBar />

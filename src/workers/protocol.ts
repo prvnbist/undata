@@ -1,4 +1,5 @@
 import type { ImportErrorCode, ImportOptions, ImportWarning } from '@/lib/import/types'
+import type { ExportOptions } from '@/lib/engine/export'
 import type { ColumnStats } from '@/lib/engine/stats'
 import type { ColumnInfo, RowWindow } from '@/lib/engine/store'
 import type { ColumnSetup, ViewState } from '@/lib/engine/view'
@@ -44,6 +45,7 @@ export type EngineCalls = {
 	}
 	stats: { request: { queryId: number; columnId: string }; response: ColumnStats }
 	setColumns: { request: { setup: ColumnSetup[] }; response: ColumnInfo[] }
+	export: { request: { queryId: number; options: ExportOptions }; response: Blob }
 }
 
 export type CallName = keyof EngineCalls

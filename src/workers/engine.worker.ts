@@ -1,4 +1,5 @@
 /// <reference lib="webworker" />
+import { exportRows } from '@/lib/engine/export'
 import { InvalidFilter } from '@/lib/engine/filter'
 import { runQuery } from '@/lib/engine/query'
 import type { QueryResult } from '@/lib/engine/query'
@@ -125,6 +126,16 @@ const handle = (data: Exclude<EngineRequest, { type: 'open' }>) => {
 			schedule<'setColumns'>(id, { priority: PRIORITY.query, replaceable: false }, dataset => {
 				dataset.setColumns(data.setup)
 				return dataset.info()
+			})
+			return
+
+		case 'export':
+			schedule<'export'>(id, { priority: PRIORITY.export, replaceable: false }, dataset => {
+				if (current?.id !== data.queryId) return null
+				const type = data.options.format === 'csv' ? 'text/csv' : 'application/json'
+				return new Blob(exportRows(dataset, current.order, data.options), {
+					type: `${type};charset=utf-8`,
+				})
 			})
 	}
 }

@@ -1,3 +1,4 @@
+import type { ExportOptions } from '@/lib/engine/export'
 import type { ColumnSetup, Filter, ViewState } from '@/lib/engine/view'
 import type { ImportOptions } from '@/lib/import/types'
 import type {
@@ -134,6 +135,7 @@ export const createEngineClient = ({ regexTimeoutMs = 10_000 }: EngineClientOpti
 		rows: (queryId: number, start: number, end: number, columnIds: string[]) =>
 			call('rows', { queryId, start, end, columnIds }),
 		stats: (queryId: number, columnId: string) => call('stats', { queryId, columnId }),
+		export: (queryId: number, options: ExportOptions) => call('export', { queryId, options }),
 		async setColumns(setup: ColumnSetup[]) {
 			const columns = await call('setColumns', { setup })
 			if (source) source.setup = columns.map(toSetup)

@@ -1,4 +1,5 @@
 import { fitColumn } from '@/components/grid/layout'
+import type { ExportOptions } from '@/lib/engine/export'
 import { defaultView } from '@/lib/engine/view'
 import type { ColumnSetup, ViewState } from '@/lib/engine/view'
 import { formatBytes } from '@/lib/bytes'
@@ -226,4 +227,28 @@ export const arrangeView = (view: ViewState) => {
 	if (!client) return Promise.resolve()
 	workspace.set({ view })
 	return persist({ view })
+}
+
+// The file name an export gets: the dataset's, with the format's extension.
+export const exportName = (name: string, format: ExportOptions['format']) =>
+	`${name.replace(/\.[^./\\]+$/, '') || 'export'}.${format}`
+
+// Made in the engine and handed to the browser to save. Nothing is sent anywhere.
+export const exportDataset = async (options: Omit<ExportOptions, 'columnIds'>) => {
+	const { query, view, dataset } = workspace.get()
+	if (!client || !query || !dataset) return null
+	const known = new Set(dataset.columns.map(column => column.id))
+	const columnIds = view.columns
+		.filter(column => !column.hidden && known.has(column.id))
+		.map(column => column.id)
+	return client.export(query.id, { ...options, columnIds })
+}
+
+export const download = (blob: Blob, name: string) => {
+	const url = URL.createObjectURL(blob)
+	const link = document.createElement('a')
+	link.href = url
+	link.download = name
+	link.click()
+	setTimeout(() => URL.revokeObjectURL(url), 60_000)
 }
