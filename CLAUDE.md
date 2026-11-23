@@ -4,7 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Undata is a client-side SPA for loading a CSV, viewing it in a paginated table, configuring columns (reorder, rename, show/hide, cell type), and exporting to JSON/CSV. It runs on TanStack Start in SPA mode, Vite+ (`vp`) and Tailwind CSS v4, with shadcn/ui (Radix) components. Tables use TanStack Table 9, drag-and-drop uses dnd-kit, and JSON cells use Monaco. There is no backend and no persistence.
+Undata is a client-side, read-only data explorer. A file (delimited text, JSON or NDJSON) is opened by
+picker, drop, paste or the sample, parsed and queried in a Web Worker, shown in a virtualised grid,
+and exported as CSV or JSON. Datasets, column setup and the current view are saved in IndexedDB. It
+runs on TanStack Start in SPA mode, Vite+ (`vp`) and Tailwind CSS v4, with shadcn/ui (Radix)
+components. There is no backend, and nothing is sent anywhere.
 
 ## Commands
 
@@ -15,36 +19,35 @@ Package manager is **pnpm**, driven through Vite+ (`vp`).
 - `vp check`: format check, Oxlint and typecheck. This is the pre-commit gate
 - `vp fmt`: Oxfmt (writes). `vp lint`: Oxlint
 - `vp test --run`: Vitest, with a `unit` project (node, `src/**/*.test.ts`) and a `browser` project (Playwright Chromium, `tests/**/*.browser.test.tsx`). Run `pnpm exec playwright install chromium --only-shell` once per machine
+- `pnpm bench`: builds `vite.bench.config.ts` and runs import, sort, filter, stats and scrolling benchmarks on a generated 1M-row file. Not part of `vp test`
 - `vp preview` does real SSR and is not a stand-in for static hosting. To check production behaviour, serve `dist/client` with a static server that falls back to `/_shell.html`
 
 Style (set in `vite.config.ts`): tabs at width 3, 100-column lines, single quotes (double in JSX), no semicolons, ES5 trailing commas, arrow parens only when needed. `@/*` resolves to `src/*`.
 
 ## Architecture
 
-**State lives in one in-memory Zustand store**, `useProject` in `src/store/project.ts`. It holds `metadata.source`, `columns` (a `Map<key, Column>` whose insertion order is the display order), and `rows` (raw parsed records keyed by the original CSV header). Nothing is persisted, so a reload loses the project.
+**Rows never leave the worker.** `src/workers/engine.worker.ts` holds the dataset. `src/workers/client.ts` is its typed client, and `src/workers/protocol.ts` lists every call (`open`, `query`, `rows`, `stats`, `setColumns`, `export`). Only the newest `query` runs, and older ones fail as `superseded`. A regex query that runs over 10 s restarts the worker without it.
 
-**Never build a collection inside a selector.** Zustand 5 loops forever on a selector that returns a new array each call. Select the stored value (`state => state.columns`), then derive the array with `useMemo`.
+**The engine is pure** (`src/lib/engine`): column store, sort, filter, stats and export, all unit-tested in Node. Import (`src/lib/import`) detects the format and parses to a `RawTable` of exact source text. Types (`src/lib/types`) parse, format and infer, and never throw. A type is only a reading of the text: nothing converts or rewrites a cell. `src/lib/**` imports no React and no browser globals, except `src/lib/storage`.
 
-**Routing guard:** `beforeLoad` on `src/routes/index.tsx` redirects to `/setup` when `metadata.source` is unset, and `src/routes/$.tsx` redirects every unknown path to `/`. The guard must not go on the root route, because that is the only route whose `beforeLoad` runs during the shell prerender.
+**UI state is one Zustand store**, `useWorkspace` in `src/store/workspace.ts`: the import phase, dataset metadata, the `ViewState` (search, filters, sort, column order, width and hidden), and UI flags. It never holds rows. `src/store/session.ts` owns the engine client and is how the UI changes anything: `importDataset`, `applyView` (re-queries), `arrangeView` (order and widths, no re-query), `applyColumns` (titles and types), and `exportDataset`. Each saves to IndexedDB, and a full or blocked store marks the dataset "Not saved" instead of failing.
 
-**SPA shell prerender:** `vp build` renders the root shell outside a browser. Nothing at module scope may touch `window` or `navigator`, and Monaco is loaded with `React.lazy` only when its popover opens. The settings and export sheet contents are lazy too.
+**Never build a collection inside a selector.** Zustand 5 loops forever on a selector that returns a new array each call. Select the stored value, then derive with `useMemo`.
 
-**Data flow:**
-1. `/setup` parses the uploaded CSV with `csv2json` (CSV-injection protection on). `extractColumns` builds columns from the first row's keys (all `text`). `initProject` stores both, then the app navigates to `/`.
-2. `/` renders `ResultsTable`, which builds TanStack Table column defs from the visible columns and picks a cell renderer by `data_type` in `components/results/cell-renderers`.
-3. Column settings (`components/settings`) live in a Sheet. Reordering rebuilds the `Map` and calls `setColumns`. A column dialog edits title, type and hidden. Edits never touch `rows`.
-4. Export (`components/export`) uses `processDataForExport` (drops hidden columns, optionally swaps keys for titles) and `serialize` (JSON or CSV) from `src/lib/export.ts`.
+**Routes:** `/` is the start screen with recents. `/d/$datasetId` is the workspace, and its `beforeLoad` reopens a saved dataset from IndexedDB or redirects to `/`. `src/routes/$.tsx` sends every unknown path to `/`. Guards must not go on the root route, because that is the only route whose `beforeLoad` runs during the shell prerender.
 
-**Cell types:** the selectable types and their date/time formats are in `src/lib/constants.ts`. Adding one means updating the constants and `cell-renderers/index.tsx`; the `Column['data_type']` union derives from `DATA_TYPES`.
+**SPA shell prerender:** `vp build` renders the root shell outside a browser. Nothing at module scope may touch `window`, `navigator`, `indexedDB` or `Worker`.
 
-**Pure logic** lives in `src/lib` with no React imports, and is unit-tested.
+**Grid** (`src/components/grid`): `DataGrid` windows rows and columns, with scaled scrolling past browsers' maximum element height (`scaledScroll.ts`). `Cell` parses each value for its column type before handing it to a renderer in `renderers/`, and shows values that do not fit as written with a labelled marker. JSON opens in `JsonTree`. Headers sort, drag and resize, and `ColumnMenu` holds the rest. The body is one tab stop, using `aria-activedescendant` (`useGridKeyboard.ts`, `navigation.ts`).
+
+**Cell types:** the list is `DATA_TYPES` in `src/lib/constants.ts`, and `DataType` derives from it. Adding one means a parser in `src/lib/types/parse.ts` and a case in `components/grid/Cell.tsx`.
 
 ## UI
 
-Dark only, with a yellow primary. Tokens are in `src/styles.css`. Use the shadcn primitives in `src/components/ui` (owned and editable) merged with `cn()`, not raw Radix. Icons are Tabler. The searchable type select is `ui/combobox.tsx`, built on Popover, so there is no `cmdk`.
+Dark only, with a yellow primary. Tokens are in `src/styles.css`. Use the shadcn primitives in `src/components/ui` (owned and editable) merged with `cn()`, not raw Radix. Icons are Tabler. The command palette is hand-built as a combobox and listbox, so there is no `cmdk`. A dialog opened without its own Trigger uses `useReturnFocus` so that focus goes back on close.
 
 When adding a shadcn component, replace `lucide-react` icons with Tabler, drop `"use client"`, then run `vp fmt`.
 
 ## Tests
 
-`tests/e2e/smoke.browser.test.tsx` mounts the real route tree on `document` with a memory history. Dnd-kit drags are driven with explicit pointer events. Lazy dependencies that Vite would otherwise re-optimise mid-run are listed in `optimizeDeps.include` in `vite.config.ts`.
+Browser tests in `tests/e2e` mount the real route tree on `document` with a memory history, through `tests/e2e/app.tsx` (`mount`, `openFile`, and `useApp`, which fails a test on any console error or warning). Storage tests are in `tests/storage`, and the real worker is tested in `tests/worker`. Drags are driven with explicit pointer events. Radix menus give focus back a moment after closing, so wait for that focus before sending more keys.
