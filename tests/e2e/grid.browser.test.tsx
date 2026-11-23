@@ -22,7 +22,7 @@ test('every row can be reached, the last one included, however many there are', 
 	await expect.element(page.getByRole('grid')).toHaveAttribute('aria-rowcount', '600001')
 
 	grid().scrollTop = grid().scrollHeight
-	const last = page.getByRole('gridcell', { name: '1199998', exact: true })
+	const last = page.getByRole('gridcell', { name: '1,199,998', exact: true })
 	await expect.element(last).toBeVisible()
 	const { bottom } = last.element().getBoundingClientRect()
 	expect(bottom).toBeLessThanOrEqual(grid().getBoundingClientRect().bottom + 1)

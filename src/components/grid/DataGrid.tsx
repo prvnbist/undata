@@ -2,7 +2,9 @@ import { memo, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
 
 import { cn } from 'cn'
+import { CELL_KINDS } from '@/lib/import/types'
 import { useWorkspace } from '@/store/workspace'
+import { Cell } from './Cell'
 import { HEADER_HEIGHT, ROW_HEIGHT, gutterWidth, visibleColumns } from './layout'
 import type { GridColumn } from './layout'
 import { BLOCK_SIZE } from './rowCache'
@@ -10,9 +12,6 @@ import type { Block } from './rowCache'
 import { columnOffsets, rowRange, spanRange } from './scaledScroll'
 import { useGridScroll } from './useGridScroll'
 import { useRowWindow } from './useRowWindow'
-
-// More than this is never readable in a cell, and a whole document in one is slow to lay out.
-const MAX_CELL_TEXT = 500
 
 type Span = { start: number; before: number; width: number }
 
@@ -58,19 +57,27 @@ const GridRow = memo(function GridRow({
 				{source === undefined ? '' : source + 1}
 			</div>
 			<Cells span={span}>
-				{columns.map(({ info, size }, i) => (
-					<div
-						key={info.id}
-						role="gridcell"
-						aria-colindex={span.start + i + 2}
-						className="flex shrink-0 items-center overflow-hidden border-r px-3 text-sm whitespace-nowrap"
-						style={{ width: size }}
-					>
-						<span className="truncate">
-							{block?.columns.get(info.id)?.text[at]?.slice(0, MAX_CELL_TEXT)}
-						</span>
-					</div>
-				))}
+				{columns.map(({ info, size }, i) => {
+					const column = block?.columns.get(info.id)
+					const code = column?.kinds?.[at]
+					return (
+						<div
+							key={info.id}
+							role="gridcell"
+							aria-colindex={span.start + i + 2}
+							className="flex shrink-0 items-center overflow-hidden border-r px-3 text-sm whitespace-nowrap"
+							style={{ width: size }}
+						>
+							{column && (
+								<Cell
+									type={info.type}
+									text={column.text[at] ?? ''}
+									kind={code === undefined ? null : (CELL_KINDS[code] ?? null)}
+								/>
+							)}
+						</div>
+					)
+				})}
 			</Cells>
 		</div>
 	)

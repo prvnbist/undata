@@ -18,7 +18,7 @@ export function URLRenderer({ value }: { value: string }) {
 				<IconArrowUpRight size={14} />
 			</a>
 			<span className="truncate text-sm text-sky-400" title={value}>
-				{extractURLName(value)}
+				{extractURLName(value) ?? value}
 			</span>
 		</div>
 	)
