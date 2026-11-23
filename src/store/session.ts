@@ -220,3 +220,10 @@ export const applyColumns = async (setup: ColumnSetup[]) => {
 	workspace.set({ dataset: { ...dataset, columns } })
 	await persist({ setup: columns.map(toSetup) })
 }
+
+// Order and widths: they change what is shown, not which rows, so the engine is not asked again.
+export const arrangeView = (view: ViewState) => {
+	if (!client) return Promise.resolve()
+	workspace.set({ view })
+	return persist({ view })
+}

@@ -1,6 +1,15 @@
 import { describe, expect, test } from 'vite-plus/test'
 
-import { cycleSort, defaultView, setHidden, setSort } from './view'
+import {
+	cycleSort,
+	defaultView,
+	moveColumn,
+	moveColumnBy,
+	setAllHidden,
+	setHidden,
+	setSize,
+	setSort,
+} from './view'
 
 const asc = (columnId: string) => ({ columnId, desc: false })
 const desc = (columnId: string) => ({ columnId, desc: true })
@@ -40,4 +49,32 @@ test('setHidden changes only that column', () => {
 		{ id: 'a', hidden: false, size: null },
 		{ id: 'b', hidden: true, size: null },
 	])
+})
+
+const order = (view: ReturnType<typeof defaultView>) => view.columns.map(column => column.id)
+
+describe('moveColumn', () => {
+	test('puts a column before another, or last', () => {
+		const view = defaultView(['a', 'b', 'c', 'd'])
+		expect(order(moveColumn(view, 'd', 'b'))).toEqual(['a', 'd', 'b', 'c'])
+		expect(order(moveColumn(view, 'a', null))).toEqual(['b', 'c', 'd', 'a'])
+		expect(order(moveColumn(view, 'b', 'b'))).toEqual(['a', 'b', 'c', 'd'])
+		expect(order(moveColumn(view, 'x', 'a'))).toEqual(['a', 'b', 'c', 'd'])
+	})
+
+	test('moving by one steps over hidden columns', () => {
+		const view = setHidden(defaultView(['a', 'b', 'c', 'd']), 'b', true)
+		expect(order(moveColumnBy(view, 'c', -1))).toEqual(['c', 'a', 'b', 'd'])
+		expect(order(moveColumnBy(view, 'a', 1))).toEqual(['b', 'c', 'a', 'd'])
+		expect(order(moveColumnBy(view, 'd', 1))).toEqual(['a', 'b', 'c', 'd'])
+		expect(order(moveColumnBy(view, 'a', -1))).toEqual(['a', 'b', 'c', 'd'])
+	})
+})
+
+test('setSize and setAllHidden change only the named columns', () => {
+	const view = setSize(defaultView(['a', 'b']), 'a', 120)
+	expect(view.columns[0]!.size).toBe(120)
+	expect(setSize(view, 'a', null).columns[0]!.size).toBeNull()
+	const hidden = setAllHidden(view, new Set(['a', 'b']), true)
+	expect(hidden.columns.every(column => column.hidden)).toBe(true)
 })

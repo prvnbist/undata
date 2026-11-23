@@ -81,3 +81,36 @@ export const setHidden = (view: ViewState, columnId: string, hidden: boolean): V
 	...view,
 	columns: view.columns.map(column => (column.id === columnId ? { ...column, hidden } : column)),
 })
+
+// Puts a column just before another, or last when `beforeId` is null. Hidden columns keep their place
+// relative to the rest.
+export const moveColumn = (view: ViewState, id: string, beforeId: string | null): ViewState => {
+	if (id === beforeId) return view
+	const moving = view.columns.find(column => column.id === id)
+	if (!moving) return view
+	const rest = view.columns.filter(column => column.id !== id)
+	const at = beforeId === null ? rest.length : rest.findIndex(column => column.id === beforeId)
+	if (at === -1) return view
+	return { ...view, columns: [...rest.slice(0, at), moving, ...rest.slice(at)] }
+}
+
+// One place left or right among the shown columns.
+export const moveColumnBy = (view: ViewState, id: string, step: -1 | 1): ViewState => {
+	const shown = view.columns.filter(column => !column.hidden || column.id === id)
+	const at = shown.findIndex(column => column.id === id)
+	const neighbour = shown[at + step]
+	if (at === -1 || !neighbour) return view
+	if (step === -1) return moveColumn(view, id, neighbour.id)
+	return moveColumn(view, id, shown[at + 2]?.id ?? null)
+}
+
+// Null goes back to the width worked out from the values.
+export const setSize = (view: ViewState, id: string, size: number | null): ViewState => ({
+	...view,
+	columns: view.columns.map(column => (column.id === id ? { ...column, size } : column)),
+})
+
+export const setAllHidden = (view: ViewState, ids: Set<string>, hidden: boolean): ViewState => ({
+	...view,
+	columns: view.columns.map(column => (ids.has(column.id) ? { ...column, hidden } : column)),
+})

@@ -1,20 +1,81 @@
-import type { MouseEvent } from 'react'
+import { useRef } from 'react'
+import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react'
 import { IconArrowDown, IconArrowUp } from '@tabler/icons-react'
 
 import { DATA_TYPES } from '@/lib/constants'
 import type { ColumnInfo } from '@/lib/engine/store'
-import { cycleSort } from '@/lib/engine/view'
+import { cycleSort, setSize } from '@/lib/engine/view'
 import type { SortKey } from '@/lib/engine/view'
-import { applyView } from '@/store/session'
+import { applyView, arrangeView } from '@/store/session'
 import { workspace } from '@/store/workspace'
 import { ColumnMenu } from './ColumnMenu'
+import { MAX_COLUMN, MIN_COLUMN } from './layout'
 
 const LABELS = new Map<string, string>(DATA_TYPES.map(({ value, label }) => [value, label]))
 
 // Shift adds the column to the sort instead of sorting by it alone.
-const onSort = (id: string) => (event: MouseEvent) => {
+const sortBy = (id: string, event: MouseEvent) => {
 	const { view } = workspace.get()
 	void applyView({ ...view, sort: cycleSort(view.sort, id, event.shiftKey) })
+}
+
+const KEY_STEP = 16
+const clamp = (size: number) => Math.round(Math.min(MAX_COLUMN, Math.max(MIN_COLUMN, size)))
+
+// Null goes back to the width that fits the values.
+const resize = (id: string, size: number | null) =>
+	arrangeView(setSize(workspace.get().view, id, size === null ? null : clamp(size)))
+
+// The right edge of a header. Drag it, double-click it to fit, or focus it and use the arrow keys.
+function ResizeHandle({ id, title, size }: { id: string; title: string; size: number }) {
+	const start = useRef<{ x: number; size: number } | null>(null)
+
+	const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+		event.stopPropagation()
+		try {
+			event.currentTarget.setPointerCapture(event.pointerId)
+		} catch {
+			// A pointer that is already gone. Moves over the handle still resize.
+		}
+		start.current = { x: event.clientX, size }
+	}
+	const onPointerMove = (event: PointerEvent) => {
+		if (!start.current) return
+		// Shown while dragging, saved when it ends.
+		const next = clamp(start.current.size + event.clientX - start.current.x)
+		workspace.set({ view: setSize(workspace.get().view, id, next) })
+	}
+	const onPointerUp = () => {
+		if (!start.current) return
+		start.current = null
+		void arrangeView(workspace.get().view)
+	}
+	const onKeyDown = (event: KeyboardEvent) => {
+		if (event.key === 'ArrowLeft') void resize(id, size - KEY_STEP)
+		else if (event.key === 'ArrowRight') void resize(id, size + KEY_STEP)
+		else if (event.key === 'Enter') void resize(id, null)
+		else return
+		event.preventDefault()
+	}
+
+	return (
+		<div
+			role="separator"
+			aria-orientation="vertical"
+			aria-label={`Resize ${title}`}
+			aria-valuenow={size}
+			aria-valuemin={MIN_COLUMN}
+			aria-valuemax={MAX_COLUMN}
+			tabIndex={0}
+			onPointerDown={onPointerDown}
+			onPointerMove={onPointerMove}
+			onPointerUp={onPointerUp}
+			onPointerCancel={onPointerUp}
+			onDoubleClick={() => void resize(id, null)}
+			onKeyDown={onKeyDown}
+			className="absolute top-0 -right-1 z-10 h-full w-2 cursor-col-resize touch-none outline-none hover:bg-primary/40 focus-visible:bg-primary/60"
+		/>
+	)
 }
 
 export function ColumnHeader({
@@ -22,11 +83,15 @@ export function ColumnHeader({
 	size,
 	colIndex,
 	sort,
+	onDragStart,
+	consumeDrag,
 }: {
 	column: ColumnInfo
 	size: number
 	colIndex: number
 	sort: SortKey[]
+	onDragStart: (id: string, event: PointerEvent) => void
+	consumeDrag: () => boolean
 }) {
 	const at = sort.findIndex(key => key.columnId === column.id)
 	const key = at === -1 ? null : sort[at]!
@@ -46,13 +111,16 @@ export function ColumnHeader({
 					? `Sorted ${direction === 'desc' ? 'descending' : 'ascending'}${sort.length > 1 ? `, ${at + 1} of ${sort.length}` : ''}`
 					: undefined
 			}
-			className="flex shrink-0 items-center gap-1 border-r pr-1 pl-3 text-sm"
+			className="relative flex shrink-0 items-center gap-1 border-r pr-1 pl-3 text-sm"
 			style={{ width: size }}
 		>
 			<button
 				type="button"
-				onClick={onSort(column.id)}
-				title={`${column.title} (${LABELS.get(column.type)}). Click to sort, Shift-click to add to the sort`}
+				onPointerDown={event => onDragStart(column.id, event)}
+				onClick={event => {
+					if (!consumeDrag()) sortBy(column.id, event)
+				}}
+				title={`${column.title} (${LABELS.get(column.type)}). Click to sort, Shift-click to add to the sort, drag to move`}
 				className="flex min-w-0 flex-1 items-center gap-1 self-stretch text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
 			>
 				<span className="truncate">{column.title}</span>
@@ -64,6 +132,7 @@ export function ColumnHeader({
 				)}
 			</button>
 			<ColumnMenu column={column} sorted={direction} sortCount={sort.length} />
+			<ResizeHandle id={column.id} title={column.title} size={size} />
 		</div>
 	)
 }

@@ -5,6 +5,7 @@ export const ROW_HEIGHT = 32
 export const HEADER_HEIGHT = 40
 export const MIN_COLUMN = 60
 export const MAX_FITTED = 420
+export const MAX_COLUMN = 2000
 
 export type GridColumn = { info: ColumnInfo; size: number }
 

@@ -141,3 +141,126 @@ test('changes survive reload, and the source text is unchanged', async () => {
 	])
 	expect(dataset!.columns.map(column => column.header)).toEqual(['amount', 'note'])
 })
+
+const centre = (element: Element) => {
+	const { left, width, top, height } = element.getBoundingClientRect()
+	return { x: left + width / 2, y: top + height / 2 }
+}
+const pointer = (target: EventTarget, type: string, x: number, y: number) =>
+	target.dispatchEvent(
+		new PointerEvent(type, {
+			bubbles: true,
+			clientX: x,
+			clientY: y,
+			button: 0,
+			pointerId: 1,
+			isPrimary: true,
+		})
+	)
+const headerOrder = () =>
+	page
+		.getByRole('columnheader')
+		.elements()
+		.slice(1)
+		.map(element => element.getAttribute('aria-label'))
+const sizeOf = (index: number) => useWorkspace.getState().view.columns[index]!.size
+
+test('dragging a header moves the column, without sorting', async () => {
+	await openFile(textFile('a,b,c\n1,2,3\n'))
+	await expect.element(sortButton('c')).toBeVisible()
+
+	const from = centre(sortButton('c').element())
+	const to = centre(header('a').element())
+	pointer(sortButton('c').element(), 'pointerdown', from.x, from.y)
+	pointer(window, 'pointermove', from.x - 20, from.y)
+	pointer(window, 'pointermove', to.x - 20, to.y)
+	pointer(window, 'pointerup', to.x - 20, to.y)
+
+	await vi.waitFor(() => expect(headerOrder()).toEqual(['c', 'a', 'b']))
+	expect(useWorkspace.getState().view.sort).toEqual([])
+})
+
+test('dragging the edge resizes, double-click fits, and the keyboard does both', async () => {
+	await openFile(textFile('a,b\n1,2\n'))
+	const handle = page.getByRole('separator', { name: 'Resize a' })
+	await expect.element(handle).toBeInTheDocument()
+	const before = Number(handle.element().getAttribute('aria-valuenow'))
+
+	const { x, y } = centre(handle.element())
+	pointer(handle.element(), 'pointerdown', x, y)
+	pointer(handle.element(), 'pointermove', x + 50, y)
+	pointer(handle.element(), 'pointerup', x + 50, y)
+	await vi.waitFor(() => expect(sizeOf(0)).toBe(before + 50))
+
+	await userEvent.dblClick(handle)
+	await vi.waitFor(() => expect(sizeOf(0)).toBeNull())
+
+	;(handle.element() as HTMLElement).focus()
+	await userEvent.keyboard('{ArrowRight}')
+	await vi.waitFor(() => expect(sizeOf(0)).toBe(before + 16))
+	await userEvent.keyboard('{Enter}')
+	await vi.waitFor(() => expect(sizeOf(0)).toBeNull())
+})
+
+test('the menu moves columns by keyboard', async () => {
+	await openFile(textFile('a,b,c\n1,2,3\n'))
+	await expect.element(menu('a')).toBeVisible()
+	;(menu('a').element() as HTMLElement).focus()
+	await userEvent.keyboard('{Enter}')
+	const right = page.getByRole('menuitem', { name: 'Move right' })
+	await expect.element(right).toBeVisible()
+	;(right.element() as HTMLElement).focus()
+	await userEvent.keyboard('{Enter}')
+	await vi.waitFor(() => expect(headerOrder()).toEqual(['b', 'a', 'c']))
+})
+
+test('the Columns popover finds columns and shows or hides them in bulk', async () => {
+	await openFile(textFile('price,price_old,name\n1,2,x\n'))
+	await userEvent.click(page.getByRole('button', { name: 'Columns' }))
+	await userEvent.fill(page.getByRole('textbox', { name: 'Find a column' }), 'price')
+
+	const list = page.getByRole('list', { name: 'Columns' })
+	await expect.element(list.getByText('price_old')).toBeVisible()
+	expect(list.getByText('name').elements()).toHaveLength(0)
+
+	await userEvent.click(page.getByRole('button', { name: 'Hide matching' }))
+	await vi.waitFor(() => expect(headerOrder()).toEqual(['name']))
+	await expect.element(page.getByRole('button', { name: /Columns \(2 hidden\)/ })).toBeVisible()
+
+	await userEvent.click(list.getByRole('checkbox').first())
+	await vi.waitFor(() => expect(headerOrder()).toEqual(['price', 'name']))
+})
+
+test('order and sizes survive reload', async () => {
+	await openFile(textFile('a,b\n1,2\n', 'arranged.csv'))
+	await saved()
+	const id = useWorkspace.getState().dataset!.id
+
+	;(menu('a').element() as HTMLElement).focus()
+	await userEvent.keyboard('{Enter}')
+	;(page.getByRole('menuitem', { name: 'Move right' }).element() as HTMLElement).focus()
+	await userEvent.keyboard('{Enter}')
+	await vi.waitFor(() => expect(headerOrder()).toEqual(['b', 'a']))
+	// The menu gives focus back to its button a moment after it closes.
+	await expect.element(menu('a')).toHaveFocus()
+	const handle = page.getByRole('separator', { name: 'Resize b' })
+	;(handle.element() as HTMLElement).focus()
+	await expect.element(handle).toHaveFocus()
+	await userEvent.keyboard('{ArrowRight}')
+	const size = await vi.waitFor(() => {
+		const value = useWorkspace.getState().view.columns[0]!.size
+		expect(value).not.toBeNull()
+		return value
+	})
+
+	await vi.waitFor(async () => {
+		const { listDatasets } = await import('@/lib/storage/datasets')
+		const [stored] = await listDatasets()
+		expect(stored!.view.columns[0]!.size).toBe(size)
+	})
+
+	closeDataset()
+	mount(`/d/${id}`)
+	await vi.waitFor(() => expect(headerOrder()).toEqual(['b', 'a']))
+	expect(useWorkspace.getState().view.columns[0]!.size).toBe(size)
+})

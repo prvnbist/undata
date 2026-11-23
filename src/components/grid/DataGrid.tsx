@@ -5,6 +5,7 @@ import { CELL_KINDS } from '@/lib/import/types'
 import { useWorkspace } from '@/store/workspace'
 import { Cell } from './Cell'
 import { ColumnHeader } from './ColumnHeader'
+import { useColumnDrag } from './useColumnDrag'
 import { HEADER_HEIGHT, ROW_HEIGHT, gutterWidth, visibleColumns } from './layout'
 import type { GridColumn } from './layout'
 import { BLOCK_SIZE } from './rowCache'
@@ -122,6 +123,13 @@ export function DataGrid() {
 	const ids = useMemo(() => shown.map(column => column.info.id), [shown])
 	const cache = useRowWindow(query, rows, ids)
 
+	const { indicator, onPointerDown, consumeDrag } = useColumnDrag(
+		scroller,
+		columns,
+		offsets,
+		gutter
+	)
+
 	const total = gutter + offsets[offsets.length - 1]!
 	const span = useMemo<Span>(
 		() => ({ start: first, before: offsets[first]!, width: total }),
@@ -143,6 +151,13 @@ export function DataGrid() {
 				style={{ height: HEADER_HEIGHT + scale.bodyHeight, width: total }}
 			>
 				<div role="rowgroup" className="sticky top-0 z-20 bg-card">
+					{indicator !== null && (
+						<div
+							aria-hidden
+							className="pointer-events-none absolute top-0 z-30 w-0.5 -translate-x-1/2 bg-primary"
+							style={{ left: gutter + indicator, height: viewport.height }}
+						/>
+					)}
 					<div
 						role="row"
 						aria-rowindex={1}
@@ -164,6 +179,8 @@ export function DataGrid() {
 									size={size}
 									colIndex={first + i + 2}
 									sort={sort}
+									onDragStart={onPointerDown}
+									consumeDrag={consumeDrag}
 								/>
 							))}
 						</Cells>

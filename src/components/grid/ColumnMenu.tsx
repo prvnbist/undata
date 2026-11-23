@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import {
+	IconArrowBarToLeft,
+	IconArrowBarToRight,
 	IconArrowDown,
 	IconArrowUp,
+	IconArrowsHorizontal,
 	IconChevronDown,
 	IconEyeOff,
 	IconForms,
@@ -34,8 +37,8 @@ import { Input } from '@/components/ui/input'
 import { DATA_TYPES } from '@/lib/constants'
 import type { DataType } from '@/lib/constants'
 import type { ColumnInfo } from '@/lib/engine/store'
-import { setHidden, setSort } from '@/lib/engine/view'
-import { applyColumns, applyView } from '@/store/session'
+import { moveColumnBy, setHidden, setSize, setSort } from '@/lib/engine/view'
+import { applyColumns, applyView, arrangeView } from '@/store/session'
 import { workspace } from '@/store/workspace'
 
 // Every column's setup, with this one changed.
@@ -57,6 +60,9 @@ const sortBy = (id: string, desc: boolean | null, add: boolean) => {
 }
 
 const hide = (id: string) => void applyView(setHidden(workspace.get().view, id, true))
+const move = (id: string, step: -1 | 1) =>
+	void arrangeView(moveColumnBy(workspace.get().view, id, step))
+const fit = (id: string) => void arrangeView(setSize(workspace.get().view, id, null))
 
 function RenameDialog({
 	column,
@@ -172,6 +178,16 @@ export function ColumnMenu({
 					</DropdownMenuSub>
 					<DropdownMenuItem onSelect={() => setRenaming(true)}>
 						<IconForms /> Rename…
+					</DropdownMenuItem>
+					<DropdownMenuSeparator />
+					<DropdownMenuItem onSelect={() => move(column.id, -1)}>
+						<IconArrowBarToLeft /> Move left
+					</DropdownMenuItem>
+					<DropdownMenuItem onSelect={() => move(column.id, 1)}>
+						<IconArrowBarToRight /> Move right
+					</DropdownMenuItem>
+					<DropdownMenuItem onSelect={() => fit(column.id)}>
+						<IconArrowsHorizontal /> Fit width
 					</DropdownMenuItem>
 					<DropdownMenuItem onSelect={() => hide(column.id)}>
 						<IconEyeOff /> Hide
