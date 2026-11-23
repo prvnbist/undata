@@ -3,6 +3,7 @@ import { defaultView } from '@/lib/engine/view'
 import type { ColumnSetup, ViewState } from '@/lib/engine/view'
 import { formatBytes } from '@/lib/bytes'
 import type { ImportOptions } from '@/lib/import/types'
+import { requestPersistence, saveDataset, updateDataset } from '@/lib/storage/datasets'
 import { createEngineClient, isEngineError } from '@/workers/client'
 import type { EngineClient } from '@/workers/client'
 import type { EngineError } from '@/workers/protocol'
@@ -27,6 +28,8 @@ export type ImportRequest = {
 	options?: ImportOptions | null
 	setup?: ColumnSetup[] | null
 	view?: ViewState | null
+	// Opened before, so the size was already agreed to.
+	known?: boolean
 }
 
 const toEngineError = (error: unknown): EngineError =>
@@ -44,10 +47,62 @@ export const closeDataset = () => {
 	workspace.set(initialWorkspace)
 }
 
-// What "open anyway" goes on with.
-let waiting: Required<ImportRequest> | null = null
+const toSetup = ({ id, title, type }: ColumnSetup): ColumnSetup => ({ id, title, type })
 
-const read = async (request: Required<ImportRequest>) => {
+const unsaved = (error: unknown) => {
+	const reason = error instanceof DOMException && error.name === 'QuotaExceededError'
+	workspace.set({
+		saved: 'unsaved',
+		notice: reason
+			? 'Could not save this dataset: browser storage is full. It stays open until you leave.'
+			: 'Could not save this dataset: this browser does not let Undata store data. It stays open until you leave.',
+	})
+}
+
+// Saving never stops a dataset from opening. It only changes what is said about it.
+const save = async (id: string, blob: Blob) => {
+	const { dataset, view } = workspace.get()
+	if (!dataset || dataset.id !== id) return
+	workspace.set({ saved: 'saving' })
+	try {
+		await saveDataset(
+			{
+				id,
+				name: dataset.name,
+				size: dataset.size,
+				rowCount: dataset.rowCount,
+				columnCount: dataset.columns.length,
+				options: dataset.options,
+				setup: dataset.columns.map(toSetup),
+				view,
+			},
+			blob
+		)
+		if (workspace.get().dataset?.id === id) workspace.set({ saved: 'saved' })
+		void requestPersistence()
+	} catch (error) {
+		if (workspace.get().dataset?.id === id) unsaved(error)
+	}
+}
+
+// Later changes go after the first save, in the order they were made.
+let pendingWrite: Promise<unknown> = Promise.resolve()
+const persist = (patch: Parameters<typeof updateDataset>[1]) => {
+	const { dataset, saved } = workspace.get()
+	if (!dataset || saved === 'unsaved') return pendingWrite
+	const { id } = dataset
+	pendingWrite = pendingWrite
+		.then(() => updateDataset(id, patch))
+		.catch(error => {
+			if (workspace.get().dataset?.id === id) unsaved(error)
+		})
+	return pendingWrite
+}
+
+// What "open anyway" goes on with.
+let waiting: Required<Omit<ImportRequest, 'known'>> | null = null
+
+const read = async (request: Required<Omit<ImportRequest, 'known'>>) => {
 	const { id, blob, name, options, setup, view } = request
 	workspace.set({ phase: { kind: 'importing', id, name, progress: null } })
 
@@ -83,6 +138,8 @@ const read = async (request: Required<ImportRequest>) => {
 			view: initial,
 			query: { id: queryId, rowCount },
 		})
+		pendingWrite = save(id, blob)
+		await pendingWrite
 	} catch (error) {
 		// Another import took over, or this one was cancelled.
 		if (own !== client) return
@@ -99,6 +156,7 @@ export const importDataset = ({
 	options = null,
 	setup = null,
 	view = null,
+	known = false,
 }: ImportRequest): { id: string; done: Promise<void> } => {
 	closeDataset()
 	const request = { blob, name, id, options, setup, view }
@@ -109,7 +167,7 @@ export const importDataset = ({
 		return { id, done: Promise.resolve() }
 	}
 
-	if (blob.size > LARGE_FILE) {
+	if (blob.size > LARGE_FILE && !known) {
 		waiting = request
 		workspace.set({ phase: { kind: 'confirming', id, name, size: blob.size } })
 		return { id, done: Promise.resolve() }
@@ -133,4 +191,32 @@ export const reimport = (options: ImportOptions) => {
 	const request = { blob: source, name: dataset.name, id: dataset.id, options }
 	closeDataset()
 	return read({ ...request, setup: null, view: null })
+}
+
+// Shows the dataset another way. What is shown is kept for next time.
+export const applyView = async (view: ViewState) => {
+	const own = client
+	if (!own) return
+	workspace.set({ view, querying: true, queryError: null })
+	const saving = persist({ view })
+	try {
+		const { queryId, rowCount } = await own.query(view)
+		if (own !== client || workspace.get().view !== view) return
+		workspace.set({ query: { id: queryId, rowCount }, querying: false })
+	} catch (error) {
+		if (own !== client || workspace.get().view !== view) return
+		workspace.set({ querying: false, queryError: toEngineError(error) })
+	}
+	await saving
+}
+
+// Titles and types. The engine works out the counts again for the new types.
+export const applyColumns = async (setup: ColumnSetup[]) => {
+	const own = client
+	const { dataset } = workspace.get()
+	if (!own || !dataset) return
+	const columns = await own.setColumns(setup)
+	if (own !== client) return
+	workspace.set({ dataset: { ...dataset, columns } })
+	await persist({ setup: columns.map(toSetup) })
 }

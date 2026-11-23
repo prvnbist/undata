@@ -27,6 +27,9 @@ export type Phase =
 	| { kind: 'failed'; id: string; name: string; error: ImportFailure }
 	| { kind: 'ready'; id: string; name: string }
 
+// Whether the open dataset is kept for next time. `unsaved` means storage is full or blocked.
+export type SaveState = 'saving' | 'saved' | 'unsaved' | null
+
 // What the engine last answered for the view, which can be a moment behind it.
 export type CurrentQuery = { id: number; rowCount: number }
 
@@ -39,6 +42,7 @@ export type WorkspaceState = {
 	query: CurrentQuery | null
 	querying: boolean
 	queryError: EngineError | null
+	saved: SaveState
 	// Something to tell the user once.
 	notice: string | null
 }
@@ -51,6 +55,7 @@ export const initialWorkspace: WorkspaceState = {
 	query: null,
 	querying: false,
 	queryError: null,
+	saved: null,
 	notice: null,
 }
 

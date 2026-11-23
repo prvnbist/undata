@@ -3,6 +3,7 @@ import { IconFileUpload } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import { SAMPLE_NAME, makeSample } from '@/lib/import/sample'
 import { OpenFileButton } from './OpenFileButton'
+import { Recents } from './Recents'
 import { useOpenDataset } from './useOpenDataset'
 
 export function StartScreen() {
@@ -36,6 +37,7 @@ export function StartScreen() {
 					</Button>
 				</div>
 			</section>
+			<Recents />
 		</main>
 	)
 }
