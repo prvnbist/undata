@@ -45,8 +45,7 @@ const scroll = async (steps: number, step: (i: number) => void) => {
 }
 
 const show = async (blob: Blob, name: string) => {
-	const { done } = importDataset({ blob, name })
-	await done
+	await importDataset({ blob, name, known: true }).done
 	await pause(500)
 }
 
@@ -55,10 +54,13 @@ const run = async () => {
 	const wide = makeWideFixture()
 	createRoot(document.getElementById('app')!).render(<DataGrid />)
 
+	// A file this size would ask before opening. Saving it goes on after the rows are shown.
 	const start = performance.now()
-	await importDataset({ blob: tall, name: tall.name }).done
+	const { done } = importDataset({ blob: tall, name: tall.name, known: true })
 	while (!document.querySelector('[role=gridcell]')?.textContent) await frame()
 	const openToRowsMs = Math.round(performance.now() - start)
+	await done
+	const openToSavedMs = Math.round(performance.now() - start)
 	await pause(500)
 
 	const height = grid().scrollHeight
@@ -76,7 +78,7 @@ const run = async () => {
 		grid().scrollLeft = (i * 400) % grid().scrollWidth
 	})
 
-	return { openToRowsMs, height, slow, fast, jumps, lastCell, sideways, diagonal }
+	return { openToRowsMs, openToSavedMs, height, slow, fast, jumps, lastCell, sideways, diagonal }
 }
 
 run().then(
