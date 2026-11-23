@@ -55,7 +55,7 @@ const useCancel = () => {
 	const navigate = useNavigate()
 	return () => {
 		closeDataset()
-		void navigate({ to: '/start' })
+		void navigate({ to: '/' })
 	}
 }
 
@@ -93,7 +93,7 @@ function Failed({ name, error }: Extract<Phase, { kind: 'failed' }>) {
 				<>
 					<OpenFileButton>Choose another file</OpenFileButton>
 					<Button variant="outline" asChild>
-						<Link to="/start">Back to start</Link>
+						<Link to="/">Back to start</Link>
 					</Button>
 				</>
 			}

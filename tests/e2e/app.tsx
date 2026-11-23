@@ -26,7 +26,7 @@ export const unmount = () => {
 	root = null
 }
 
-export const START = '/start'
+export const START = '/'
 
 export const textFile = (content: BlobPart, name = 'data.csv') => new File([content], name)
 

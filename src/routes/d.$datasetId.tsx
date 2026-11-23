@@ -14,7 +14,7 @@ export const Route = createFileRoute('/d/$datasetId')({
 		if (phase.kind !== 'idle' && phase.id === params.datasetId) return
 
 		const found = await stored(params.datasetId)
-		if (!found) throw redirect({ to: '/start' })
+		if (!found) throw redirect({ to: '/' })
 
 		const { record, blob } = found
 		importDataset({

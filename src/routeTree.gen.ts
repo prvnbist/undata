@@ -11,8 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
-import { Route as SetupRouteImport } from './routes/setup'
-import { Route as StartRouteImport } from './routes/start'
 import { Route as DDatasetIdRouteImport } from './routes/d.$datasetId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -25,16 +23,6 @@ const SplatRoute = SplatRouteImport.update({
   path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SetupRoute = SetupRouteImport.update({
-  id: '/setup',
-  path: '/setup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const StartRoute = StartRouteImport.update({
-  id: '/start',
-  path: '/start',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DDatasetIdRoute = DDatasetIdRouteImport.update({
   id: '/d/$datasetId',
   path: '/d/$datasetId',
@@ -44,38 +32,30 @@ const DDatasetIdRoute = DDatasetIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/setup': typeof SetupRoute
-  '/start': typeof StartRoute
   '/d/$datasetId': typeof DDatasetIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/setup': typeof SetupRoute
-  '/start': typeof StartRoute
   '/d/$datasetId': typeof DDatasetIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/setup': typeof SetupRoute
-  '/start': typeof StartRoute
   '/d/$datasetId': typeof DDatasetIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$' | '/setup' | '/start' | '/d/$datasetId'
+  fullPaths: '/' | '/$' | '/d/$datasetId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$' | '/setup' | '/start' | '/d/$datasetId'
-  id: '__root__' | '/' | '/$' | '/setup' | '/start' | '/d/$datasetId'
+  to: '/' | '/$' | '/d/$datasetId'
+  id: '__root__' | '/' | '/$' | '/d/$datasetId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
-  SetupRoute: typeof SetupRoute
-  StartRoute: typeof StartRoute
   DDatasetIdRoute: typeof DDatasetIdRoute
 }
 
@@ -95,20 +75,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/setup': {
-      id: '/setup'
-      path: '/setup'
-      fullPath: '/setup'
-      preLoaderRoute: typeof SetupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/start': {
-      id: '/start'
-      path: '/start'
-      fullPath: '/start'
-      preLoaderRoute: typeof StartRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/d/$datasetId': {
       id: '/d/$datasetId'
       path: '/d/$datasetId'
@@ -122,8 +88,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
-  SetupRoute: SetupRoute,
-  StartRoute: StartRoute,
   DDatasetIdRoute: DDatasetIdRoute,
 }
 export const routeTree = rootRouteImport
