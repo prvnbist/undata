@@ -1,4 +1,4 @@
-import { memo, useMemo, useRef } from 'react'
+import { memo, useLayoutEffect, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
 
 import { CELL_KINDS } from '@/lib/import/types'
@@ -6,6 +6,7 @@ import { useWorkspace } from '@/store/workspace'
 import { Cell } from './Cell'
 import { ColumnHeader } from './ColumnHeader'
 import { useColumnDrag } from './useColumnDrag'
+import { cellId, useGridKeyboard } from './useGridKeyboard'
 import { HEADER_HEIGHT, ROW_HEIGHT, gutterWidth, visibleColumns } from './layout'
 import type { GridColumn } from './layout'
 import { BLOCK_SIZE } from './rowCache'
@@ -32,12 +33,15 @@ const GridRow = memo(function GridRow({
 	columns,
 	span,
 	gutter,
+	activeCol,
 }: {
 	index: number
 	block: Block | undefined
 	columns: GridColumn[]
 	span: Span
 	gutter: number
+	// The active cell's column, when it is in this row.
+	activeCol: number | null
 }) {
 	const at = index % BLOCK_SIZE
 	const source = block?.rows[at]
@@ -61,12 +65,17 @@ const GridRow = memo(function GridRow({
 				{columns.map(({ info, size }, i) => {
 					const column = block?.columns.get(info.id)
 					const code = column?.kinds?.[at]
+					const col = span.start + i
 					return (
 						<div
 							key={info.id}
+							id={cellId(index, info.id)}
 							role="gridcell"
-							aria-colindex={span.start + i + 2}
-							className="flex shrink-0 items-center overflow-hidden border-r px-3 text-sm whitespace-nowrap"
+							aria-colindex={col + 2}
+							aria-selected={col === activeCol || undefined}
+							data-row={index}
+							data-col={col}
+							className="flex shrink-0 items-center overflow-hidden border-r px-3 text-sm whitespace-nowrap aria-selected:bg-primary/10 aria-selected:outline-2 aria-selected:-outline-offset-2 aria-selected:outline-primary/60 group-focus-visible/grid:aria-selected:outline-primary"
 							style={{ width: size }}
 						>
 							{column && (
@@ -100,7 +109,7 @@ export function DataGrid() {
 	)
 	const offsets = useMemo(() => columnOffsets(columns.map(column => column.size)), [columns])
 
-	const { viewport, position, scale } = useGridScroll(scroller, {
+	const { viewport, position, scale, reveal } = useGridScroll(scroller, {
 		contentHeight: rowCount * ROW_HEIGHT,
 		headerHeight: HEADER_HEIGHT,
 		gutter,
@@ -130,6 +139,32 @@ export function DataGrid() {
 		gutter
 	)
 
+	const keyboard = useGridKeyboard({
+		query,
+		columns,
+		offsets,
+		page: Math.max(1, Math.floor(viewport.height / ROW_HEIGHT) - 1),
+		reveal,
+	})
+	const active = keyboard.active
+	// Only a cell that exists can be pointed at.
+	const activeShown =
+		active &&
+		active.col >= first &&
+		active.col < last &&
+		active.row >= rows.start &&
+		active.row < rows.end
+			? active
+			: null
+	const body = useRef<HTMLDivElement>(null)
+
+	// Links and buttons in cells are worked with Enter on the cell, so the grid stays one tab stop.
+	useLayoutEffect(() => {
+		for (const control of body.current?.querySelectorAll('a[href], button') ?? []) {
+			if (control.getAttribute('tabindex') !== '-1') control.setAttribute('tabindex', '-1')
+		}
+	})
+
 	const total = gutter + offsets[offsets.length - 1]!
 	const span = useMemo<Span>(
 		() => ({ start: first, before: offsets[first]!, width: total }),
@@ -141,9 +176,15 @@ export function DataGrid() {
 			ref={scroller}
 			role="grid"
 			aria-label="Rows"
+			tabIndex={0}
+			aria-activedescendant={
+				activeShown ? cellId(activeShown.row, columns[activeShown.col]!.info.id) : undefined
+			}
+			onKeyDown={keyboard.onKeyDown}
+			onFocus={keyboard.onFocus}
 			aria-rowcount={rowCount + 1}
 			aria-colcount={columns.length + 1}
-			className="relative min-h-0 flex-1 overflow-auto [overflow-anchor:none]"
+			className="group/grid relative min-h-0 flex-1 overflow-auto outline-none [overflow-anchor:none]"
 		>
 			<div
 				role="presentation"
@@ -187,7 +228,9 @@ export function DataGrid() {
 					</div>
 				</div>
 				<div
+					ref={body}
 					role="rowgroup"
+					onPointerDown={keyboard.onPointerDown}
 					className="absolute left-0"
 					style={{
 						// Rows sit where the scrollbar is, so a squeezed body still shows them in full.
@@ -203,6 +246,7 @@ export function DataGrid() {
 								columns={shown}
 								span={span}
 								gutter={gutter}
+								activeCol={activeShown?.row === index ? activeShown.col : null}
 							/>
 						)
 					)}
