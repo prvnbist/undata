@@ -19,6 +19,7 @@ import type { FilterDraft } from '@/lib/engine/operators'
 import type { Filter } from '@/lib/engine/view'
 import { applyView } from '@/store/session'
 import { useWorkspace, workspace } from '@/store/workspace'
+import { mergeFilter } from './mergeFilter'
 
 const HINTS: Partial<Record<DataType, string>> = {
 	number: 'A number, such as 10 or -2.5',
@@ -38,6 +39,13 @@ export const commitFilter = (filter: Filter, index: number | null) => {
 			? [...view.filters, filter]
 			: view.filters.map((existing, i) => (i === index ? filter : existing))
 	return applyView({ ...view, filters })
+}
+
+// A filter from a click: merged with what the column already has, so nothing is doubled.
+export const addFilter = (filter: Filter) => {
+	const { view } = workspace.get()
+	const filters = mergeFilter(view.filters, filter)
+	return filters === view.filters ? Promise.resolve() : applyView({ ...view, filters })
 }
 
 export const removeFilter = (index: number) => {

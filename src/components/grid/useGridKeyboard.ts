@@ -16,7 +16,7 @@ type Reveal = (
 export const cellId = (row: number, columnId: string) => `cell-${row}-${columnId}`
 
 // The raw text, as it is in the file, of one cell of the current query.
-const cellText = async (query: CurrentQuery, row: number, columnId: string) => {
+export const cellText = async (query: CurrentQuery, row: number, columnId: string) => {
 	const [found] = (await engine()?.rows(query.id, row, row + 1, [columnId])) ?? []
 	return found?.text[0] ?? ''
 }

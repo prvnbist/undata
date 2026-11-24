@@ -9,6 +9,7 @@ import {
 	IconArrowsHorizontal,
 	IconChevronDown,
 	IconEyeOff,
+	IconFilter,
 	IconForms,
 	IconPlus,
 	IconX,
@@ -34,6 +35,7 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { addFilter } from '@/components/filtering/FilterEditor'
 import { Input } from '@/components/ui/input'
 import { DATA_TYPES } from '@/lib/constants'
 import type { DataType } from '@/lib/constants'
@@ -41,6 +43,16 @@ import type { ColumnInfo } from '@/lib/engine/store'
 import { moveColumnBy, setHidden, setSize, setSort } from '@/lib/engine/view'
 import { applyColumns, applyView, arrangeView } from '@/store/session'
 import { workspace } from '@/store/workspace'
+
+const inEnglish = new Intl.NumberFormat('en')
+
+// Each with the whole column's count of the cells it is about.
+const FILTERS = [
+	{ op: 'empty', label: 'Only empty', count: 'empty' },
+	{ op: 'notEmpty', label: 'Hide empty', count: 'empty' },
+	{ op: 'malformed', label: 'Only malformed', count: 'malformed' },
+	{ op: 'notMalformed', label: 'Hide malformed', count: 'malformed' },
+] as const
 
 // Every column's setup, with this one changed.
 const changeColumn = (id: string, change: { title?: string; type?: DataType }) => {
@@ -173,6 +185,30 @@ export function ColumnMenu({
 						</DropdownMenuItem>
 					)}
 					<DropdownMenuSeparator />
+					<DropdownMenuSub>
+						<DropdownMenuSubTrigger>
+							<IconFilter /> Filter
+						</DropdownMenuSubTrigger>
+						<DropdownMenuSubContent className="w-56">
+							{FILTERS.filter(
+								({ op }) => column.type !== 'text' || !op.endsWith('alformed')
+							).map(({ op, label, count }) => {
+								const n = column[count]
+								return (
+									<DropdownMenuItem
+										key={op}
+										disabled={n === 0}
+										onSelect={() => void addFilter({ columnId: column.id, op })}
+									>
+										{label}
+										<span className="ml-auto font-mono text-xs text-foreground/70">
+											{inEnglish.format(n)}
+										</span>
+									</DropdownMenuItem>
+								)
+							})}
+						</DropdownMenuSubContent>
+					</DropdownMenuSub>
 					<DropdownMenuSub>
 						<DropdownMenuSubTrigger>Type</DropdownMenuSubTrigger>
 						<DropdownMenuSubContent className="w-52">

@@ -5,6 +5,8 @@ import { SearchContext } from '@/components/filtering/Highlighted'
 import { CELL_KINDS } from '@/lib/import/types'
 import { useWorkspace } from '@/store/workspace'
 import { Cell } from './Cell'
+import { CellMenu } from './CellMenu'
+import type { CellMenuTarget } from './CellMenu'
 import { ColumnHeader } from './ColumnHeader'
 import { useColumnDrag } from './useColumnDrag'
 import { cellId, useGridKeyboard } from './useGridKeyboard'
@@ -185,6 +187,35 @@ export function DataGrid() {
 		}
 	})
 
+	// Right-click, Shift+F10 or the Menu key on a cell.
+	const [menu, setMenu] = useState<CellMenuTarget | null>(null)
+	const openMenu = (row: number, col: number, x?: number, y?: number) => {
+		const column = columns[col]
+		if (!column) return
+		const rect = document.getElementById(cellId(row, column.info.id))?.getBoundingClientRect()
+		setMenu({
+			row,
+			column: column.info,
+			x: x ?? rect?.left ?? 0,
+			y: y ?? rect?.bottom ?? 0,
+		})
+	}
+	const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+		const menuKey = event.key === 'ContextMenu' || (event.key === 'F10' && event.shiftKey)
+		if (!menuKey || event.target !== event.currentTarget) return keyboard.onKeyDown(event)
+		event.preventDefault()
+		const at = active ?? (rowCount > 0 && columns.length > 0 ? { row: 0, col: 0 } : null)
+		if (at) openMenu(at.row, at.col)
+	}
+	const onContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+		const cell = (event.target as HTMLElement).closest<HTMLElement>('[data-row][data-col]')
+		if (!cell) return
+		event.preventDefault()
+		const at = { row: Number(cell.dataset.row), col: Number(cell.dataset.col) }
+		show(at)
+		openMenu(at.row, at.col, event.clientX, event.clientY)
+	}
+
 	const total = gutter + offsets[offsets.length - 1]!
 	const span = useMemo<Span>(
 		() => ({ start: first, before: offsets[first]!, width: total }),
@@ -192,88 +223,92 @@ export function DataGrid() {
 	)
 
 	return (
-		<div
-			ref={scroller}
-			role="grid"
-			aria-label="Rows"
-			tabIndex={0}
-			aria-activedescendant={
-				activeShown ? cellId(activeShown.row, columns[activeShown.col]!.info.id) : undefined
-			}
-			onKeyDown={keyboard.onKeyDown}
-			onFocus={keyboard.onFocus}
-			aria-rowcount={rowCount + 1}
-			aria-colcount={columns.length + 1}
-			className="group/grid relative min-h-0 flex-1 overflow-auto outline-none [overflow-anchor:none]"
-		>
+		<>
 			<div
-				role="presentation"
-				className="relative"
-				style={{ height: HEADER_HEIGHT + scale.bodyHeight, width: total }}
+				ref={scroller}
+				role="grid"
+				aria-label="Rows"
+				tabIndex={0}
+				aria-activedescendant={
+					activeShown ? cellId(activeShown.row, columns[activeShown.col]!.info.id) : undefined
+				}
+				onKeyDown={onKeyDown}
+				onFocus={keyboard.onFocus}
+				aria-rowcount={rowCount + 1}
+				aria-colcount={columns.length + 1}
+				className="group/grid relative min-h-0 flex-1 overflow-auto outline-none [overflow-anchor:none]"
 			>
-				<div role="rowgroup" className="sticky top-0 z-20 bg-card">
-					{indicator !== null && (
+				<div
+					role="presentation"
+					className="relative"
+					style={{ height: HEADER_HEIGHT + scale.bodyHeight, width: total }}
+				>
+					<div role="rowgroup" className="sticky top-0 z-20 bg-card">
+						{indicator !== null && (
+							<div
+								aria-hidden
+								className="pointer-events-none absolute top-0 z-30 w-0.5 -translate-x-1/2 bg-primary"
+								style={{ left: gutter + indicator, height: viewport.height }}
+							/>
+						)}
 						<div
-							aria-hidden
-							className="pointer-events-none absolute top-0 z-30 w-0.5 -translate-x-1/2 bg-primary"
-							style={{ left: gutter + indicator, height: viewport.height }}
-						/>
-					)}
+							role="row"
+							aria-rowindex={1}
+							className="flex border-b"
+							style={{ height: HEADER_HEIGHT, width: total }}
+						>
+							<div
+								role="columnheader"
+								aria-colindex={1}
+								aria-label="Row number"
+								className="sticky left-0 z-10 shrink-0 border-r bg-card"
+								style={{ width: gutter }}
+							/>
+							<Cells span={span}>
+								{shown.map(({ info, size }, i) => (
+									<ColumnHeader
+										key={info.id}
+										column={info}
+										size={size}
+										colIndex={first + i + 2}
+										sort={sort}
+										onDragStart={onPointerDown}
+										consumeDrag={consumeDrag}
+									/>
+								))}
+							</Cells>
+						</div>
+					</div>
 					<div
-						role="row"
-						aria-rowindex={1}
-						className="flex border-b"
-						style={{ height: HEADER_HEIGHT, width: total }}
+						ref={body}
+						role="rowgroup"
+						onPointerDown={keyboard.onPointerDown}
+						onContextMenu={onContextMenu}
+						className="absolute left-0"
+						style={{
+							// Rows sit where the scrollbar is, so a squeezed body still shows them in full.
+							top: HEADER_HEIGHT + rows.start * ROW_HEIGHT - position.top + position.scroll,
+						}}
 					>
-						<div
-							role="columnheader"
-							aria-colindex={1}
-							aria-label="Row number"
-							className="sticky left-0 z-10 shrink-0 border-r bg-card"
-							style={{ width: gutter }}
-						/>
-						<Cells span={span}>
-							{shown.map(({ info, size }, i) => (
-								<ColumnHeader
-									key={info.id}
-									column={info}
-									size={size}
-									colIndex={first + i + 2}
-									sort={sort}
-									onDragStart={onPointerDown}
-									consumeDrag={consumeDrag}
-								/>
-							))}
-						</Cells>
+						<SearchContext value={marked}>
+							{Array.from({ length: rows.end - rows.start }, (_, i) => rows.start + i).map(
+								index => (
+									<GridRow
+										key={index}
+										index={index}
+										block={cache.block(index)}
+										columns={shown}
+										span={span}
+										gutter={gutter}
+										activeCol={activeShown?.row === index ? activeShown.col : null}
+									/>
+								)
+							)}
+						</SearchContext>
 					</div>
 				</div>
-				<div
-					ref={body}
-					role="rowgroup"
-					onPointerDown={keyboard.onPointerDown}
-					className="absolute left-0"
-					style={{
-						// Rows sit where the scrollbar is, so a squeezed body still shows them in full.
-						top: HEADER_HEIGHT + rows.start * ROW_HEIGHT - position.top + position.scroll,
-					}}
-				>
-					<SearchContext value={marked}>
-						{Array.from({ length: rows.end - rows.start }, (_, i) => rows.start + i).map(
-							index => (
-								<GridRow
-									key={index}
-									index={index}
-									block={cache.block(index)}
-									columns={shown}
-									span={span}
-									gutter={gutter}
-									activeCol={activeShown?.row === index ? activeShown.col : null}
-								/>
-							)
-						)}
-					</SearchContext>
-				</div>
 			</div>
-		</div>
+			<CellMenu target={menu} query={query} onClose={() => setMenu(null)} />
+		</>
 	)
 }
