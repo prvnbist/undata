@@ -32,6 +32,12 @@
 	--input: #2e3035;
 	--ring: #ffd43b;
 
+	/* The SQL editor. Muted enough to sit beside the grid, distinct enough to tell apart. */
+	--syntax-keyword: #b197fc;
+	--syntax-function: #66d9e8;
+	--syntax-string: #8ce99a;
+	--syntax-number: #ffc078;
+
 	--shadow-popover:
 		0 0 0 1px rgb(255 255 255 / 0.02), 0 4px 8px -2px rgb(0 0 0 / 0.4),
 		0 12px 32px -4px rgb(0 0 0 / 0.5);
@@ -61,6 +67,10 @@
 	--color-border: var(--border);
 	--color-input: var(--input);
 	--color-ring: var(--ring);
+	--color-syntax-keyword: var(--syntax-keyword);
+	--color-syntax-function: var(--syntax-function);
+	--color-syntax-string: var(--syntax-string);
+	--color-syntax-number: var(--syntax-number);
 
 	--radius-xs: 0.25rem;
 	--radius-sm: 0.3125rem;

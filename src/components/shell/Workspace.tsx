@@ -10,6 +10,7 @@ import { Inspector } from '@/components/inspector/Inspector'
 import { ViewSwitcher } from '@/components/views/ViewSwitcher'
 import { AddFilter, FilterBar } from '@/components/filtering/FilterBar'
 import { NoMatches } from '@/components/filtering/NoMatches'
+import { QuerySlot, QueryToggle } from '@/components/query/QueryToggle'
 import { SearchBox } from '@/components/filtering/SearchBox'
 import { useWorkspace } from '@/store/workspace'
 import { ImportStatus } from './ImportStatus'
@@ -40,11 +41,13 @@ export function Workspace() {
 				</div>
 				<SearchBox />
 				<div aria-hidden className="mx-1 h-4 w-px shrink-0 bg-border" />
+				<QueryToggle />
 				<AddFilter />
 				<GroupButton />
 				<ColumnsPopover />
 				<ExportDialog />
 			</header>
+			<QuerySlot />
 			<FilterBar />
 			<GroupBar />
 			<div className="flex min-h-0 flex-1">

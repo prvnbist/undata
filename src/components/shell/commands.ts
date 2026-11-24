@@ -1,7 +1,7 @@
 export type Command = {
 	id: string
 	label: string
-	group: 'File' | 'Columns' | 'Sort' | 'Go to'
+	group: 'File' | 'View' | 'Columns' | 'Sort' | 'Go to'
 	// More words it can be found by.
 	keywords?: string
 	run: () => void
@@ -17,6 +17,7 @@ export type CommandActions = {
 	sort: (id: string, desc: boolean) => void
 	setHidden: (id: string, hidden: boolean) => void
 	inspectColumn: (id: string) => void
+	editQuery: () => void
 }
 
 export type CommandColumn = { id: string; title: string; hidden: boolean }
@@ -50,6 +51,14 @@ export const buildCommands = (
 			group: 'File',
 			keywords: 'download save csv json',
 			run: actions.exportView,
+		},
+		{
+			id: 'query',
+			label: 'Edit view as SQL',
+			group: 'View',
+			keywords: 'query select where filter sort group',
+			run: actions.editQuery,
+			movesFocus: true,
 		},
 		...columns.flatMap(({ id, title, hidden }): Command[] => [
 			{

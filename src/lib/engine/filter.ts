@@ -102,6 +102,11 @@ const rowTest = (column: EngineColumn, test: FilterTest): RowTest => {
 			const value = key(test.value)
 			return row => of[row] === value
 		}
+		case 'ne': {
+			// A NaN key is a row with no value, which differs from nothing.
+			const value = key(test.value)
+			return row => !Number.isNaN(of[row]) && of[row] !== value
+		}
 		case 'gt': {
 			const value = key(test.value)
 			return row => of[row]! > value

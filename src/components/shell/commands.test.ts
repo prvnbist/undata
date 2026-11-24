@@ -10,6 +10,7 @@ const actions = () => ({
 	sort: vi.fn(),
 	setHidden: vi.fn(),
 	inspectColumn: vi.fn(),
+	editQuery: vi.fn(),
 })
 
 const columns = [
@@ -27,6 +28,7 @@ describe('buildCommands', () => {
 		expect(ids).toEqual([
 			'open',
 			'export',
+			'query',
 			'go:a',
 			'details:a',
 			'asc:a',
@@ -67,6 +69,7 @@ describe('matchCommands', () => {
 	test('labels that start with the query come first, then keyword matches', () => {
 		expect(labels('go')[0]).toBe('Go to amount')
 		expect(labels('csv')).toEqual(['Export…'])
+		expect(labels('sql')).toEqual(['Edit view as SQL'])
 	})
 
 	test('an empty query lists everything, up to the limit', () => {

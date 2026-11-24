@@ -27,7 +27,7 @@ describe('operatorsFor', () => {
 		for (const type of ['number', 'date', 'timestamp', 'time'] as const) {
 			const ops = operatorsFor(type)
 			expect(ops).toEqual(
-				expect.arrayContaining(['eq', 'gt', 'gte', 'lt', 'lte', 'between', 'malformed'])
+				expect.arrayContaining(['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'between', 'malformed'])
 			)
 			expect(ops).not.toContain('regex')
 		}
@@ -47,6 +47,8 @@ describe('operatorsFor', () => {
 		expect(operatorLabel('date', 'gt')).toBe('is after')
 		expect(operatorLabel('time', 'lte')).toBe('is at or before')
 		expect(operatorLabel('number', 'malformed')).toBe('is not a valid number')
+		expect(operatorLabel('number', 'ne')).toBe('≠')
+		expect(operatorLabel('date', 'ne')).toBe('is not')
 	})
 })
 
