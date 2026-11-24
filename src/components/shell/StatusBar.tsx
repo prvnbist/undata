@@ -6,13 +6,17 @@ import { ImportNotice } from './ImportNotice'
 const inEnglish = new Intl.NumberFormat('en')
 
 export function StatusBar() {
-	const rowCount = useWorkspace(state => state.dataset?.rowCount ?? 0)
+	const total = useWorkspace(state => state.dataset?.rowCount ?? 0)
+	const found = useWorkspace(state => state.query?.rowCount ?? 0)
+	const narrowed = useWorkspace(state => state.view.search !== '' || state.view.filters.length > 0)
 	const unsaved = useWorkspace(state => state.saved === 'unsaved')
 
 	return (
 		<footer className="flex h-8 shrink-0 items-center gap-2 border-t px-4 text-xs">
-			<p>
-				{inEnglish.format(rowCount)} {rowCount === 1 ? 'row' : 'rows'}
+			{/* Read out politely as the search and filters change it. */}
+			<p role="status">
+				{narrowed && `${inEnglish.format(found)} of `}
+				{inEnglish.format(total)} {total === 1 ? 'row' : 'rows'}
 			</p>
 			{unsaved && (
 				<p

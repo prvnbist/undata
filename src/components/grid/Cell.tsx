@@ -10,6 +10,7 @@ import type { DataType } from '@/lib/constants'
 import type { CellKind } from '@/lib/import/types'
 import { formatValue } from '@/lib/types/format'
 import { parse } from '@/lib/types/parse'
+import { Highlighted } from '@/components/filtering/Highlighted'
 import { JsonCell } from './JsonCell'
 
 // More than this is never readable in a cell, and a whole document in one is slow to lay out.
@@ -37,7 +38,9 @@ function Malformed({ text, type }: { text: string; type: DataType }) {
 	return (
 		<span className="flex min-w-0 items-center gap-1.5 text-amber-300" title={label}>
 			<IconAlertTriangle role="img" aria-label={label} className="size-3.5 shrink-0" />
-			<span className="truncate">{text.slice(0, MAX_CELL_TEXT)}</span>
+			<span className="truncate">
+				<Highlighted text={text.slice(0, MAX_CELL_TEXT)} />
+			</span>
 		</span>
 	)
 }
@@ -55,7 +58,12 @@ export const Cell = memo(function Cell({
 	if (text === '') {
 		return kind === 'null' ? <span className="text-xs text-foreground/40">null</span> : null
 	}
-	if (type === 'text') return <span className="truncate">{text.slice(0, MAX_CELL_TEXT)}</span>
+	if (type === 'text')
+		return (
+			<span className="truncate">
+				<Highlighted text={text.slice(0, MAX_CELL_TEXT)} />
+			</span>
+		)
 
 	const result = parse(type, text)
 	if (!result.ok) return <Malformed text={text} type={type} />
@@ -80,6 +88,10 @@ export const Cell = memo(function Cell({
 		case 'json':
 			return <JsonCell text={text} />
 		default:
-			return <span className="truncate">{text.slice(0, MAX_CELL_TEXT)}</span>
+			return (
+				<span className="truncate">
+					<Highlighted text={text.slice(0, MAX_CELL_TEXT)} />
+				</span>
+			)
 	}
 })

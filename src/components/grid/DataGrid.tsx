@@ -1,6 +1,7 @@
-import { memo, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 
+import { SearchContext } from '@/components/filtering/Highlighted'
 import { CELL_KINDS } from '@/lib/import/types'
 import { useWorkspace } from '@/store/workspace'
 import { Cell } from './Cell'
@@ -98,6 +99,10 @@ export function DataGrid() {
 	const view = useWorkspace(state => state.view.columns)
 	const sort = useWorkspace(state => state.view.sort)
 	const query = useWorkspace(state => state.query)
+	// Marked once the rows shown are the ones found for it.
+	const search = useWorkspace(state => (state.querying ? null : state.view.search))
+	const [marked, setMarked] = useState('')
+	if (search !== null && search !== marked) setMarked(search)
 	const fitted = useWorkspace(state => state.fitted)
 	const scroller = useRef<HTMLDivElement>(null)
 
@@ -252,19 +257,21 @@ export function DataGrid() {
 						top: HEADER_HEIGHT + rows.start * ROW_HEIGHT - position.top + position.scroll,
 					}}
 				>
-					{Array.from({ length: rows.end - rows.start }, (_, i) => rows.start + i).map(
-						index => (
-							<GridRow
-								key={index}
-								index={index}
-								block={cache.block(index)}
-								columns={shown}
-								span={span}
-								gutter={gutter}
-								activeCol={activeShown?.row === index ? activeShown.col : null}
-							/>
-						)
-					)}
+					<SearchContext value={marked}>
+						{Array.from({ length: rows.end - rows.start }, (_, i) => rows.start + i).map(
+							index => (
+								<GridRow
+									key={index}
+									index={index}
+									block={cache.block(index)}
+									columns={shown}
+									span={span}
+									gutter={gutter}
+									activeCol={activeShown?.row === index ? activeShown.col : null}
+								/>
+							)
+						)}
+					</SearchContext>
 				</div>
 			</div>
 		</div>
