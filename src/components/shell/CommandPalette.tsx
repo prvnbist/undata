@@ -7,7 +7,7 @@ import { useReturnFocus } from '@/components/ui/useReturnFocus'
 import { SAMPLE_NAME, makeSample } from '@/lib/import/sample'
 import { setHidden, setSort } from '@/lib/engine/view'
 import { applyView } from '@/store/session'
-import { useWorkspace, workspace } from '@/store/workspace'
+import { nextNonce, useWorkspace, workspace } from '@/store/workspace'
 import { cn } from 'cn'
 import { buildCommands, matchCommands } from './commands'
 import type { Command, CommandActions } from './commands'
@@ -15,8 +15,6 @@ import { useOpenDataset } from './useOpenDataset'
 
 const isMac = () =>
 	typeof navigator !== 'undefined' && /Mac|iP(?:hone|ad|od)/.test(navigator.platform)
-
-let nonce = 0
 
 // Ctrl/⌘+K: everything there is a command for, found by typing. A searchable list in the same
 // pattern as the combobox, with the arrow keys moving through it.
@@ -55,7 +53,7 @@ export function CommandPalette() {
 				if (view.columns.find(column => column.id === columnId)?.hidden) {
 					void applyView(setHidden(view, columnId, false))
 				}
-				workspace.set({ goTo: { columnId, nonce: ++nonce } })
+				workspace.set({ goTo: { columnId, focus: true, nonce: nextNonce() } })
 			},
 			sort: (columnId, desc) => {
 				const { view } = workspace.get()

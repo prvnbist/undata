@@ -1,6 +1,7 @@
 import { ExportDialog } from '@/components/export/ExportDialog'
 import { ColumnsPopover } from '@/components/grid/ColumnsPopover'
 import { DataGrid } from '@/components/grid/DataGrid'
+import { Inspector } from '@/components/inspector/Inspector'
 import { AddFilter, FilterBar } from '@/components/filtering/FilterBar'
 import { NoMatches } from '@/components/filtering/NoMatches'
 import { SearchBox } from '@/components/filtering/SearchBox'
@@ -24,9 +25,12 @@ export function Workspace() {
 				<ExportDialog />
 			</header>
 			<FilterBar />
-			<div className="relative flex min-h-0 flex-1 flex-col">
-				<DataGrid />
-				<NoMatches />
+			<div className="flex min-h-0 flex-1">
+				<div className="relative flex min-w-0 flex-1 flex-col">
+					<DataGrid />
+					<NoMatches />
+				</div>
+				<Inspector />
 			</div>
 			<StatusBar />
 		</main>

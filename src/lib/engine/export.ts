@@ -1,3 +1,4 @@
+import type { DataType } from '@/lib/constants'
 import { CELL_KIND_CODE } from '@/lib/import/types'
 import { parse } from '@/lib/types/parse'
 import type { Dataset, EngineColumn } from './store'
@@ -31,10 +32,10 @@ const csvCell = (text: string, escapeFormulas: boolean, alone: boolean) => {
 
 // A cell as JSON. From JSON it is what it was. From delimited text it is what its type makes of it,
 // and the text as written when that does not fit.
-const jsonValue = (column: EngineColumn, row: number): string | undefined => {
-	const text = column.text[row] ?? ''
-	if (column.kinds) {
-		switch (column.kinds[row]) {
+// `kind` is the cell's code from a JSON source, or null for delimited text.
+export const jsonCell = (type: DataType, text: string, kind: number | null): string | undefined => {
+	if (kind !== null) {
+		switch (kind) {
 			case CELL_KIND_CODE.missing:
 				return undefined
 			case CELL_KIND_CODE.null:
@@ -48,7 +49,6 @@ const jsonValue = (column: EngineColumn, row: number): string | undefined => {
 		}
 	}
 
-	const { type } = column.info
 	if (type === 'text') return JSON.stringify(text)
 	if (text.trim() === '') return 'null'
 	const result = parse(type, text)
@@ -59,6 +59,22 @@ const jsonValue = (column: EngineColumn, row: number): string | undefined => {
 		if (type === 'json') return trimmed
 	}
 	return JSON.stringify(text)
+}
+
+const jsonValue = (column: EngineColumn, row: number) =>
+	jsonCell(column.info.type, column.text[row] ?? '', column.kinds ? column.kinds[row]! : null)
+
+// One row as a JSON object keyed by title, the same way an export writes it. Missing keys are left out.
+export const rowJson = (
+	columns: { title: string; type: DataType }[],
+	text: string[],
+	kinds: number[] | null
+) => {
+	const fields = columns.flatMap((column, i) => {
+		const value = jsonCell(column.type, text[i] ?? '', kinds ? (kinds[i] ?? 0) : null)
+		return value === undefined ? [] : [`  ${JSON.stringify(column.title)}: ${value}`]
+	})
+	return fields.length ? `{\n${fields.join(',\n')}\n}` : '{}'
 }
 
 // Keys for JSON must differ, so a repeated header falls back to its title, which never repeats.

@@ -33,6 +33,8 @@ export type SaveState = 'saving' | 'saved' | 'unsaved' | null
 // What the engine last answered for the view, which can be a moment behind it.
 export type CurrentQuery = { id: number; rowCount: number }
 
+export type Inspecting = { kind: 'row'; row: number } | { kind: 'column'; columnId: string }
+
 export type WorkspaceState = {
 	phase: Phase
 	dataset: DatasetMeta | null
@@ -45,8 +47,11 @@ export type WorkspaceState = {
 	saved: SaveState
 	// Whether the export dialog is open, so the palette can open it too.
 	exporting: boolean
-	// A column to bring into view and make active. `nonce` tells one request from the next.
-	goTo: { columnId: string; nonce: number } | null
+	// A cell to bring into view and make active. A part left out stays where it is. `nonce` tells one
+	// request from the next, and `focus` moves focus to the grid too.
+	goTo: { columnId?: string; row?: number; focus: boolean; nonce: number } | null
+	// The side panel: one row of the view, by its index there, or one column.
+	inspector: Inspecting | null
 	// Something to tell the user once.
 	notice: string | null
 }
@@ -62,6 +67,7 @@ export const initialWorkspace: WorkspaceState = {
 	saved: null,
 	exporting: false,
 	goTo: null,
+	inspector: null,
 	notice: null,
 }
 
@@ -72,3 +78,6 @@ export const workspace = {
 	get: useWorkspace.getState,
 	set: useWorkspace.setState,
 }
+
+let nonce = 0
+export const nextNonce = () => ++nonce

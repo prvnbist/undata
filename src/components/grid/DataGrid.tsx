@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 
 import { SearchContext } from '@/components/filtering/Highlighted'
 import { CELL_KINDS } from '@/lib/import/types'
-import { useWorkspace } from '@/store/workspace'
+import { useWorkspace, workspace } from '@/store/workspace'
 import { Cell } from './Cell'
 import { CellMenu } from './CellMenu'
 import type { CellMenuTarget } from './CellMenu'
@@ -37,6 +37,7 @@ const GridRow = memo(function GridRow({
 	span,
 	gutter,
 	activeCol,
+	inspected,
 }: {
 	index: number
 	block: Block | undefined
@@ -45,6 +46,8 @@ const GridRow = memo(function GridRow({
 	gutter: number
 	// The active cell's column, when it is in this row.
 	activeCol: number | null
+	// Open in the row panel.
+	inspected: boolean
 }) {
 	const at = index % BLOCK_SIZE
 	const source = block?.rows[at]
@@ -53,13 +56,16 @@ const GridRow = memo(function GridRow({
 		<div
 			role="row"
 			aria-rowindex={index + 2}
-			className="flex border-b hover:bg-accent/30"
+			aria-current={inspected || undefined}
+			className="flex border-b hover:bg-accent/30 aria-current:bg-primary/5"
 			style={{ height: ROW_HEIGHT, width: span.width }}
 		>
 			<div
 				role="rowheader"
 				aria-colindex={1}
-				className="sticky left-0 z-10 flex shrink-0 items-center justify-end border-r bg-background px-2 font-mono text-xs text-foreground/70"
+				data-row={index}
+				title="Open this row"
+				className="sticky left-0 z-10 flex shrink-0 cursor-pointer items-center justify-end border-r bg-background px-2 font-mono text-xs text-foreground/70 hover:text-foreground"
 				style={{ width: gutter }}
 			>
 				{source === undefined ? '' : source + 1}
@@ -171,14 +177,30 @@ export function DataGrid() {
 	const topRow = Math.floor(position.top / ROW_HEIGHT)
 	const placed = useRef<number | null>(null)
 	useEffect(() => {
-		if (!goTo || placed.current === goTo.nonce) return
-		const col = columns.findIndex(column => column.info.id === goTo.columnId)
+		if (!goTo || placed.current === goTo.nonce || columns.length === 0) return
+		const col =
+			goTo.columnId === undefined
+				? (active?.col ?? 0)
+				: columns.findIndex(column => column.info.id === goTo.columnId)
 		// A column being shown again is not in the list until the view catches up.
 		if (col === -1) return
 		placed.current = goTo.nonce
-		show({ row: active?.row ?? Math.min(topRow, Math.max(0, rowCount - 1)), col })
-		scroller.current?.focus({ preventScroll: true })
+		show({
+			row: goTo.row ?? active?.row ?? Math.min(topRow, Math.max(0, rowCount - 1)),
+			col,
+		})
+		if (goTo.focus) scroller.current?.focus({ preventScroll: true })
 	}, [goTo, columns, show, active, topRow, rowCount])
+
+	// An open row panel follows the active row.
+	const activeRow = active?.row ?? null
+	useEffect(() => {
+		const { inspector } = workspace.get()
+		if (activeRow === null || inspector?.kind !== 'row' || inspector.row === activeRow) return
+		workspace.set({ inspector: { kind: 'row', row: activeRow } })
+	}, [activeRow])
+	const inspector = useWorkspace(state => state.inspector)
+	const inspectedRow = inspector?.kind === 'row' ? inspector.row : null
 
 	// Links and buttons in cells are worked with Enter on the cell, so the grid stays one tab stop.
 	useLayoutEffect(() => {
@@ -202,11 +224,34 @@ export function DataGrid() {
 	}
 	const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
 		const menuKey = event.key === 'ContextMenu' || (event.key === 'F10' && event.shiftKey)
-		if (!menuKey || event.target !== event.currentTarget) return keyboard.onKeyDown(event)
+		if (!menuKey || event.target !== event.currentTarget) {
+			keyboard.onKeyDown(event)
+			// Enter on a cell with nothing to work in it opens its row.
+			if (
+				event.key === 'Enter' &&
+				!event.defaultPrevented &&
+				event.target === event.currentTarget
+			) {
+				const row = active?.row ?? (rowCount > 0 ? 0 : null)
+				if (row !== null) workspace.set({ inspector: { kind: 'row', row } })
+			}
+			return
+		}
 		event.preventDefault()
 		const at = active ?? (rowCount > 0 && columns.length > 0 ? { row: 0, col: 0 } : null)
 		if (at) openMenu(at.row, at.col)
 	}
+	// A click on a row number opens that row.
+	const onClick = (event: React.MouseEvent<HTMLDivElement>) => {
+		const header = (event.target as HTMLElement).closest<HTMLElement>(
+			'[role="rowheader"][data-row]'
+		)
+		if (!header) return
+		const row = Number(header.dataset.row)
+		show({ row, col: active?.col ?? 0 })
+		workspace.set({ inspector: { kind: 'row', row } })
+	}
+
 	const onContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
 		const cell = (event.target as HTMLElement).closest<HTMLElement>('[data-row][data-col]')
 		if (!cell) return
@@ -284,6 +329,7 @@ export function DataGrid() {
 						role="rowgroup"
 						onPointerDown={keyboard.onPointerDown}
 						onContextMenu={onContextMenu}
+						onClick={onClick}
 						className="absolute left-0"
 						style={{
 							// Rows sit where the scrollbar is, so a squeezed body still shows them in full.
@@ -301,6 +347,7 @@ export function DataGrid() {
 										span={span}
 										gutter={gutter}
 										activeCol={activeShown?.row === index ? activeShown.col : null}
+										inspected={inspectedRow === index}
 									/>
 								)
 							)}

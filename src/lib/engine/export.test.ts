@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vite-plus/test'
 
 import { openBlob } from '@/lib/import/open'
 import { inferColumnTypes } from '@/lib/types/infer'
-import { exportRows } from './export'
+import { exportRows, rowJson } from './export'
 import type { ExportOptions } from './export'
 import { runQuery } from './query'
 import { createDataset } from './store'
@@ -126,5 +126,37 @@ describe('JSON', () => {
 	test('an empty view is an empty array', async () => {
 		const { dataset } = await open('a\n1\n')
 		expect(JSON.parse(run(dataset, { format: 'json' }, new Uint32Array(0)))).toEqual([])
+	})
+})
+
+describe('rowJson', () => {
+	test('types a delimited row the way an export does, keyed by title', () => {
+		const columns = [
+			{ title: 'id', type: 'number' as const },
+			{ title: 'name', type: 'text' as const },
+			{ title: 'ok', type: 'boolean' as const },
+			{ title: 'big', type: 'number' as const },
+			{ title: 'note', type: 'number' as const },
+		]
+		const text = ['007', 'Ann', 'TRUE', '12345678901234567890', '']
+		expect(JSON.parse(rowJson(columns, text, null))).toEqual({
+			id: '007',
+			name: 'Ann',
+			ok: true,
+			// Too big to be a number without losing digits, so kept as written.
+			big: '12345678901234567890',
+			note: null,
+		})
+	})
+
+	test('a JSON row keeps its kinds, and leaves out missing keys', () => {
+		const columns = [
+			{ title: 'a', type: 'text' as const },
+			{ title: 'b', type: 'text' as const },
+			{ title: 'c', type: 'text' as const },
+		]
+		// number, missing, null
+		expect(JSON.parse(rowJson(columns, ['1', '', ''], [3, 0, 1]))).toEqual({ a: 1, c: null })
+		expect(rowJson(columns, ['', '', ''], [0, 0, 0])).toBe('{}')
 	})
 })
