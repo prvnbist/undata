@@ -61,7 +61,7 @@ const buildRanks = (column: EngineColumn): Ranks => {
 	return ranksFromOrder(column, order, (a, b) => text[a] === text[b])
 }
 
-const ranksOf = (column: EngineColumn): Ranks => (column.ranks ??= buildRanks(column))
+export const ranksOf = (column: EngineColumn): Ranks => (column.ranks ??= buildRanks(column))
 
 // A stable counting sort on one column. Rows with no value go to the last bucket whichever way it is
 // sorted, so the direction applies between real values only.

@@ -20,7 +20,9 @@ export type SortKey = { columnId: string; desc: boolean }
 
 export type AggregateFn = 'sum' | 'avg' | 'min' | 'max'
 export type Aggregate = { columnId: string; fn: AggregateFn }
-export type Grouping = { by: string[]; aggregates: Aggregate[] }
+// `key` is a grouped column's id, `count`, or an aggregate as `fn:columnId`.
+export type GroupSortKey = { key: string; desc: boolean }
+export type Grouping = { by: string[]; aggregates: Aggregate[]; sort: GroupSortKey[] }
 
 export type ViewColumn = { id: string; hidden: boolean; size: number | null }
 

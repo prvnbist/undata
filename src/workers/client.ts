@@ -1,5 +1,5 @@
 import type { ExportOptions } from '@/lib/engine/export'
-import type { ColumnSetup, Filter, ViewState } from '@/lib/engine/view'
+import type { ColumnSetup, Filter, Grouping, ViewState } from '@/lib/engine/view'
 import type { ImportOptions } from '@/lib/import/types'
 import type {
 	CallName,
@@ -135,6 +135,9 @@ export const createEngineClient = ({ regexTimeoutMs = 10_000 }: EngineClientOpti
 		rows: (queryId: number, start: number, end: number, columnIds: string[]) =>
 			call('rows', { queryId, start, end, columnIds }),
 		stats: (queryId: number, columnId: string) => call('stats', { queryId, columnId }),
+		group: (queryId: number, grouping: Grouping) => call('group', { queryId, grouping }),
+		groupRows: (groupId: number, start: number, end: number) =>
+			call('groupRows', { groupId, start, end }),
 		export: (queryId: number, options: ExportOptions) => call('export', { queryId, options }),
 		async setColumns(setup: ColumnSetup[]) {
 			const columns = await call('setColumns', { setup })

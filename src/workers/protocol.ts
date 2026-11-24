@@ -1,8 +1,9 @@
 import type { ImportErrorCode, ImportOptions, ImportWarning } from '@/lib/import/types'
 import type { ExportOptions } from '@/lib/engine/export'
+import type { GroupRow, GroupSummary } from '@/lib/engine/group'
 import type { ColumnStats } from '@/lib/engine/stats'
 import type { ColumnInfo, RowWindow } from '@/lib/engine/store'
-import type { ColumnSetup, ViewState } from '@/lib/engine/view'
+import type { ColumnSetup, Grouping, ViewState } from '@/lib/engine/view'
 
 export type EngineErrorCode =
 	| ImportErrorCode
@@ -31,6 +32,8 @@ export type Opened = {
 
 export type Queried = { queryId: number; rowCount: number }
 
+export type Grouped = GroupSummary & { groupId: number }
+
 // Every request and what it answers. One entry here is all it takes to add a call.
 export type EngineCalls = {
 	open: {
@@ -44,6 +47,9 @@ export type EngineCalls = {
 		response: RowWindow[]
 	}
 	stats: { request: { queryId: number; columnId: string }; response: ColumnStats }
+	// The rows of a query, grouped. The groups stay in the worker and are read a window at a time.
+	group: { request: { queryId: number; grouping: Grouping }; response: Grouped }
+	groupRows: { request: { groupId: number; start: number; end: number }; response: GroupRow[] }
 	setColumns: { request: { setup: ColumnSetup[] }; response: ColumnInfo[] }
 	export: { request: { queryId: number; options: ExportOptions }; response: Blob }
 }

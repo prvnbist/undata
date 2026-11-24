@@ -1,6 +1,8 @@
 /// <reference lib="webworker" />
 import { exportRows } from '@/lib/engine/export'
 import { InvalidFilter } from '@/lib/engine/filter'
+import { groupRows } from '@/lib/engine/group'
+import type { GroupTable } from '@/lib/engine/group'
 import { runQuery } from '@/lib/engine/query'
 import type { QueryResult } from '@/lib/engine/query'
 import { createScheduler, PRIORITY } from '@/lib/engine/scheduler'
@@ -13,6 +15,7 @@ import type { CallName, EngineCalls, EngineError, EngineMessage, EngineRequest }
 
 let dataset: Dataset | null = null
 let current: (QueryResult & { id: number }) | null = null
+let grouped: { id: number; table: GroupTable } | null = null
 
 const send = (message: EngineMessage) => postMessage(message)
 const fail = (id: number, error: EngineError) => send({ id, kind: 'failed', error })
@@ -62,6 +65,7 @@ type Request<K extends CallName> = Extract<EngineRequest, { type: K }>
 const open = async ({ id, blob, options, setup }: Request<'open'>) => {
 	dataset = null
 	current = null
+	grouped = null
 
 	// At most one message per percent, or a big file floods the page.
 	let last = -1
@@ -119,6 +123,21 @@ const handle = (data: Exclude<EngineRequest, { type: 'open' }>) => {
 		case 'stats':
 			schedule<'stats'>(id, { priority: PRIORITY.stats, replaceable: true }, dataset =>
 				current?.id === data.queryId ? columnStats(dataset, current.order, data.columnId) : null
+			)
+			return
+
+		case 'group':
+			schedule<'group'>(id, { priority: PRIORITY.rows, replaceable: true }, dataset => {
+				if (current?.id !== data.queryId) return null
+				const table = groupRows(dataset, current.order, data.grouping)
+				grouped = { id, table }
+				return { groupId: id, ...table.summary }
+			})
+			return
+
+		case 'groupRows':
+			schedule<'groupRows'>(id, { priority: PRIORITY.rows, replaceable: false }, () =>
+				grouped?.id === data.groupId ? grouped.table.window(data.start, data.end) : null
 			)
 			return
 

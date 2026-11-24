@@ -1,5 +1,5 @@
 import { defaultView } from '@/lib/engine/view'
-import type { ViewState } from '@/lib/engine/view'
+import type { Grouping, ViewState } from '@/lib/engine/view'
 import { createEngineClient } from '@/workers/client'
 import { makeFixture, makeJsonFixture } from './fixture'
 
@@ -98,6 +98,37 @@ const run = async () => {
 	const p95: Record<string, string> = {}
 	for (const [name, changes] of Object.entries(cases)) p95[name] = await measure(changes)
 
+	// Grouping: the query, the groups, and the first screen of the summary.
+	const measureGroup = async (grouping: Grouping, repeats = REPEATS) => {
+		const times: number[] = []
+		for (let i = 0; i < repeats; i++) {
+			times.push(
+				await timed(async () => {
+					const { queryId } = await client.query(view)
+					const { groupId } = await client.group(queryId, grouping)
+					await client.groupRows(groupId, 0, 50)
+				})
+			)
+		}
+		const sorted = times.toSorted((a, b) => a - b)
+		return `${sorted[Math.ceil(repeats * 0.95) - 1]} (first ${times[0]}, max ${sorted.at(-1)})`
+	}
+	const groupP95 = {
+		'by city, count': await measureGroup({ by: ['c2'], aggregates: [], sort: [] }),
+		'by city and active, sum and avg amount': await measureGroup({
+			by: ['c2', 'c4'],
+			aggregates: [
+				{ columnId: 'c3', fn: 'sum' },
+				{ columnId: 'c3', fn: 'avg' },
+			],
+			sort: [{ key: 'sum:c3', desc: true }],
+		}),
+		'by id, every row its own group, by count': await measureGroup(
+			{ by: ['c0'], aggregates: [], sort: [{ key: 'count', desc: true }] },
+			3
+		),
+	}
+
 	// Every column at once, as the headers will ask, before and after their dictionaries exist.
 	const allStats = async () => {
 		const { queryId } = await client.query(view)
@@ -120,6 +151,7 @@ const run = async () => {
 		importToRowsMs,
 		lastRowMs,
 		p95,
+		groupP95,
 		freshStatsMs,
 		freshStatsPerColumnMs,
 		statsMs,

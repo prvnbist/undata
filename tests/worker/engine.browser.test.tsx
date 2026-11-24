@@ -195,3 +195,31 @@ describe('stats', () => {
 		await expect(query).resolves.toMatchObject({ rowCount: 2 })
 	})
 })
+
+describe('group', () => {
+	test('groups the rows of the view, and reads the summary a window at a time', async () => {
+		await client.open(file('city,amount\nOslo,1\nLima,2\nOslo,3\nRome,9\n'))
+		const { queryId } = await client.query({
+			...defaultView(['c0', 'c1']),
+			filters: [{ columnId: 'c0', op: 'noneOf', values: ['Rome'] }],
+		})
+		const grouped = await client.group(queryId, {
+			by: ['c0'],
+			aggregates: [{ columnId: 'c1', fn: 'sum' }],
+			sort: [{ key: 'count', desc: true }],
+		})
+		expect(grouped).toMatchObject({ groupCount: 2, malformed: [0] })
+		expect(await client.groupRows(grouped.groupId, 0, 10)).toEqual([
+			{ index: 0, keys: ['Oslo'], empty: [false], count: 2, values: ['4'] },
+			{ index: 1, keys: ['Lima'], empty: [false], count: 1, values: ['2'] },
+		])
+	})
+
+	test('a group for an older query is dropped', async () => {
+		await client.open(file('a\n1\n'))
+		const { queryId } = await client.query(defaultView(['c0']))
+		const old = client.group(queryId, { by: ['c0'], aggregates: [], sort: [] })
+		await client.query(defaultView(['c0']))
+		await expect(old).rejects.toMatchObject({ code: 'superseded' })
+	})
+})
