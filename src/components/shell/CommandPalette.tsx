@@ -3,6 +3,7 @@ import type { KeyboardEvent } from 'react'
 import { IconSearch } from '@tabler/icons-react'
 
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
+import { inspectColumn } from '@/components/inspector/Inspector'
 import { useReturnFocus } from '@/components/ui/useReturnFocus'
 import { SAMPLE_NAME, makeSample } from '@/lib/import/sample'
 import { setHidden, setSort } from '@/lib/engine/view'
@@ -59,6 +60,7 @@ export function CommandPalette() {
 				const { view } = workspace.get()
 				void applyView({ ...view, sort: setSort(view.sort, columnId, desc, false) })
 			},
+			inspectColumn,
 			setHidden: (columnId, hidden) =>
 				void applyView(setHidden(workspace.get().view, columnId, hidden)),
 		}

@@ -9,6 +9,7 @@ const actions = () => ({
 	goToColumn: vi.fn(),
 	sort: vi.fn(),
 	setHidden: vi.fn(),
+	inspectColumn: vi.fn(),
 })
 
 const columns = [
@@ -21,16 +22,18 @@ describe('buildCommands', () => {
 		expect(buildCommands(actions(), null).map(command => command.id)).toEqual(['open', 'sample'])
 	})
 
-	test('with one, export and each column’s go to, sort and hide or show', () => {
+	test('with one, export and each column’s go to, details, sort and hide or show', () => {
 		const ids = buildCommands(actions(), columns).map(command => command.id)
 		expect(ids).toEqual([
 			'open',
 			'export',
 			'go:a',
+			'details:a',
 			'asc:a',
 			'desc:a',
 			'hide:a',
 			'go:b',
+			'details:b',
 			'asc:b',
 			'desc:b',
 			'show:b',
@@ -43,6 +46,8 @@ describe('buildCommands', () => {
 		commands.find(command => command.id === 'desc:a')!.run()
 		commands.find(command => command.id === 'show:b')!.run()
 		commands.find(command => command.id === 'go:b')!.run()
+		commands.find(command => command.id === 'details:a')!.run()
+		expect(spies.inspectColumn).toHaveBeenCalledWith('a')
 		expect(spies.sort).toHaveBeenCalledWith('a', true)
 		expect(spies.setHidden).toHaveBeenCalledWith('b', false)
 		expect(spies.goToColumn).toHaveBeenCalledWith('b')

@@ -7,6 +7,7 @@ import {
 	IconArrowDown,
 	IconArrowUp,
 	IconArrowsHorizontal,
+	IconChartBar,
 	IconChevronDown,
 	IconEyeOff,
 	IconFilter,
@@ -36,6 +37,7 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { addFilter } from '@/components/filtering/FilterEditor'
+import { inspectColumn } from '@/components/inspector/Inspector'
 import { Input } from '@/components/ui/input'
 import { DATA_TYPES } from '@/lib/constants'
 import type { DataType } from '@/lib/constants'
@@ -146,6 +148,8 @@ export function ColumnMenu({
 }) {
 	const [renaming, setRenaming] = useState(false)
 	const trigger = useRef<HTMLButtonElement>(null)
+	// Opened once the menu is closed, so focus goes to the details and not back to the menu button.
+	const details = useRef(false)
 	const others = sortCount - (sorted ? 1 : 0)
 
 	return (
@@ -162,7 +166,16 @@ export function ColumnMenu({
 						<IconChevronDown />
 					</Button>
 				</DropdownMenuTrigger>
-				<DropdownMenuContent align="start" className="w-56">
+				<DropdownMenuContent
+					align="start"
+					className="w-56"
+					onCloseAutoFocus={event => {
+						if (!details.current) return
+						details.current = false
+						event.preventDefault()
+						inspectColumn(column.id)
+					}}
+				>
 					<DropdownMenuItem onSelect={() => sortBy(column.id, false, false)}>
 						<IconArrowUp /> Sort ascending
 					</DropdownMenuItem>
@@ -224,6 +237,9 @@ export function ColumnMenu({
 							</DropdownMenuRadioGroup>
 						</DropdownMenuSubContent>
 					</DropdownMenuSub>
+					<DropdownMenuItem onSelect={() => (details.current = true)}>
+						<IconChartBar /> Details
+					</DropdownMenuItem>
 					<DropdownMenuItem onSelect={() => setRenaming(true)}>
 						<IconForms /> Rename…
 					</DropdownMenuItem>

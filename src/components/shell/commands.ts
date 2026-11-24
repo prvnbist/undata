@@ -16,6 +16,7 @@ export type CommandActions = {
 	goToColumn: (id: string) => void
 	sort: (id: string, desc: boolean) => void
 	setHidden: (id: string, hidden: boolean) => void
+	inspectColumn: (id: string) => void
 }
 
 export type CommandColumn = { id: string; title: string; hidden: boolean }
@@ -57,6 +58,14 @@ export const buildCommands = (
 				group: 'Go to',
 				keywords: 'column find jump',
 				run: () => actions.goToColumn(id),
+				movesFocus: true,
+			},
+			{
+				id: `details:${id}`,
+				label: `Details of ${title}`,
+				group: 'Columns',
+				keywords: 'column stats statistics profile distribution values',
+				run: () => actions.inspectColumn(id),
 				movesFocus: true,
 			},
 			{
