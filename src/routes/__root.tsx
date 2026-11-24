@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 
 import '@fontsource-variable/inter'
-import '@fontsource-variable/bricolage-grotesque'
 // Only weight 500 is loaded, so all monospace text renders at 500.
 import '@fontsource/ibm-plex-mono/500.css'
 

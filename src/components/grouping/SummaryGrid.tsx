@@ -178,13 +178,13 @@ export function SummaryGrid() {
 											className="max-w-full truncate rounded-xs text-left underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
 										>
 											{row.empty[0] ? (
-												<em className="text-foreground/70">(empty)</em>
+												<em className="text-muted-foreground">(empty)</em>
 											) : (
 												key
 											)}
 										</button>
 									) : row.empty[i] ? (
-										<em className="text-foreground/70">(empty)</em>
+										<em className="text-muted-foreground">(empty)</em>
 									) : (
 										key
 									)}

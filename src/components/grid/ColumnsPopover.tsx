@@ -40,12 +40,12 @@ export function ColumnsPopover() {
 	return (
 		<Popover onOpenChange={open => !open && setQuery('')}>
 			<PopoverTrigger asChild>
-				<Button variant="outline" size="sm">
+				<Button variant="ghost" size="sm">
 					<IconColumns />
 					<span className="max-sm:sr-only">
 						Columns
 						{hiddenCount > 0 && (
-							<span className="text-xs text-foreground/70"> ({hiddenCount} hidden)</span>
+							<span className="text-xs text-muted-foreground"> ({hiddenCount} hidden)</span>
 						)}
 					</span>
 				</Button>
@@ -92,7 +92,7 @@ export function ColumnsPopover() {
 						</li>
 					))}
 					{matches.length === 0 && (
-						<li className="px-2 py-1.5 text-sm text-foreground/70">No column matches</li>
+						<li className="px-2 py-1.5 text-sm text-muted-foreground">No column matches</li>
 					)}
 				</ul>
 			</PopoverContent>

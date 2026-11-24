@@ -111,7 +111,7 @@ export function ExportDialog() {
 
 	return (
 		<>
-			<Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+			<Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
 				<IconDownload />
 				<span className="max-sm:sr-only">Export</span>
 			</Button>
@@ -177,7 +177,7 @@ export function ExportDialog() {
 									<label htmlFor={`${id}-escape`} className="text-sm font-medium">
 										Escape formulas
 									</label>
-									<p id={`${id}-escape-help`} className="text-xs text-foreground/70">
+									<p id={`${id}-escape-help`} className="text-xs text-muted-foreground">
 										Puts ' before cells starting with = + - or @, so a spreadsheet shows
 										them instead of running them. This changes those values.
 									</p>

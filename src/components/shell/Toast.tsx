@@ -24,7 +24,7 @@ export function Toast() {
 			className="pointer-events-none fixed inset-x-0 bottom-12 z-90 flex justify-center px-4"
 		>
 			{notice && (
-				<div className="pointer-events-auto flex items-center gap-2 rounded-md border bg-popover py-2 pr-2 pl-4 text-sm shadow-lg">
+				<div className="pointer-events-auto flex items-center gap-2 rounded-lg border bg-popover py-1.5 pr-1.5 pl-3 text-sm shadow-popover">
 					<p>{notice}</p>
 					<Button variant="ghost" size="icon-xs" aria-label="Dismiss" onClick={dismiss}>
 						<IconX />

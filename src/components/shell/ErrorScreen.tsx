@@ -20,7 +20,7 @@ export function ErrorScreen({ error, reset }: ErrorComponentProps) {
 			}
 		>
 			<p>Your file has not been changed. You can try again, or go back and open it anew.</p>
-			<p className="font-mono break-words text-foreground/70">
+			<p className="font-mono break-words text-muted-foreground">
 				{error instanceof Error ? error.message : String(error)}
 			</p>
 		</Notice>

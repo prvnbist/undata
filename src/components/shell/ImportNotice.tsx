@@ -72,7 +72,7 @@ function DelimitedOptions({ options, onDone }: { options: Delimited; onDone: () 
 					</SelectContent>
 				</Select>
 			</div>
-			<p className="text-sm text-foreground/70">
+			<p className="text-sm text-muted-foreground">
 				Reading it again starts over: column names, types, filters and sorting are set afresh.
 			</p>
 			<Button type="submit" disabled={!changed}>

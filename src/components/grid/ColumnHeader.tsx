@@ -12,6 +12,7 @@ import { MiniChart } from '@/components/profile/MiniChart'
 import type { ColumnStats } from '@/lib/engine/stats'
 import { ColumnMenu } from './ColumnMenu'
 import { MAX_COLUMN, MIN_COLUMN } from './layout'
+import { TYPE_ICONS } from './typeIcons'
 
 const LABELS = new Map<string, string>(DATA_TYPES.map(({ value, label }) => [value, label]))
 
@@ -104,6 +105,7 @@ export function ColumnHeader({
 	// Assistive tech expects one sorted column. The others say where they come in the sort.
 	const ariaSort = at === 0 ? (key!.desc ? 'descending' : 'ascending') : undefined
 	const Arrow = key?.desc ? IconArrowDown : IconArrowUp
+	const TypeIcon = TYPE_ICONS[column.type]
 
 	return (
 		<div
@@ -116,10 +118,10 @@ export function ColumnHeader({
 					? `Sorted ${direction === 'desc' ? 'descending' : 'ascending'}${sort.length > 1 ? `, ${at + 1} of ${sort.length}` : ''}`
 					: undefined
 			}
-			className="relative flex shrink-0 flex-col border-r pr-1 pb-1.5 pl-3 text-sm"
+			className="group/header relative flex shrink-0 flex-col border-r border-border/70 pr-1 pb-1.5 pl-3 text-xs"
 			style={{ width: size }}
 		>
-			<div className="flex h-9 shrink-0 items-center gap-1">
+			<div className="flex h-8 shrink-0 items-center gap-1">
 				<button
 					type="button"
 					onPointerDown={event => onDragStart(column.id, event)}
@@ -127,13 +129,14 @@ export function ColumnHeader({
 						if (!consumeDrag()) sortBy(column.id, event)
 					}}
 					title={`${column.title} (${LABELS.get(column.type)}). Click to sort, Shift-click to add to the sort, drag to move`}
-					className="flex min-w-0 flex-1 items-center gap-1 self-stretch text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+					className="flex min-w-0 flex-1 items-center gap-1.5 self-stretch rounded-sm text-left font-medium text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
 				>
+					<TypeIcon className="size-3.5 shrink-0 text-subtle-foreground" aria-hidden />
 					<span className="truncate">{column.title}</span>
 					{key && (
 						<span className="flex shrink-0 items-center text-primary">
 							<Arrow className="size-3.5" aria-hidden />
-							{sort.length > 1 && <span className="font-mono text-[10px]">{at + 1}</span>}
+							{sort.length > 1 && <span className="text-[10px] tabular">{at + 1}</span>}
 						</span>
 					)}
 				</button>

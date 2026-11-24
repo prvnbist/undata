@@ -71,23 +71,21 @@ export function ColumnPanel({ columnId }: { columnId: string }) {
 			title={
 				<>
 					{column.title}{' '}
-					<span className="ml-1 text-xs font-normal text-foreground/70">
+					<span className="ml-1.5 text-xs font-normal text-subtle-foreground">
 						{LABELS.get(column.type)}
 					</span>
 				</>
 			}
 		>
 			<div className="min-h-0 flex-1 overflow-y-auto px-4 py-3 text-sm">
-				{!stats && <p className="text-foreground/70">Counting…</p>}
+				{!stats && <p className="text-muted-foreground">Counting…</p>}
 				{stats && (
 					<>
-						<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+						<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
 							{facts.map(([name, value]) => (
 								<div key={name} className="contents">
-									<dt className="text-foreground/70">{name}</dt>
-									<dd className="truncate text-right font-mono text-xs leading-5">
-										{value}
-									</dd>
+									<dt className="text-subtle-foreground">{name}</dt>
+									<dd className="truncate text-right leading-5 tabular">{value}</dd>
 								</div>
 							))}
 						</dl>
@@ -99,8 +97,10 @@ export function ColumnPanel({ columnId }: { columnId: string }) {
 							className="mt-4 h-24"
 						/>
 						{stats.top.length > 0 && (
-							<section className="mt-4">
-								<h3 className="mb-1 text-xs text-foreground/70">Most common values</h3>
+							<section className="mt-5">
+								<h3 className="mb-1.5 text-xs font-medium text-subtle-foreground">
+									Most common values
+								</h3>
 								<ul aria-label="Most common values" className="flex flex-col">
 									{stats.top.map(({ value, count }) => (
 										<li key={value}>
@@ -114,13 +114,13 @@ export function ColumnPanel({ columnId }: { columnId: string }) {
 											>
 												<span
 													aria-hidden
-													className="absolute inset-y-0.5 left-0 rounded-sm bg-primary/15"
+													className="absolute inset-y-0.5 left-0 rounded-sm bg-foreground/[0.06]"
 													style={{ width: `${(count / most) * 100}%` }}
 												/>
 												<span className="relative min-w-0 flex-1 truncate">
 													{value}
 												</span>
-												<span className="relative font-mono text-xs text-foreground/70">
+												<span className="relative text-xs text-subtle-foreground tabular">
 													{inEnglish.format(count)}
 												</span>
 											</button>

@@ -25,7 +25,7 @@ export function SheetPicker({ name, sheets }: { name: string; sheets: string[] }
 			}
 		>
 			<p>
-				<span className="font-mono break-all text-foreground/70">{name}</span> has{' '}
+				<span className="font-mono break-all text-muted-foreground">{name}</span> has{' '}
 				{sheets.length} sheets. Undata opens one at a time.
 			</p>
 			<ul role="group" aria-label={`Sheets in ${name}`} className="flex flex-col gap-1 pt-2">

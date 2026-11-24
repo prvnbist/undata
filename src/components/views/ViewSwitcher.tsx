@@ -43,7 +43,7 @@ export function ViewSwitcher() {
 				<DropdownMenuTrigger asChild>
 					<Button
 						ref={trigger}
-						variant="outline"
+						variant="ghost"
 						size="sm"
 						aria-label={`View: ${name}${changed ? ', changed' : ''}`}
 						className="max-w-44 min-w-0 shrink"

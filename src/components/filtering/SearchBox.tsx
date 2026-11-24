@@ -3,6 +3,7 @@ import type { KeyboardEvent } from 'react'
 import { IconSearch } from '@tabler/icons-react'
 
 import { Input } from '@/components/ui/input'
+import { Kbd } from '@/components/ui/kbd'
 import { applyView } from '@/store/session'
 import { useWorkspace, workspace } from '@/store/workspace'
 
@@ -82,10 +83,10 @@ export function SearchBox() {
 	}
 
 	return (
-		<div role="search" className="relative w-64 min-w-0 shrink">
+		<div role="search" className="relative w-56 min-w-0 shrink">
 			<IconSearch
 				aria-hidden
-				className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+				className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-subtle-foreground"
 			/>
 			<Input
 				ref={input}
@@ -97,14 +98,14 @@ export function SearchBox() {
 				onKeyDown={onKeyDown}
 				spellCheck={false}
 				autoComplete="off"
-				className="h-8 pr-7 pl-8 [&::-webkit-search-cancel-button]:hidden"
+				className="h-7 border-transparent bg-transparent pr-7 pl-7.5 hover:border-input hover:bg-secondary/60 focus-visible:bg-secondary [&::-webkit-search-cancel-button]:hidden"
 			/>
-			<kbd
+			<Kbd
 				aria-hidden
-				className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 rounded border px-1 font-mono text-[10px] text-muted-foreground"
+				className="pointer-events-none absolute top-1/2 right-1.5 -translate-y-1/2"
 			>
 				/
-			</kbd>
+			</Kbd>
 		</div>
 	)
 }

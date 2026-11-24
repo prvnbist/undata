@@ -4,35 +4,42 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * The app is dark only, so there is a single palette. Values are Mantine 7's dark scale and
- * yellow 4, which is what the app used before the migration.
+ * The app is dark only, so there is a single palette. Neutrals are near black with a slight cool
+ * tint, and each raised surface (card, popover, accent for hover) is one step lighter. Text has
+ * three levels: foreground, muted and subtle. Yellow is kept for state, not decoration.
  */
 :root {
 	color-scheme: dark;
 
-	--background: #242424;
-	--foreground: #c9c9c9;
-	--card: #2e2e2e;
-	--card-foreground: #c9c9c9;
-	--popover: #2e2e2e;
-	--popover-foreground: #c9c9c9;
+	--background: #0f1011;
+	--foreground: #e6e7ea;
+	--card: #151618;
+	--card-foreground: #e6e7ea;
+	--popover: #1b1c1f;
+	--popover-foreground: #e6e7ea;
 	--primary: #ffd43b;
-	--primary-foreground: #000;
-	--secondary: #2e2e2e;
-	--secondary-foreground: #fff;
-	--muted: #2e2e2e;
-	--muted-foreground: #a6a6a6;
-	--accent: #3b3b3b;
-	--accent-foreground: #fff;
+	--primary-foreground: #0f1011;
+	--secondary: #1e1f23;
+	--secondary-foreground: #e6e7ea;
+	--muted: #18191c;
+	--muted-foreground: #a1a3ab;
+	/* The third text level. Still 4.5:1 on the background and on cards. */
+	--subtle-foreground: #80838d;
+	--accent: #24252a;
+	--accent-foreground: #f4f5f6;
 	--destructive: #ff8787;
-	--border: #424242;
-	--input: #424242;
+	--border: #26272c;
+	--input: #2e3035;
 	--ring: #ffd43b;
+
+	--shadow-popover:
+		0 0 0 1px rgb(255 255 255 / 0.02), 0 4px 8px -2px rgb(0 0 0 / 0.4),
+		0 12px 32px -4px rgb(0 0 0 / 0.5);
 }
 
 @theme inline {
 	--font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
-	--font-heading: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+	--font-heading: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
 	--color-background: var(--background);
@@ -47,6 +54,7 @@
 	--color-secondary-foreground: var(--secondary-foreground);
 	--color-muted: var(--muted);
 	--color-muted-foreground: var(--muted-foreground);
+	--color-subtle-foreground: var(--subtle-foreground);
 	--color-accent: var(--accent);
 	--color-accent-foreground: var(--accent-foreground);
 	--color-destructive: var(--destructive);
@@ -54,11 +62,21 @@
 	--color-input: var(--input);
 	--color-ring: var(--ring);
 
-	/* Mantine used one 4px radius everywhere. */
-	--radius-sm: 0.25rem;
-	--radius-md: 0.25rem;
-	--radius-lg: 0.25rem;
-	--radius-xl: 0.25rem;
+	--radius-xs: 0.25rem;
+	--radius-sm: 0.3125rem;
+	--radius-md: 0.375rem;
+	--radius-lg: 0.5rem;
+	--radius-xl: 0.75rem;
+
+	--shadow-popover: var(--shadow-popover);
+
+	/* A dense scale: body text is 13px, small text 12px. */
+	--text-xs: 0.75rem;
+	--text-xs--line-height: 1rem;
+	--text-sm: 0.8125rem;
+	--text-sm--line-height: 1.25rem;
+	--text-base: 0.875rem;
+	--text-base--line-height: 1.375rem;
 }
 
 @layer base {
@@ -66,8 +84,15 @@
 		@apply border-border outline-ring/50;
 	}
 
+	html {
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+
 	body {
-		@apply bg-background font-sans text-foreground;
+		@apply bg-background font-sans text-sm text-foreground;
+		font-feature-settings: 'cv11', 'ss01';
+		letter-spacing: -0.003em;
 	}
 
 	h1,
@@ -76,6 +101,19 @@
 	h4,
 	h5,
 	h6 {
-		@apply font-heading font-normal;
+		@apply font-heading font-medium tracking-tight;
 	}
+
+	::selection {
+		@apply bg-primary/25 text-foreground;
+	}
+
+	* {
+		scrollbar-width: thin;
+		scrollbar-color: var(--input) transparent;
+	}
+}
+
+@utility tabular {
+	font-variant-numeric: tabular-nums;
 }

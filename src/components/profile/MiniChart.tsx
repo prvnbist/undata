@@ -8,9 +8,9 @@ import { cn } from 'cn'
 import { chartItems, chartSummary } from './chartItems'
 
 const TONES = {
-	value: 'bg-primary/60 hover:bg-primary',
-	empty: 'bg-foreground/25 hover:bg-foreground/50',
-	malformed: 'bg-amber-400/70 hover:bg-amber-300',
+	value: 'bg-foreground/[0.13] hover:bg-primary',
+	empty: 'bg-foreground/[0.05] hover:bg-foreground/30',
+	malformed: 'bg-amber-400/50 hover:bg-amber-300',
 }
 
 // A column's distribution in its header. Each bar filters to what it counts. The bars are one tab
