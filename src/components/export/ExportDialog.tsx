@@ -13,7 +13,7 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { useReturnFocus } from '@/components/ui/useReturnFocus'
 import type { ExportOptions } from '@/lib/engine/export'
-import { download, exportDataset, exportName } from '@/store/session'
+import { download, exportDataset, exportGroups, exportName } from '@/store/session'
 import { useWorkspace, workspace } from '@/store/workspace'
 
 const inEnglish = new Intl.NumberFormat('en')
@@ -75,6 +75,10 @@ export function ExportDialog() {
 	const total = useWorkspace(state => state.dataset?.rowCount ?? 0)
 	const shown = useWorkspace(state => state.query?.rowCount ?? 0)
 	const hidden = useWorkspace(state => state.view.columns.filter(c => c.hidden).length)
+	// A grouped view exports its summary.
+	const groups = useWorkspace(state =>
+		(state.view.grouping?.by.length ?? 0) > 0 ? (state.groups?.groupCount ?? 0) : null
+	)
 	const open = useWorkspace(state => state.exporting)
 	const setOpen = (exporting: boolean) => workspace.set({ exporting })
 	const returnFocus = useReturnFocus(open)
@@ -90,9 +94,9 @@ export function ExportDialog() {
 		setBusy(true)
 		setError(null)
 		try {
-			const blob = await exportDataset(settings)
+			const blob = groups === null ? await exportDataset(settings) : await exportGroups(settings)
 			if (!blob) throw new Error('Nothing is open')
-			download(blob, exportName(name, settings.format))
+			download(blob, exportName(name, settings.format, groups === null ? '' : '-groups'))
 			setOpen(false)
 		} catch (failure) {
 			setError(
@@ -116,23 +120,31 @@ export function ExportDialog() {
 					<DialogHeader>
 						<DialogTitle>Export</DialogTitle>
 						<DialogDescription>
-							{hidden > 0
-								? `Hidden columns (${hidden}) are left out.`
-								: 'Every shown column is included.'}{' '}
+							{groups !== null
+								? 'One row per group, as the summary shows it.'
+								: hidden > 0
+									? `Hidden columns (${hidden}) are left out.`
+									: 'Every shown column is included.'}{' '}
 							The file is made here and never leaves your browser.
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4">
-						<Choices
-							legend="Rows"
-							name={`${id}-scope`}
-							value={settings.scope}
-							onChange={change('scope')}
-							choices={[
-								{ value: 'view', label: `This view, ${rows(shown)}` },
-								{ value: 'all', label: `All ${rows(total)}` },
-							]}
-						/>
+						{groups === null ? (
+							<Choices
+								legend="Rows"
+								name={`${id}-scope`}
+								value={settings.scope}
+								onChange={change('scope')}
+								choices={[
+									{ value: 'view', label: `This view, ${rows(shown)}` },
+									{ value: 'all', label: `All ${rows(total)}` },
+								]}
+							/>
+						) : (
+							<p className="text-sm">
+								The summary, {inEnglish.format(groups)} {groups === 1 ? 'group' : 'groups'}
+							</p>
+						)}
 						<Choices
 							legend="Format"
 							name={`${id}-format`}

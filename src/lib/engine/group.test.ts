@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vite-plus/test'
 
 import type { DataType } from '../constants'
 import { parseDelimited } from '../import/delimited'
-import { aggregatesFor, groupRows } from './group'
+import { aggregatesFor, aggregateTitle, groupRows, summaryCells, summaryColumns } from './group'
 import { createDataset } from './store'
 import type { Grouping } from './view'
 
@@ -142,5 +142,57 @@ describe('aggregatesFor', () => {
 		expect(aggregatesFor('date')).toEqual(['min', 'max'])
 		expect(aggregatesFor('boolean')).toEqual([])
 		expect(aggregatesFor('text')).toEqual([])
+	})
+})
+
+describe('summaryColumns and summaryCells', () => {
+	const columns = [
+		{ id: 'c0', title: 'Town', header: 'city', type: 'text' as const },
+		{ id: 'c2', title: 'amount', header: 'amount', type: 'number' as const },
+		{ id: 'c3', title: 'when', header: 'when', type: 'date' as const },
+	]
+	const grouping: Grouping = {
+		by: ['c0'],
+		aggregates: [
+			{ columnId: 'c2', fn: 'avg' },
+			{ columnId: 'c3', fn: 'min' },
+		],
+		sort: [],
+	}
+
+	test('grouped columns, the count, then each aggregate, by title or header', () => {
+		expect(summaryColumns(columns, grouping, 'titles')).toEqual([
+			{ name: 'Town', type: 'text' },
+			{ name: 'Rows', type: 'number' },
+			{ name: 'Mean of amount', type: 'number' },
+			{ name: 'Min of when', type: 'date' },
+		])
+		expect(summaryColumns(columns, grouping, 'headers')[0]!.name).toBe('city')
+	})
+
+	test('a name used twice gets a number', () => {
+		const named = summaryColumns(
+			[{ id: 'c0', title: 'Rows', header: 'Rows', type: 'text' }],
+			{ by: ['c0'], aggregates: [], sort: [] },
+			'titles'
+		)
+		expect(named.map(column => column.name)).toEqual(['Rows', 'Rows (2)'])
+	})
+
+	test('the empty group has no key', () => {
+		expect(
+			summaryCells({
+				index: 0,
+				keys: ['', 'a'],
+				empty: [true, false],
+				count: 4,
+				values: ['1.5', null],
+			})
+		).toEqual([null, 'a', '4', '1.5', null])
+	})
+
+	test('aggregateTitle', () => {
+		expect(aggregateTitle('sum', 'amount')).toBe('Sum of amount')
+		expect(aggregateTitle('max', 'when')).toBe('Max of when')
 	})
 })

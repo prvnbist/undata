@@ -138,3 +138,44 @@ export const exportRows = (
 	parts.push(count > 0 ? '\n]\n' : ']\n')
 	return parts
 }
+
+// The group summary as pieces of text. Null cells are a group with no value, or the empty group's key.
+export const exportSummary = (
+	columns: { name: string; type: DataType }[],
+	rows: (string | null)[][],
+	format: ExportOptions['format'],
+	escapeFormulas: boolean
+): string[] => {
+	const parts: string[] = []
+	if (format === 'csv') {
+		const alone = columns.length === 1
+		const line = (cells: string[]) =>
+			cells.map(cell => csvCell(cell, escapeFormulas, alone)).join(',') + '\n'
+		parts.push(line(columns.map(column => column.name)))
+		for (let start = 0; start < rows.length; start += CHUNK_ROWS) {
+			parts.push(
+				rows
+					.slice(start, start + CHUNK_ROWS)
+					.map(row => line(row.map(cell => cell ?? '')))
+					.join('')
+			)
+		}
+		return parts
+	}
+
+	const keys = columns.map(column => JSON.stringify(column.name))
+	parts.push('[')
+	for (let start = 0; start < rows.length; start += CHUNK_ROWS) {
+		let chunk = ''
+		rows.slice(start, start + CHUNK_ROWS).forEach((row, offset) => {
+			const fields = columns.map((column, c) => {
+				const cell = row[c] ?? null
+				return `${keys[c]}:${cell === null ? 'null' : (jsonCell(column.type, cell, null) ?? 'null')}`
+			})
+			chunk += `${start + offset === 0 ? '\n' : ',\n'}{${fields.join(',')}}`
+		})
+		parts.push(chunk)
+	}
+	parts.push(rows.length > 0 ? '\n]\n' : ']\n')
+	return parts
+}

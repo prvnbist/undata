@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
-import { exportRows } from '@/lib/engine/export'
+import { exportRows, exportSummary } from '@/lib/engine/export'
 import { InvalidFilter } from '@/lib/engine/filter'
-import { groupRows } from '@/lib/engine/group'
+import { groupRows, summaryCells } from '@/lib/engine/group'
 import type { GroupTable } from '@/lib/engine/group'
 import { runQuery } from '@/lib/engine/query'
 import type { QueryResult } from '@/lib/engine/query'
@@ -139,6 +139,18 @@ const handle = (data: Exclude<EngineRequest, { type: 'open' }>) => {
 			schedule<'groupRows'>(id, { priority: PRIORITY.rows, replaceable: false }, () =>
 				grouped?.id === data.groupId ? grouped.table.window(data.start, data.end) : null
 			)
+			return
+
+		case 'exportGroups':
+			schedule<'exportGroups'>(id, { priority: PRIORITY.export, replaceable: false }, () => {
+				if (grouped?.id !== data.groupId) return null
+				const { table } = grouped
+				const rows = table.window(0, table.summary.groupCount).map(summaryCells)
+				const type = data.format === 'csv' ? 'text/csv' : 'application/json'
+				return new Blob(exportSummary(data.columns, rows, data.format, data.escapeFormulas), {
+					type: `${type};charset=utf-8`,
+				})
+			})
 			return
 
 		case 'setColumns':

@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vite-plus/test'
 
 import { openBlob } from '@/lib/import/open'
 import { inferColumnTypes } from '@/lib/types/infer'
-import { exportRows, rowJson } from './export'
+import { exportRows, exportSummary, rowJson } from './export'
 import type { ExportOptions } from './export'
 import { runQuery } from './query'
 import { createDataset } from './store'
@@ -158,5 +158,40 @@ describe('rowJson', () => {
 		// number, missing, null
 		expect(JSON.parse(rowJson(columns, ['1', '', ''], [3, 0, 1]))).toEqual({ a: 1, c: null })
 		expect(rowJson(columns, ['', '', ''], [0, 0, 0])).toBe('{}')
+	})
+})
+
+describe('exportSummary', () => {
+	const columns = [
+		{ name: 'city', type: 'text' as const },
+		{ name: 'Rows', type: 'number' as const },
+		{ name: 'Sum of amount', type: 'number' as const },
+		{ name: 'Earliest', type: 'date' as const },
+	]
+	const rows = [
+		['Oslo', '3', '12.5', '2024-01-05'],
+		['=x, y', '1', null, null],
+		[null, '2', '7', '2024-02-01'],
+	]
+
+	test('as CSV, a group without a value or key left blank', () => {
+		expect(exportSummary(columns, rows, 'csv', false).join('')).toBe(
+			'city,Rows,Sum of amount,Earliest\nOslo,3,12.5,2024-01-05\n"=x, y",1,,\n,2,7,2024-02-01\n'
+		)
+	})
+
+	test('formulas escaped only when asked', () => {
+		expect(exportSummary(columns, [['=1', '1', null, null]], 'csv', true).join('')).toContain(
+			"\n'=1,1,,\n"
+		)
+	})
+
+	test('as JSON, numbers as numbers and nothing as null', () => {
+		expect(JSON.parse(exportSummary(columns, rows, 'json', false).join(''))).toEqual([
+			{ city: 'Oslo', Rows: 3, 'Sum of amount': 12.5, Earliest: '2024-01-05' },
+			{ city: '=x, y', Rows: 1, 'Sum of amount': null, Earliest: null },
+			{ city: null, Rows: 2, 'Sum of amount': 7, Earliest: '2024-02-01' },
+		])
+		expect(exportSummary(columns, [], 'json', false).join('')).toBe('[]\n')
 	})
 })

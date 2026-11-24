@@ -1,6 +1,6 @@
 import type { ImportErrorCode, ImportOptions, ImportWarning } from '@/lib/import/types'
 import type { ExportOptions } from '@/lib/engine/export'
-import type { GroupRow, GroupSummary } from '@/lib/engine/group'
+import type { GroupRow, GroupSummary, SummaryColumn } from '@/lib/engine/group'
 import type { ColumnStats } from '@/lib/engine/stats'
 import type { ColumnInfo, RowWindow } from '@/lib/engine/store'
 import type { ColumnSetup, Grouping, ViewState } from '@/lib/engine/view'
@@ -50,6 +50,16 @@ export type EngineCalls = {
 	// The rows of a query, grouped. The groups stay in the worker and are read a window at a time.
 	group: { request: { queryId: number; grouping: Grouping }; response: Grouped }
 	groupRows: { request: { groupId: number; start: number; end: number }; response: GroupRow[] }
+	// The whole summary of a grouping, as a file. The caller names its columns.
+	exportGroups: {
+		request: {
+			groupId: number
+			columns: SummaryColumn[]
+			format: ExportOptions['format']
+			escapeFormulas: boolean
+		}
+		response: Blob
+	}
 	setColumns: { request: { setup: ColumnSetup[] }; response: ColumnInfo[] }
 	export: { request: { queryId: number; options: ExportOptions }; response: Blob }
 }

@@ -139,6 +139,8 @@ export const createEngineClient = ({ regexTimeoutMs = 10_000 }: EngineClientOpti
 		groupRows: (groupId: number, start: number, end: number) =>
 			call('groupRows', { groupId, start, end }),
 		export: (queryId: number, options: ExportOptions) => call('export', { queryId, options }),
+		exportGroups: (request: EngineCalls['exportGroups']['request']) =>
+			call('exportGroups', request),
 		async setColumns(setup: ColumnSetup[]) {
 			const columns = await call('setColumns', { setup })
 			if (source) source.setup = columns.map(toSetup)

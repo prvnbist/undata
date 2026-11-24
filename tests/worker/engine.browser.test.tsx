@@ -218,8 +218,39 @@ describe('group', () => {
 	test('a group for an older query is dropped', async () => {
 		await client.open(file('a\n1\n'))
 		const { queryId } = await client.query(defaultView(['c0']))
-		const old = client.group(queryId, { by: ['c0'], aggregates: [], sort: [] })
+		// Caught from the start, so its failure is never left unhandled.
+		const old = client.group(queryId, { by: ['c0'], aggregates: [], sort: [] }).then(
+			() => null,
+			(error: unknown) => error
+		)
 		await client.query(defaultView(['c0']))
-		await expect(old).rejects.toMatchObject({ code: 'superseded' })
+		expect(await old).toMatchObject({ code: 'superseded' })
+	})
+
+	test('the whole summary exports as a file, and only for the newest groups', async () => {
+		await client.open(file('city,amount\nOslo,1\nLima,2\nOslo,3\n'))
+		const { queryId } = await client.query(defaultView(['c0', 'c1']))
+		const grouping = { by: ['c0'], aggregates: [], sort: [] }
+		const first = await client.group(queryId, grouping)
+		const { groupId } = await client.group(queryId, grouping)
+		const columns = [
+			{ name: 'city', type: 'text' as const },
+			{ name: 'Rows', type: 'number' as const },
+		]
+		const blob = await client.exportGroups({
+			groupId,
+			columns,
+			format: 'csv',
+			escapeFormulas: false,
+		})
+		expect(await blob.text()).toBe('city,Rows\nLima,1\nOslo,2\n')
+		await expect(
+			client.exportGroups({
+				groupId: first.groupId,
+				columns,
+				format: 'csv',
+				escapeFormulas: false,
+			})
+		).rejects.toMatchObject({ code: 'superseded' })
 	})
 })

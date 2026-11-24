@@ -1,8 +1,9 @@
 import { fitColumn } from '@/components/grid/layout'
 import type { ExportOptions } from '@/lib/engine/export'
+import { aggregateKey, aggregatesFor, summaryColumns } from '@/lib/engine/group'
 import { fitsColumns } from '@/lib/engine/operators'
 import { defaultView } from '@/lib/engine/view'
-import type { ColumnSetup, ViewState } from '@/lib/engine/view'
+import type { ColumnSetup, Grouping, ViewState } from '@/lib/engine/view'
 import { formatBytes } from '@/lib/bytes'
 import type { ImportOptions } from '@/lib/import/types'
 import { requestPersistence, saveDataset, updateDataset } from '@/lib/storage/datasets'
@@ -56,11 +57,39 @@ const droppedNotice = (dropped: number) =>
 		? 'A filter no longer fit its column, so it was removed.'
 		: `${dropped} filters no longer fit their columns, so they were removed.`
 
+// A grouping by columns that are still there, with only the aggregates their types still have.
+const fitGrouping = (grouping: Grouping | null, columns: ColumnSetup[]): Grouping | null => {
+	if (!grouping) return null
+	const types = new Map(columns.map(column => [column.id, column.type]))
+	const by = grouping.by.filter(id => types.has(id))
+	if (by.length === 0) return null
+	const aggregates = grouping.aggregates.filter(({ columnId, fn }) => {
+		const type = types.get(columnId)
+		return type !== undefined && aggregatesFor(type).includes(fn)
+	})
+	const keys = new Set(['count', ...by, ...aggregates.map(aggregateKey)])
+	const sort = grouping.sort.filter(key => keys.has(key.key))
+	const same =
+		by.length === grouping.by.length &&
+		aggregates.length === grouping.aggregates.length &&
+		sort.length === grouping.sort.length
+	return same ? grouping : { by, aggregates, sort }
+}
+
 // A view whose filters all still fit the columns. One that does not would fail every query.
 const fitView = (view: ViewState, columns: ColumnSetup[]) => {
 	const { kept, dropped } = fitsColumns(view.filters, columns)
-	return { view: dropped ? { ...view, filters: kept } : view, dropped }
+	const grouping = fitGrouping(view.grouping, columns)
+	const fitted =
+		dropped || grouping !== view.grouping ? { ...view, filters: kept, grouping } : view
+	return { view: fitted, dropped }
 }
+
+const isGrouped = (view: ViewState) => (view.grouping?.by.length ?? 0) > 0
+
+// The groups of a query, if the view has any.
+const groupsOf = (own: EngineClient, queryId: number, view: ViewState) =>
+	isGrouped(view) ? own.group(queryId, view.grouping!) : Promise.resolve(null)
 
 const unsaved = (error: unknown) => {
 	const reason = error instanceof DOMException && error.name === 'QuotaExceededError'
@@ -134,6 +163,7 @@ const read = async (request: Required<Omit<ImportRequest, 'known'>>) => {
 		const { view: initial, dropped } = fitView(view ?? defaultView(ids), opened.columns)
 		const { queryId, rowCount } = await own.query(initial)
 		const sample = await own.rows(queryId, 0, FIT_ROWS, ids)
+		const groups = await groupsOf(own, queryId, initial)
 		if (own !== client) return
 
 		workspace.set({
@@ -150,6 +180,7 @@ const read = async (request: Required<Omit<ImportRequest, 'known'>>) => {
 			dataset: { id, name, size: blob.size, ...opened },
 			view: initial,
 			query: { id: queryId, rowCount },
+			groups,
 			...(dropped ? { notice: droppedNotice(dropped) } : {}),
 		})
 		pendingWrite = save(id, blob)
@@ -211,12 +242,20 @@ export const reimport = (options: ImportOptions) => {
 export const applyView = async (view: ViewState) => {
 	const own = client
 	if (!own) return
-	workspace.set({ view, querying: true, queryError: null })
+	// Grouping again, or ungrouping, leaves the group that was opened behind.
+	const leaves = view.grouping !== null || workspace.get().view.grouping !== null
+	workspace.set({
+		view,
+		querying: true,
+		queryError: null,
+		...(leaves ? { drilledFrom: null } : {}),
+	})
 	const saving = persist({ view })
 	try {
 		const { queryId, rowCount } = await own.query(view)
+		const groups = await groupsOf(own, queryId, view)
 		if (own !== client || workspace.get().view !== view) return
-		workspace.set({ query: { id: queryId, rowCount }, querying: false })
+		workspace.set({ query: { id: queryId, rowCount }, groups, querying: false })
 	} catch (error) {
 		if (own !== client || workspace.get().view !== view) return
 		workspace.set({ querying: false, queryError: toEngineError(error) })
@@ -253,8 +292,8 @@ export const arrangeView = (view: ViewState) => {
 }
 
 // The file name an export gets: the dataset's, with the format's extension.
-export const exportName = (name: string, format: ExportOptions['format']) =>
-	`${name.replace(/\.[^./\\]+$/, '') || 'export'}.${format}`
+export const exportName = (name: string, format: ExportOptions['format'], suffix = '') =>
+	`${name.replace(/\.[^./\\]+$/, '') || 'export'}${suffix}.${format}`
 
 // Made in the engine and handed to the browser to save. Nothing is sent anywhere.
 export const exportDataset = async (options: Omit<ExportOptions, 'columnIds'>) => {
@@ -265,6 +304,20 @@ export const exportDataset = async (options: Omit<ExportOptions, 'columnIds'>) =
 		.filter(column => !column.hidden && known.has(column.id))
 		.map(column => column.id)
 	return client.export(query.id, { ...options, columnIds })
+}
+
+// The group summary as a file, or as text to copy.
+export const exportGroups = async (
+	options: Pick<ExportOptions, 'format' | 'names' | 'escapeFormulas'>
+) => {
+	const { groups, view, dataset } = workspace.get()
+	if (!client || !groups || !dataset || !view.grouping) return null
+	return client.exportGroups({
+		groupId: groups.groupId,
+		columns: summaryColumns(dataset.columns, view.grouping, options.names),
+		format: options.format,
+		escapeFormulas: options.escapeFormulas,
+	})
 }
 
 export const download = (blob: Blob, name: string) => {

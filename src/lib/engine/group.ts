@@ -262,3 +262,56 @@ export const groupRows = (
 		},
 	}
 }
+
+const AGGREGATE_NAMES: Record<AggregateFn, string> = {
+	sum: 'Sum',
+	avg: 'Mean',
+	min: 'Min',
+	max: 'Max',
+}
+
+export const aggregateTitle = (fn: AggregateFn, title: string) =>
+	`${AGGREGATE_NAMES[fn]} of ${title}`
+
+export type SummaryColumn = { name: string; type: DataType }
+
+type NamedColumn = { id: string; title: string; header: string; type: DataType }
+
+// The summary's columns as a file has them: the grouped columns, the count, then the aggregates. A
+// sum or a mean is a number whatever it adds up. Names never repeat, so JSON keeps every one.
+export const summaryColumns = (
+	columns: NamedColumn[],
+	grouping: Grouping,
+	names: 'titles' | 'headers'
+): SummaryColumn[] => {
+	const byId = new Map(columns.map(column => [column.id, column]))
+	const nameOf = (column: NamedColumn) => (names === 'headers' ? column.header : column.title)
+	const wanted: SummaryColumn[] = [
+		...grouping.by.flatMap(id => {
+			const column = byId.get(id)
+			return column ? [{ name: nameOf(column), type: column.type }] : []
+		}),
+		{ name: 'Rows', type: 'number' },
+		...grouping.aggregates.map(({ columnId, fn }) => {
+			const column = byId.get(columnId)
+			return {
+				name: aggregateTitle(fn, column ? nameOf(column) : columnId),
+				type: fn === 'sum' || fn === 'avg' ? 'number' : (column?.type ?? 'text'),
+			} satisfies SummaryColumn
+		}),
+	]
+	const seen = new Set<string>()
+	return wanted.map(column => {
+		let name = column.name
+		for (let n = 2; seen.has(name); n++) name = `${column.name} (${n})`
+		seen.add(name)
+		return { ...column, name }
+	})
+}
+
+// One group as the cells of a summary row, in the order of `summaryColumns`. Null is no value.
+export const summaryCells = (row: GroupRow): (string | null)[] => [
+	...row.keys.map((key, i) => (row.empty[i] ? null : key)),
+	String(row.count),
+	...row.values,
+]

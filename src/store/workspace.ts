@@ -4,7 +4,7 @@ import type { ColumnInfo } from '@/lib/engine/store'
 import { defaultView } from '@/lib/engine/view'
 import type { ViewState } from '@/lib/engine/view'
 import type { ImportOptions, ImportWarning } from '@/lib/import/types'
-import type { EngineError, Progress } from '@/workers/protocol'
+import type { EngineError, Grouped, Progress } from '@/workers/protocol'
 
 // A file can also be turned away before the engine sees it.
 export type ImportFailure = Omit<EngineError, 'code'> & { code: EngineError['code'] | 'too-large' }
@@ -43,6 +43,10 @@ export type WorkspaceState = {
 	fitted: Record<string, number>
 	query: CurrentQuery | null
 	querying: boolean
+	// The groups of the query, when the view groups its rows.
+	groups: Grouped | null
+	// The grouped view a group was opened from, for going back to it.
+	drilledFrom: ViewState | null
 	queryError: EngineError | null
 	saved: SaveState
 	// Whether the export dialog is open, so the palette can open it too.
@@ -63,6 +67,8 @@ export const initialWorkspace: WorkspaceState = {
 	fitted: {},
 	query: null,
 	querying: false,
+	groups: null,
+	drilledFrom: null,
 	queryError: null,
 	saved: null,
 	exporting: false,

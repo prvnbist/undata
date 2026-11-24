@@ -12,6 +12,7 @@ import {
 	IconEyeOff,
 	IconFilter,
 	IconForms,
+	IconLayoutList,
 	IconPlus,
 	IconX,
 } from '@tabler/icons-react'
@@ -37,6 +38,7 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { addFilter } from '@/components/filtering/FilterEditor'
+import { toggleGroupBy } from '@/components/grouping/actions'
 import { inspectColumn } from '@/components/inspector/Inspector'
 import { Input } from '@/components/ui/input'
 import { DATA_TYPES } from '@/lib/constants'
@@ -44,7 +46,7 @@ import type { DataType } from '@/lib/constants'
 import type { ColumnInfo } from '@/lib/engine/store'
 import { moveColumnBy, setHidden, setSize, setSort } from '@/lib/engine/view'
 import { applyColumns, applyView, arrangeView } from '@/store/session'
-import { workspace } from '@/store/workspace'
+import { useWorkspace, workspace } from '@/store/workspace'
 
 const inEnglish = new Intl.NumberFormat('en')
 
@@ -151,6 +153,8 @@ export function ColumnMenu({
 	// Opened once the menu is closed, so focus goes to the details and not back to the menu button.
 	const details = useRef(false)
 	const others = sortCount - (sorted ? 1 : 0)
+	const grouping = useWorkspace(state => state.view.grouping)
+	const groupedBy = grouping?.by.includes(column.id) ?? false
 
 	return (
 		<>
@@ -222,6 +226,10 @@ export function ColumnMenu({
 							})}
 						</DropdownMenuSubContent>
 					</DropdownMenuSub>
+					<DropdownMenuItem onSelect={() => void toggleGroupBy(column.id)}>
+						<IconLayoutList />{' '}
+						{groupedBy ? 'Stop grouping by this column' : 'Group by this column'}
+					</DropdownMenuItem>
 					<DropdownMenuSub>
 						<DropdownMenuSubTrigger>Type</DropdownMenuSubTrigger>
 						<DropdownMenuSubContent className="w-52">
