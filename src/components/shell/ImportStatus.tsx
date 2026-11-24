@@ -93,8 +93,8 @@ function Failed({ name, error }: Extract<Phase, { kind: 'failed' }>) {
 			actions={
 				<>
 					<OpenFileButton>Choose another file</OpenFileButton>
-					<Button variant="outline" asChild>
-						<Link to="/">Back to start</Link>
+					<Button variant="outline" render={<Link to="/" />}>
+						Back to start
 					</Button>
 				</>
 			}

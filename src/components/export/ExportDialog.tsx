@@ -116,7 +116,7 @@ export function ExportDialog() {
 				<span className="max-sm:sr-only">Export</span>
 			</Button>
 			<Dialog open={open} onOpenChange={setOpen}>
-				<DialogContent className="sm:max-w-md" onCloseAutoFocus={event => returnFocus(event)}>
+				<DialogContent className="sm:max-w-md" finalFocus={() => returnFocus()}>
 					<DialogHeader>
 						<DialogTitle>Export</DialogTitle>
 						<DialogDescription>

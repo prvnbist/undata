@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { IconCopy, IconFilter, IconFilterOff } from '@tabler/icons-react'
 
 import { addFilter } from '@/components/filtering/FilterEditor'
@@ -7,7 +7,6 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuLabel,
-	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { ColumnInfo } from '@/lib/engine/store'
 import type { Filter } from '@/lib/engine/view'
@@ -17,6 +16,7 @@ import { cellText } from './useGridKeyboard'
 export type CellMenuTarget = { row: number; column: ColumnInfo; x: number; y: number }
 
 const SHOWN = 24
+const FIRST_ITEM = '[role="menuitem"]:not([aria-disabled="true"])'
 const quote = (text: string) =>
 	`“${text.length > SHOWN ? `${text.slice(0, SHOWN).trimEnd()}…` : text}”`
 
@@ -70,25 +70,29 @@ export function CellMenu({
 
 	const ready = target !== null && text?.for === target
 	const value = ready ? text.text : ''
+	const popup = useRef<HTMLDivElement>(null)
+	// The menu opens where it was asked for, with no button to hang from.
+	const anchor = useMemo(
+		() => ({ getBoundingClientRect: () => new DOMRect(target?.x ?? 0, target?.y ?? 0, 0, 0) }),
+		[target]
+	)
 
 	return (
-		<DropdownMenu open={ready} onOpenChange={open => !open && onClose()}>
-			<DropdownMenuTrigger asChild>
-				<span
-					aria-hidden
-					tabIndex={-1}
-					className="pointer-events-none fixed size-0"
-					style={{ left: target?.x ?? 0, top: target?.y ?? 0 }}
-				/>
-			</DropdownMenuTrigger>
+		<DropdownMenu
+			open={ready}
+			onOpenChange={open => !open && onClose()}
+			// With no trigger, the popup itself takes focus. The first item does, as in any menu.
+			onOpenChangeComplete={open => {
+				if (open) popup.current?.querySelector<HTMLElement>(FIRST_ITEM)?.focus()
+			}}
+		>
 			<DropdownMenuContent
+				ref={popup}
+				anchor={anchor}
 				align="start"
 				className="w-60"
 				aria-label="Cell"
-				onCloseAutoFocus={event => {
-					event.preventDefault()
-					document.querySelector<HTMLElement>('[role="grid"]')?.focus()
-				}}
+				finalFocus={() => document.querySelector<HTMLElement>('[role="grid"]')}
 			>
 				{ready && (
 					<>
@@ -96,12 +100,14 @@ export function CellMenu({
 							Filter {target.column.title}
 						</DropdownMenuLabel>
 						{cellFilters(target.column.id, value).map(({ label, icon: Icon, filter }) => (
-							<DropdownMenuItem key={label} onSelect={() => void addFilter(filter)}>
-								<Icon /> {label}
+							<DropdownMenuItem key={label} onClick={() => void addFilter(filter)}>
+								<Icon />
+								{label}
 							</DropdownMenuItem>
 						))}
-						<DropdownMenuItem onSelect={() => void navigator.clipboard?.writeText(value)}>
-							<IconCopy /> Copy value
+						<DropdownMenuItem onClick={() => void navigator.clipboard?.writeText(value)}>
+							<IconCopy />
+							Copy value
 						</DropdownMenuItem>
 					</>
 				)}

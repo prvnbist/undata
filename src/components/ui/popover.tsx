@@ -1,33 +1,41 @@
-import * as React from 'react'
 import { cn } from 'cn'
-import { Popover as PopoverPrimitive } from 'radix-ui'
+import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
 
-function Popover({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Root>) {
+function Popover({ ...props }: PopoverPrimitive.Root.Props) {
 	return <PopoverPrimitive.Root data-slot="popover" {...props} />
 }
 
-function PopoverTrigger({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Trigger>) {
+function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
 	return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
 }
 
 function PopoverContent({
 	className,
 	align = 'center',
+	side = 'bottom',
 	sideOffset = 4,
+	alignOffset = 0,
 	...props
-}: React.ComponentProps<typeof PopoverPrimitive.Content>) {
+}: PopoverPrimitive.Popup.Props &
+	Pick<PopoverPrimitive.Positioner.Props, 'align' | 'side' | 'sideOffset' | 'alignOffset'>) {
 	return (
 		<PopoverPrimitive.Portal>
-			<PopoverPrimitive.Content
-				data-slot="popover-content"
+			<PopoverPrimitive.Positioner
+				className="z-50"
 				align={align}
+				side={side}
 				sideOffset={sideOffset}
-				className={cn(
-					'z-50 w-72 rounded-lg border bg-popover text-popover-foreground shadow-popover p-3 outline-hidden data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-[0.98] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-[0.98] duration-150',
-					className
-				)}
-				{...props}
-			/>
+				alignOffset={alignOffset}
+			>
+				<PopoverPrimitive.Popup
+					data-slot="popover-content"
+					className={cn(
+						'w-72 origin-(--transform-origin) rounded-lg border bg-popover p-3 text-popover-foreground shadow-popover outline-hidden duration-150 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-[0.98] data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.98]',
+						className
+					)}
+					{...props}
+				/>
+			</PopoverPrimitive.Positioner>
 		</PopoverPrimitive.Portal>
 	)
 }

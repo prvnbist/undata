@@ -221,6 +221,9 @@ test('story 5: group by a column, open a group, and go back', async () => {
 
 test('story 6: save a view, and find it after a reload', async () => {
 	await pasteData(people)
+	// The pointer is left on the grid by an earlier test, where the menu opens, and an item under it
+	// is highlighted as the menu appears. This story is the keyboard alone.
+	await userEvent.hover(status())
 	await focusGrid()
 	await userEvent.keyboard('{ArrowRight}')
 	await pressOn(page.getByRole('button', { name: 'Column menu for amount' }))

@@ -39,16 +39,14 @@ export function ColumnsPopover() {
 
 	return (
 		<Popover onOpenChange={open => !open && setQuery('')}>
-			<PopoverTrigger asChild>
-				<Button variant="ghost" size="sm">
-					<IconColumns />
-					<span className="max-sm:sr-only">
-						Columns
-						{hiddenCount > 0 && (
-							<span className="text-xs text-muted-foreground"> ({hiddenCount} hidden)</span>
-						)}
-					</span>
-				</Button>
+			<PopoverTrigger render={<Button variant="ghost" size="sm" />}>
+				<IconColumns />
+				<span className="max-sm:sr-only">
+					Columns
+					{hiddenCount > 0 && (
+						<span className="text-xs text-muted-foreground"> ({hiddenCount} hidden)</span>
+					)}
+				</span>
 			</PopoverTrigger>
 			<PopoverContent align="end" className="flex w-72 flex-col gap-2 p-2">
 				<Input

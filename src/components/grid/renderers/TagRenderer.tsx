@@ -24,15 +24,17 @@ export function TagRenderer({ value }: { value: unknown }) {
 			))}
 			{remaining.length > 0 && (
 				<Popover>
-					<PopoverTrigger asChild>
-						<Button
-							variant="ghost"
-							size="icon-xs"
-							title="View Options"
-							aria-label="View Options"
-						>
-							<IconDots size={14} />
-						</Button>
+					<PopoverTrigger
+						render={
+							<Button
+								variant="ghost"
+								size="icon-xs"
+								title="View Options"
+								aria-label="View Options"
+							/>
+						}
+					>
+						<IconDots size={14} />
 					</PopoverTrigger>
 					<PopoverContent align="end" className="flex w-70 flex-wrap gap-1 p-1">
 						{remaining.map((item, index) => (

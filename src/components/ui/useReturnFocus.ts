@@ -1,7 +1,7 @@
 import { useCallback, useLayoutEffect, useRef } from 'react'
 
-// A dialog opened without its own Trigger gives focus back to nothing when it closes. This keeps what
-// had focus as it opened (a layout effect runs before the dialog moves focus inside) and returns it.
+// A dialog opened without its own Trigger keeps what had focus as it opened (a layout effect runs
+// before the dialog moves focus inside) and gives focus back to it on close.
 export const useReturnFocus = (open: boolean) => {
 	const returnTo = useRef<HTMLElement | null>(null)
 
@@ -11,11 +11,11 @@ export const useReturnFocus = (open: boolean) => {
 		}
 	}, [open])
 
-	// For `onCloseAutoFocus`. `keep` is false when focus has been put somewhere else on purpose.
-	return useCallback((event: Event, keep = true) => {
-		event.preventDefault()
+	// For `finalFocus`. `keep` is false when focus is being put somewhere else on purpose.
+	return useCallback((keep = true): HTMLElement | boolean => {
 		const target = returnTo.current
 		returnTo.current = null
-		if (keep && target?.isConnected) target.focus()
+		if (!keep) return false
+		return target?.isConnected ? target : true
 	}, [])
 }

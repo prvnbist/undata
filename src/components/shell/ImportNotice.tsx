@@ -57,8 +57,9 @@ function DelimitedOptions({ options, onDone }: { options: Delimited; onDone: () 
 			<div className="flex items-center justify-between gap-4">
 				<Label htmlFor="delimiter">Cells are separated by</Label>
 				<Select
+					items={DELIMITER_NAMES}
 					value={draft.delimiter}
-					onValueChange={delimiter => setDraft({ ...draft, delimiter })}
+					onValueChange={delimiter => delimiter !== null && setDraft({ ...draft, delimiter })}
 				>
 					<SelectTrigger id="delimiter" size="sm">
 						<SelectValue />

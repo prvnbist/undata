@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from 'cn'
-import { Slot } from 'radix-ui'
+import { mergeProps } from '@base-ui/react/merge-props'
+import { useRender } from '@base-ui/react/use-render'
 
 const buttonVariants = cva(
 	"inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-[color,background-color,border-color,box-shadow] duration-150 outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/30 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -35,27 +36,29 @@ const buttonVariants = cva(
 	}
 )
 
+// `render` swaps the element, as in `render={<Link to="/" />}`, keeping the button's look.
 function Button({
 	className,
 	variant = 'default',
 	size = 'default',
-	asChild = false,
+	render,
+	ref,
 	...props
-}: React.ComponentProps<'button'> &
-	VariantProps<typeof buttonVariants> & {
-		asChild?: boolean
-	}) {
-	const Comp = asChild ? Slot.Root : 'button'
-
-	return (
-		<Comp
-			data-slot="button"
-			data-variant={variant}
-			data-size={size}
-			className={cn(buttonVariants({ variant, size, className }))}
-			{...props}
-		/>
-	)
+}: useRender.ComponentProps<'button'> & VariantProps<typeof buttonVariants>) {
+	return useRender({
+		defaultTagName: 'button',
+		render,
+		ref,
+		props: mergeProps<'button'>(
+			{
+				'data-slot': 'button',
+				'data-variant': variant ?? undefined,
+				'data-size': size ?? undefined,
+				className: cn(buttonVariants({ variant, size, className })),
+			} as React.ComponentProps<'button'>,
+			props
+		),
+	})
 }
 
 export { Button, buttonVariants }
