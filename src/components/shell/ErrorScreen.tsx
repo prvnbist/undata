@@ -12,9 +12,9 @@ export function ErrorScreen({ error, reset }: ErrorComponentProps) {
 			actions={
 				<>
 					<Button onClick={reset}>Try again</Button>
-					<Button variant="outline" asChild>
-						{/* A full load, because whatever broke may still be in memory. */}
-						<a href="/">Back to start</a>
+					{/* A full load, because whatever broke may still be in memory. */}
+					<Button variant="outline" render={<a href="/" />}>
+						Back to start
 					</Button>
 				</>
 			}

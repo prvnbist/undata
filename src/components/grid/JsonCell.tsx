@@ -15,10 +15,12 @@ export function JsonCell({ text }: { text: string }) {
 		<div className="flex min-w-0 flex-1 items-center justify-between gap-1">
 			<span className="truncate font-mono text-xs">{text.slice(0, 500)}</span>
 			<Popover open={open} onOpenChange={setOpen}>
-				<PopoverTrigger asChild>
-					<Button variant="ghost" size="icon-xs" aria-label="View JSON" title="View JSON">
-						<IconMaximize />
-					</Button>
+				<PopoverTrigger
+					render={
+						<Button variant="ghost" size="icon-xs" aria-label="View JSON" title="View JSON" />
+					}
+				>
+					<IconMaximize />
 				</PopoverTrigger>
 				<PopoverContent side="bottom" align="start" className="max-h-80 w-96 overflow-auto p-2">
 					{node && <JsonTree node={node} />}

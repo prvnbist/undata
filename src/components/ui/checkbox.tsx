@@ -1,14 +1,16 @@
-import * as React from 'react'
 import { cn } from 'cn'
 import { IconCheck } from '@tabler/icons-react'
-import { Checkbox as CheckboxPrimitive } from 'radix-ui'
+import { Checkbox as CheckboxPrimitive } from '@base-ui/react/checkbox'
 
-function Checkbox({ className, ...props }: React.ComponentProps<typeof CheckboxPrimitive.Root>) {
+// A native button, so a sibling `<label htmlFor>` names it.
+function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
 	return (
 		<CheckboxPrimitive.Root
 			data-slot="checkbox"
+			nativeButton
+			render={<button type="button" />}
 			className={cn(
-				'peer size-3.5 shrink-0 rounded-[4px] border border-foreground/25 transition-[background-color,border-color,box-shadow] duration-150 outline-none hover:border-foreground/40 focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
+				'peer size-3.5 shrink-0 rounded-[4px] border border-foreground/25 transition-[background-color,border-color,box-shadow] duration-150 outline-none hover:border-foreground/40 focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground',
 				className
 			)}
 			{...props}

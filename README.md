@@ -3,7 +3,7 @@
 Open a data file and understand it. Undata is a local, read-only data explorer that runs entirely in
 your browser: nothing is uploaded, and nothing in the file is changed.
 
-Built with TanStack Start (SPA mode), Vite+, Tailwind CSS v4 and shadcn/ui (Radix). Files are parsed
+Built with TanStack Start (SPA mode), Vite+, Tailwind CSS v4 and shadcn/ui (Base UI). Files are parsed
 and queried in a Web Worker, and the grid is virtualised, so a file of a million rows stays smooth.
 
 ## Features

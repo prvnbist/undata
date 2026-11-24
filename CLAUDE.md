@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Undata is a client-side, read-only data explorer. A file (delimited text, JSON, NDJSON or an `.xlsx` workbook) is opened by
 picker, drop, paste or the sample, parsed and queried in a Web Worker, shown in a virtualised grid,
 and exported as CSV or JSON. Datasets, column setup and the current view are saved in IndexedDB. It
-runs on TanStack Start in SPA mode, Vite+ (`vp`) and Tailwind CSS v4, with shadcn/ui (Radix)
+runs on TanStack Start in SPA mode, Vite+ (`vp`) and Tailwind CSS v4, with shadcn/ui (Base UI)
 components. There is no backend, and nothing is sent anywhere.
 
 ## Commands
@@ -46,13 +46,15 @@ Style (set in `vite.config.ts`): tabs at width 3, 100-column lines, single quote
 
 ## UI
 
-Dark only, with a yellow primary. Tokens are in `src/styles.css`. Use the shadcn primitives in `src/components/ui` (owned and editable) merged with `cn()`, not raw Radix. Icons are Tabler. The command palette is hand-built as a combobox and listbox, so there is no `cmdk`. A dialog opened without its own Trigger uses `useReturnFocus` so that focus goes back on close.
+Dark only, with a yellow primary. Tokens are in `src/styles.css`. Use the shadcn primitives in `src/components/ui` (owned and editable) merged with `cn()`, not raw Base UI (`@base-ui/react`). Compose with the `render` prop (`<PopoverTrigger render={<Button />}>`), not `asChild`. Menu items act on `onClick`, and radio and checkbox items close the menu like any item. Icons are Tabler. The command palette is hand-built as a combobox and listbox, so there is no `cmdk`.
 
-When adding a shadcn component, replace `lucide-react` icons with Tabler, drop `"use client"`, then run `vp fmt`.
+Focus on close is set with `finalFocus` on the popup. A dialog opened without its own Trigger uses `useReturnFocus` so that focus goes back on close. A menu item that opens a dialog or moves focus elsewhere must make the menu's `finalFocus` return `false`, or the menu gives focus back to its button and closes the dialog. Base UI menus type-ahead on an item's raw text, so put no space between an icon and the label (`<Icon />{label}`, not `<Icon /> {label}`).
+
+When adding a shadcn component, take its Base UI version, not the Radix one, replace `lucide-react` icons with Tabler, drop `"use client"`, then run `vp fmt`.
 
 ## Tests
 
-Browser tests in `tests/e2e` mount the real route tree on `document` with a memory history, through `tests/e2e/app.tsx` (`mount`, `openFile`, and `useApp`, which fails a test on any console error or warning). Storage tests are in `tests/storage`, and the real worker is tested in `tests/worker`. Drags are driven with explicit pointer events. Radix menus give focus back a moment after closing, so wait for that focus before sending more keys.
+Browser tests in `tests/e2e` mount the real route tree on `document` with a memory history, through `tests/e2e/app.tsx` (`mount`, `openFile`, and `useApp`, which fails a test on any console error or warning). Storage tests are in `tests/storage`, and the real worker is tested in `tests/worker`. Drags are driven with explicit pointer events. Menus give focus back a moment after closing (once their exit animation ends), so wait for that focus before sending more keys. A menu that opens under a resting pointer highlights the item there, so a keyboard-only test moves the pointer away first.
 
 
 ## File Operations Policy

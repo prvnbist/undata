@@ -133,17 +133,21 @@ export function CommandPalette() {
 
 	return (
 		<>
-			<Dialog open={open} onOpenChange={change}>
+			<Dialog
+				open={open}
+				onOpenChange={change}
+				onOpenChangeComplete={isOpen => {
+					const command = chosen.current
+					if (isOpen || !command) return
+					chosen.current = null
+					setTimeout(command.run)
+				}}
+			>
 				<DialogContent
 					className="top-[15dvh] translate-y-0 gap-0 overflow-hidden p-0 sm:max-w-xl"
 					showCloseButton={false}
-					onCloseAutoFocus={event => {
-						const command = chosen.current
-						chosen.current = null
-						// Focus goes back where it was, unless the command puts it somewhere itself.
-						returnFocus(event, !command?.movesFocus)
-						if (command) setTimeout(command.run)
-					}}
+					// Focus goes back where it was, unless the command puts it somewhere itself.
+					finalFocus={() => returnFocus(!chosen.current?.movesFocus)}
 				>
 					<DialogTitle className="sr-only">Commands</DialogTitle>
 					<DialogDescription className="sr-only">

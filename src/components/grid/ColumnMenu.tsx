@@ -105,13 +105,7 @@ function RenameDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent
-				className="sm:max-w-sm"
-				onCloseAutoFocus={event => {
-					event.preventDefault()
-					returnTo.current?.focus()
-				}}
-			>
+			<DialogContent className="sm:max-w-sm" finalFocus={returnTo}>
 				<DialogHeader>
 					<DialogTitle>Rename column</DialogTitle>
 					<DialogDescription>
@@ -151,61 +145,71 @@ export function ColumnMenu({
 }) {
 	const [renaming, setRenaming] = useState(false)
 	const trigger = useRef<HTMLButtonElement>(null)
-	// Opened once the menu is closed, so focus goes to the details and not back to the menu button.
-	const details = useRef(false)
+	// Where an item sends focus instead of back to the menu's button: the details, opened once the
+	// menu is closed, or the rename dialog, which focus returning to the button would close.
+	const handoff = useRef<'details' | 'rename' | null>(null)
 	const others = sortCount - (sorted ? 1 : 0)
 	const grouping = useWorkspace(state => state.view.grouping)
 	const groupedBy = grouping?.by.includes(column.id) ?? false
 
 	return (
 		<>
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button
-						ref={trigger}
-						variant="ghost"
-						size="icon-xs"
-						aria-label={`Column menu for ${column.title}`}
-						className="shrink-0 transition-opacity [@media(hover:hover)]:not-aria-expanded:not-group-hover/header:not-group-focus-within/header:opacity-0"
-					>
-						<IconChevronDown />
-					</Button>
+			<DropdownMenu
+				onOpenChangeComplete={open => {
+					if (open) return
+					if (handoff.current === 'details') inspectColumn(column.id)
+					handoff.current = null
+				}}
+			>
+				<DropdownMenuTrigger
+					render={
+						<Button
+							ref={trigger}
+							variant="ghost"
+							size="icon-xs"
+							aria-label={`Column menu for ${column.title}`}
+							className="shrink-0 transition-opacity [@media(hover:hover)]:not-aria-expanded:not-group-hover/header:not-group-focus-within/header:opacity-0"
+						/>
+					}
+				>
+					<IconChevronDown />
 				</DropdownMenuTrigger>
 				<DropdownMenuContent
 					align="start"
 					className="w-56"
-					onCloseAutoFocus={event => {
-						if (!details.current) return
-						details.current = false
-						event.preventDefault()
-						inspectColumn(column.id)
-					}}
+					finalFocus={() => handoff.current === null}
 				>
-					<DropdownMenuItem onSelect={() => sortBy(column.id, false, false)}>
-						<IconArrowUp /> Sort ascending
+					<DropdownMenuItem onClick={() => sortBy(column.id, false, false)}>
+						<IconArrowUp />
+						Sort ascending
 					</DropdownMenuItem>
-					<DropdownMenuItem onSelect={() => sortBy(column.id, true, false)}>
-						<IconArrowDown /> Sort descending
+					<DropdownMenuItem onClick={() => sortBy(column.id, true, false)}>
+						<IconArrowDown />
+						Sort descending
 					</DropdownMenuItem>
 					{others > 0 && (
 						<>
-							<DropdownMenuItem onSelect={() => sortBy(column.id, false, true)}>
-								<IconPlus /> Add to sort, ascending
+							<DropdownMenuItem onClick={() => sortBy(column.id, false, true)}>
+								<IconPlus />
+								Add to sort, ascending
 							</DropdownMenuItem>
-							<DropdownMenuItem onSelect={() => sortBy(column.id, true, true)}>
-								<IconPlus /> Add to sort, descending
+							<DropdownMenuItem onClick={() => sortBy(column.id, true, true)}>
+								<IconPlus />
+								Add to sort, descending
 							</DropdownMenuItem>
 						</>
 					)}
 					{sorted && (
-						<DropdownMenuItem onSelect={() => sortBy(column.id, null, false)}>
-							<IconX /> Remove from sort
+						<DropdownMenuItem onClick={() => sortBy(column.id, null, false)}>
+							<IconX />
+							Remove from sort
 						</DropdownMenuItem>
 					)}
 					<DropdownMenuSeparator />
 					<DropdownMenuSub>
 						<DropdownMenuSubTrigger>
-							<IconFilter /> Filter
+							<IconFilter />
+							Filter
 						</DropdownMenuSubTrigger>
 						<DropdownMenuSubContent className="w-56">
 							{FILTERS.filter(
@@ -216,7 +220,7 @@ export function ColumnMenu({
 									<DropdownMenuItem
 										key={op}
 										disabled={n === 0}
-										onSelect={() => void addFilter({ columnId: column.id, op })}
+										onClick={() => void addFilter({ columnId: column.id, op })}
 									>
 										{label}
 										<span className="ml-auto font-mono text-xs text-muted-foreground">
@@ -227,8 +231,8 @@ export function ColumnMenu({
 							})}
 						</DropdownMenuSubContent>
 					</DropdownMenuSub>
-					<DropdownMenuItem onSelect={() => void toggleGroupBy(column.id)}>
-						<IconLayoutList />{' '}
+					<DropdownMenuItem onClick={() => void toggleGroupBy(column.id)}>
+						<IconLayoutList />
 						{groupedBy ? 'Stop grouping by this column' : 'Group by this column'}
 					</DropdownMenuItem>
 					<DropdownMenuSub>
@@ -250,24 +254,35 @@ export function ColumnMenu({
 							</DropdownMenuRadioGroup>
 						</DropdownMenuSubContent>
 					</DropdownMenuSub>
-					<DropdownMenuItem onSelect={() => (details.current = true)}>
-						<IconChartBar /> Details
+					<DropdownMenuItem onClick={() => (handoff.current = 'details')}>
+						<IconChartBar />
+						Details
 					</DropdownMenuItem>
-					<DropdownMenuItem onSelect={() => setRenaming(true)}>
-						<IconForms /> Rename…
+					<DropdownMenuItem
+						onClick={() => {
+							handoff.current = 'rename'
+							setRenaming(true)
+						}}
+					>
+						<IconForms />
+						Rename…
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
-					<DropdownMenuItem onSelect={() => move(column.id, -1)}>
-						<IconArrowBarToLeft /> Move left
+					<DropdownMenuItem onClick={() => move(column.id, -1)}>
+						<IconArrowBarToLeft />
+						Move left
 					</DropdownMenuItem>
-					<DropdownMenuItem onSelect={() => move(column.id, 1)}>
-						<IconArrowBarToRight /> Move right
+					<DropdownMenuItem onClick={() => move(column.id, 1)}>
+						<IconArrowBarToRight />
+						Move right
 					</DropdownMenuItem>
-					<DropdownMenuItem onSelect={() => fit(column.id)}>
-						<IconArrowsHorizontal /> Fit width
+					<DropdownMenuItem onClick={() => fit(column.id)}>
+						<IconArrowsHorizontal />
+						Fit width
 					</DropdownMenuItem>
-					<DropdownMenuItem onSelect={() => hide(column.id)}>
-						<IconEyeOff /> Hide
+					<DropdownMenuItem onClick={() => hide(column.id)}>
+						<IconEyeOff />
+						Hide
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>

@@ -188,7 +188,11 @@ export function FilterEditor({
 		<form ref={form} onSubmit={submit} className="flex flex-col gap-3" noValidate>
 			<div className="flex flex-col gap-1.5">
 				<Label htmlFor={`${id}-column`}>Column</Label>
-				<Select value={draft.columnId} onValueChange={changeColumn}>
+				<Select
+					items={columns.map(column => ({ value: column.id, label: column.title }))}
+					value={draft.columnId}
+					onValueChange={columnId => columnId !== null && changeColumn(columnId)}
+				>
 					<SelectTrigger id={`${id}-column`} size="sm" className="w-full">
 						<SelectValue />
 					</SelectTrigger>
@@ -203,7 +207,11 @@ export function FilterEditor({
 			</div>
 			<div className="flex flex-col gap-1.5">
 				<Label htmlFor={`${id}-op`}>Condition</Label>
-				<Select value={draft.op} onValueChange={op => change({ op: op as FilterDraft['op'] })}>
+				<Select
+					items={ops.map(op => ({ value: op, label: operatorLabel(type, op) }))}
+					value={draft.op}
+					onValueChange={op => op !== null && change({ op })}
+				>
 					<SelectTrigger id={`${id}-op`} size="sm" className="w-full">
 						<SelectValue />
 					</SelectTrigger>

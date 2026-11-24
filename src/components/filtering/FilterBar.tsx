@@ -23,11 +23,11 @@ export function AddFilter() {
 	const [open, setOpen] = useState(false)
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
-			<PopoverTrigger asChild>
-				<Button id={ADD_FILTER} variant="ghost" size="sm" aria-label="Add filter">
-					<IconFilter />
-					<span className="max-sm:sr-only">Filter</span>
-				</Button>
+			<PopoverTrigger
+				render={<Button id={ADD_FILTER} variant="ghost" size="sm" aria-label="Add filter" />}
+			>
+				<IconFilter />
+				<span className="max-sm:sr-only">Filter</span>
 			</PopoverTrigger>
 			<PopoverContent align="end" className="w-80">
 				{open && <FilterEditor filter={null} index={null} onDone={() => setOpen(false)} />}
@@ -53,23 +53,20 @@ function FilterChip({
 	return (
 		<li className="flex h-6 items-center rounded-md border border-input bg-secondary text-xs">
 			<Popover open={open} onOpenChange={onOpenChange}>
-				<PopoverTrigger asChild>
-					<button
-						type="button"
-						data-filter-chip
-						aria-label={`Edit filter: ${label}`}
-						className="h-full max-w-80 truncate rounded-l-md pr-1.5 pl-2 text-foreground hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
-					>
-						{label}
-					</button>
+				<PopoverTrigger
+					data-filter-chip
+					aria-label={`Edit filter: ${label}`}
+					className="h-full max-w-80 truncate rounded-l-md pr-1.5 pl-2 text-foreground hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
+				>
+					{label}
 				</PopoverTrigger>
 				<PopoverContent
 					align="start"
 					className="w-80"
-					onCloseAutoFocus={event => {
-						if (!removed.current) return
+					finalFocus={() => {
+						if (!removed.current) return true
 						removed.current = false
-						event.preventDefault()
+						return false
 					}}
 				>
 					{open && (

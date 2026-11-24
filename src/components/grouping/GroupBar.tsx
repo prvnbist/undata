@@ -88,11 +88,17 @@ export function GroupButton() {
 	const grouped = useWorkspace(state => (state.view.grouping?.by.length ?? 0) > 0)
 	return (
 		<Popover>
-			<PopoverTrigger asChild>
-				<Button variant={grouped ? 'secondary' : 'ghost'} size="sm" aria-label="Group rows">
-					<IconLayoutList />
-					<span className="max-sm:sr-only">Group</span>
-				</Button>
+			<PopoverTrigger
+				render={
+					<Button
+						variant={grouped ? 'secondary' : 'ghost'}
+						size="sm"
+						aria-label="Group rows"
+					/>
+				}
+			>
+				<IconLayoutList />
+				<span className="max-sm:sr-only">Group</span>
 			</PopoverTrigger>
 			<PopoverContent
 				align="end"

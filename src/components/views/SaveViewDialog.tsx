@@ -73,13 +73,7 @@ export function SaveViewDialog({
 }) {
 	return (
 		<Dialog open={naming !== null} onOpenChange={open => !open && onClose()}>
-			<DialogContent
-				className="sm:max-w-sm"
-				onCloseAutoFocus={event => {
-					event.preventDefault()
-					returnTo.current?.focus()
-				}}
-			>
+			<DialogContent className="sm:max-w-sm" finalFocus={returnTo}>
 				<DialogHeader>
 					<DialogTitle>{naming?.kind === 'rename' ? 'Rename view' : 'Save view'}</DialogTitle>
 					<DialogDescription>

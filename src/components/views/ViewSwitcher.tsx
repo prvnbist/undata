@@ -27,6 +27,12 @@ export function ViewSwitcher() {
 	const dataset = useWorkspace(state => state.dataset)
 	const [naming, setNaming] = useState<Naming | null>(null)
 	const trigger = useRef<HTMLButtonElement>(null)
+	// Set while the naming dialog opens, so the closing menu leaves focus in it.
+	const handoff = useRef(false)
+	const name = (next: Naming) => {
+		handoff.current = true
+		setNaming(next)
+	}
 
 	const active = views.find(saved => saved.id === activeView) ?? null
 	const changed = useMemo(
@@ -35,27 +41,29 @@ export function ViewSwitcher() {
 			isChanged(active, view, dataset?.columns.map(column => column.id) ?? []),
 		[active, view, dataset]
 	)
-	const name = active?.name ?? 'All rows'
+	const label = active?.name ?? 'All rows'
 
 	return (
 		<>
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button
-						ref={trigger}
-						variant="ghost"
-						size="sm"
-						aria-label={`View: ${name}${changed ? ', changed' : ''}`}
-						className="max-w-44 min-w-0 shrink"
-					>
-						<IconBookmark />
-						<span className="truncate max-sm:sr-only">{name}</span>
-						{changed && (
-							<span aria-hidden className="size-1.5 shrink-0 rounded-full bg-primary" />
-						)}
-					</Button>
+			<DropdownMenu onOpenChangeComplete={open => !open && (handoff.current = false)}>
+				<DropdownMenuTrigger
+					render={
+						<Button
+							ref={trigger}
+							variant="ghost"
+							size="sm"
+							aria-label={`View: ${label}${changed ? ', changed' : ''}`}
+							className="max-w-44 min-w-0 shrink"
+						/>
+					}
+				>
+					<IconBookmark />
+					<span className="truncate max-sm:sr-only">{label}</span>
+					{changed && (
+						<span aria-hidden className="size-1.5 shrink-0 rounded-full bg-primary" />
+					)}
 				</DropdownMenuTrigger>
-				<DropdownMenuContent align="start" className="w-64">
+				<DropdownMenuContent align="start" className="w-64" finalFocus={() => !handoff.current}>
 					<DropdownMenuLabel>Views</DropdownMenuLabel>
 					<DropdownMenuRadioGroup
 						value={activeView ?? ALL}
@@ -71,23 +79,25 @@ export function ViewSwitcher() {
 					<DropdownMenuSeparator />
 					{active && (
 						<>
-							<DropdownMenuItem disabled={!changed} onSelect={() => void updateView()}>
-								<IconDeviceFloppy /> Update “{active.name}”
+							<DropdownMenuItem disabled={!changed} onClick={() => void updateView()}>
+								<IconDeviceFloppy />
+								Update “{active.name}”
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								onSelect={() =>
-									setNaming({ kind: 'rename', id: active.id, name: active.name })
-								}
+								onClick={() => name({ kind: 'rename', id: active.id, name: active.name })}
 							>
-								<IconForms /> Rename “{active.name}”…
+								<IconForms />
+								Rename “{active.name}”…
 							</DropdownMenuItem>
-							<DropdownMenuItem onSelect={() => void deleteView()}>
-								<IconTrash /> Delete “{active.name}”
+							<DropdownMenuItem onClick={() => void deleteView()}>
+								<IconTrash />
+								Delete “{active.name}”
 							</DropdownMenuItem>
 						</>
 					)}
-					<DropdownMenuItem onSelect={() => setNaming({ kind: 'save' })}>
-						<IconPlus /> Save as a new view…
+					<DropdownMenuItem onClick={() => name({ kind: 'save' })}>
+						<IconPlus />
+						Save as a new view…
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
