@@ -94,7 +94,11 @@ test('the menu sorts, changes the type, renames and hides, by keyboard', async (
 	await userEvent.keyboard('{Enter}')
 	const title = page.getByRole('textbox', { name: 'Column title' })
 	await expect.element(title).toHaveFocus()
-	await userEvent.keyboard('Total{Enter}')
+	// The closed menu gives focus back a moment later, so the title is filled in one step.
+	await expect.element(page.getByRole('menu')).not.toBeInTheDocument()
+	await userEvent.fill(title, 'Total')
+	await expect.element(title).toHaveFocus()
+	await userEvent.keyboard('{Enter}')
 	await expect.element(menu('Total')).toBeVisible()
 
 	// Hide.

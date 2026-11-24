@@ -125,7 +125,7 @@ export function CommandPalette() {
 						Type to find a command, move with the arrow keys and press Enter to run it.
 					</DialogDescription>
 					<div className="flex items-center gap-2 border-b px-3">
-						<IconSearch className="size-4 text-foreground/60" aria-hidden />
+						<IconSearch className="size-4 text-muted-foreground" aria-hidden />
 						<input
 							role="combobox"
 							aria-label="Command"
@@ -141,7 +141,7 @@ export function CommandPalette() {
 								setHighlight(0)
 							}}
 							onKeyDown={onKeyDown}
-							className="h-12 w-full bg-transparent text-sm outline-none placeholder:text-foreground/50"
+							className="h-12 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
 						/>
 					</div>
 					<div
@@ -151,7 +151,7 @@ export function CommandPalette() {
 						className="max-h-80 overflow-y-auto p-1"
 					>
 						{matches.length === 0 && (
-							<p className="px-3 py-6 text-center text-sm text-foreground/60">
+							<p className="px-3 py-6 text-center text-sm text-muted-foreground">
 								No command matches
 							</p>
 						)}
@@ -172,7 +172,9 @@ export function CommandPalette() {
 								)}
 							>
 								<span className="truncate">{command.label}</span>
-								<span className="shrink-0 text-xs text-foreground/50">{command.group}</span>
+								<span className="shrink-0 text-xs text-muted-foreground">
+									{command.group}
+								</span>
 							</div>
 						))}
 					</div>

@@ -56,7 +56,7 @@ export const Cell = memo(function Cell({
 	kind?: CellKind | null
 }) {
 	if (text === '') {
-		return kind === 'null' ? <span className="text-xs text-foreground/40">null</span> : null
+		return kind === 'null' ? <span className="text-xs text-muted-foreground">null</span> : null
 	}
 	if (type === 'text')
 		return (

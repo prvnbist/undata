@@ -11,7 +11,7 @@ const leafClass: Record<string, string> = {
 	number: 'text-sky-300',
 	string: 'text-emerald-300',
 	boolean: 'text-primary',
-	null: 'text-foreground/50',
+	null: 'text-muted-foreground',
 }
 
 function Branch({ label, node, open }: { label: ReactNode; node: JsonNode; open: boolean }) {
@@ -30,7 +30,10 @@ function Branch({ label, node, open }: { label: ReactNode; node: JsonNode; open:
 					<span className="text-foreground/70">{key}:</span>,
 					child,
 				])
-			: node.items.map((child, i) => [<span className="text-foreground/50">{i}:</span>, child])
+			: node.items.map((child, i) => [
+					<span className="text-muted-foreground">{i}:</span>,
+					child,
+				])
 	const hidden = children.length - MAX_CHILDREN
 
 	return (
@@ -38,13 +41,15 @@ function Branch({ label, node, open }: { label: ReactNode; node: JsonNode; open:
 			<details open={open} className="group">
 				<summary className="flex cursor-pointer gap-2 rounded-sm py-0.5 outline-none select-none focus-visible:ring-2 focus-visible:ring-ring/50">
 					{label}
-					<span className="text-foreground/50">{summarise(node)}</span>
+					<span className="text-muted-foreground">{summarise(node)}</span>
 				</summary>
 				<ul className="ml-2 border-l border-border/60 pl-1">
 					{children.slice(0, MAX_CHILDREN).map(([childLabel, child], i) => (
 						<Branch key={i} label={childLabel} node={child} open={false} />
 					))}
-					{hidden > 0 && <li className="py-0.5 pl-4 text-foreground/50">… {hidden} more</li>}
+					{hidden > 0 && (
+						<li className="py-0.5 pl-4 text-muted-foreground">… {hidden} more</li>
+					)}
 				</ul>
 			</details>
 		</li>

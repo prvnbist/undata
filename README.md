@@ -8,7 +8,8 @@ and queried in a Web Worker, and the grid is virtualised, so a file of a million
 
 ## Features
 
-- **Open anything, any way:** CSV, TSV and other delimited text, JSON and NDJSON, by picking a file,
+- **Open anything, any way:** CSV, TSV and other delimited text, JSON, NDJSON and Excel workbooks
+  (`.xlsx`, choosing the sheet when there are several), by picking a file,
   dropping it anywhere, pasting text or spreadsheet cells, or trying the sample data. The format,
   delimiter and encoding are detected, and every problem is reported instead of hidden.
 - **Exact values:** cells keep their source text. Big ids, leading zeros, dotted or repeated headers
@@ -20,6 +21,16 @@ and queried in a Web Worker, and the grid is virtualised, so a file of a million
 - **Columns where they are:** click a header to sort, Shift-click to add a sort key, and use its menu
   to change the type, rename, hide or move it. Drag headers to reorder and their edges to resize. The
   Columns popover finds and shows or hides columns in bulk.
+- **Search and filters:** search every visible column, build filters per column, or filter from a
+  cell's value. Matching runs in the worker, so typing stays smooth.
+- **Column profiles:** each header shows a small chart of its values, and the column panel gives the
+  type, counts of distinct, empty and invalid values, the range and mean, and the most common values.
+- **Row inspector:** read one record with every field, step to the next and previous rows, and open
+  JSON as a tree.
+- **Group and summarise:** group by one or more columns with counts, sums, means, minimums and
+  maximums, sort the groups, open one to see its rows, and copy or export the summary.
+- **Saved views:** keep a search, filters, sort, grouping and column arrangement under a name, and
+  switch between views of the same dataset.
 - **Saved locally:** datasets, column setup and the current view are kept in IndexedDB, so a reload
   or a recent dataset reopens where you left it.
 - **Export:** CSV or JSON of the current view or of every row, with titles or the file's headers, and

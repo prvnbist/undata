@@ -1,5 +1,6 @@
 import { defaultView } from '@/lib/engine/view'
 import type { Grouping, ViewState } from '@/lib/engine/view'
+import { deleteDataset, loadDataset, saveDataset } from '@/lib/storage/datasets'
 import { createEngineClient } from '@/workers/client'
 import { makeFixture, makeJsonFixture } from './fixture'
 
@@ -142,6 +143,43 @@ const run = async () => {
 	const queryDuringStatsMs = await timed(() => client.query({ ...view, search: 'zz' }))
 	await Promise.all(dropped)
 
+	// Reopening from recents: the bytes come back from IndexedDB, and the saved options and column
+	// setup are used, so nothing is detected or inferred again.
+	const id = 'bench'
+	await saveDataset(
+		{
+			id,
+			name: 'bench',
+			size: file.size,
+			rowCount: opened.rowCount,
+			columnCount: ids.length,
+			options: opened.options,
+			setup: opened.columns.map(({ id: columnId, title, type }) => ({
+				id: columnId,
+				title,
+				type,
+			})),
+			view,
+		},
+		file
+	)
+	const reopenToRowsMs = await timed(async () => {
+		const found = await loadDataset(id)
+		if (!found) throw new Error('The saved dataset is gone')
+		const reopened = await client.open(found.blob, {
+			options: found.record.options,
+			setup: found.record.setup,
+		})
+		const { queryId: again } = await client.query(view)
+		await client.rows(
+			again,
+			0,
+			50,
+			reopened.columns.map(column => column.id)
+		)
+	})
+	await deleteDataset(id)
+
 	return {
 		kind,
 		fileMB: Math.round(file.size / 1e6),
@@ -149,6 +187,7 @@ const run = async () => {
 		types: opened.columns.map(column => column.type).join(' '),
 		lastRowOk: last?.text[0] === String(rows - 1),
 		importToRowsMs,
+		reopenToRowsMs,
 		lastRowMs,
 		p95,
 		groupP95,

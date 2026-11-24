@@ -70,8 +70,8 @@ export function ColumnPanel({ columnId }: { columnId: string }) {
 			label="Column details"
 			title={
 				<>
-					{column.title}
-					<span className="ml-2 text-xs font-normal text-foreground/70">
+					{column.title}{' '}
+					<span className="ml-1 text-xs font-normal text-foreground/70">
 						{LABELS.get(column.type)}
 					</span>
 				</>

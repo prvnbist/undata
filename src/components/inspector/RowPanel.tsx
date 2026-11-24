@@ -37,9 +37,9 @@ const moveTo = (row: number) =>
 
 // The whole value, wrapped. JSON as a tree, and a value that does not fit its type said to be wrong.
 function FieldValue({ type, text, kind }: { type: DataType; text: string; kind: CellKind | null }) {
-	if (kind === 'missing') return <em className="text-foreground/50">missing</em>
-	if (kind === 'null') return <span className="font-mono text-xs text-foreground/50">null</span>
-	if (text.trim() === '') return <em className="text-foreground/50">empty</em>
+	if (kind === 'missing') return <em className="text-muted-foreground">missing</em>
+	if (kind === 'null') return <span className="font-mono text-xs text-muted-foreground">null</span>
+	if (text.trim() === '') return <em className="text-muted-foreground">empty</em>
 
 	if (type === 'json' || kind === 'json') {
 		const node = parseJsonTree(text)
@@ -200,8 +200,10 @@ export function RowPanel({ row }: { row: number }) {
 							<span className="min-w-0 flex-1 truncate">
 								{column.title}
 								<span className="sr-only">, </span>
-								<span className="ml-1.5 text-foreground/50">{LABELS.get(column.type)}</span>
-								{hidden && <span className="ml-1.5 text-foreground/50">· hidden</span>}
+								<span className="ml-1.5 text-muted-foreground">
+									{LABELS.get(column.type)}
+								</span>
+								{hidden && <span className="ml-1.5 text-muted-foreground">· hidden</span>}
 							</span>
 							<Button
 								variant="ghost"

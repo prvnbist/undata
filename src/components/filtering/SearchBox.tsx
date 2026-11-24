@@ -85,7 +85,7 @@ export function SearchBox() {
 		<div role="search" className="relative w-64 min-w-0 shrink">
 			<IconSearch
 				aria-hidden
-				className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-foreground/50"
+				className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
 			/>
 			<Input
 				ref={input}
@@ -101,7 +101,7 @@ export function SearchBox() {
 			/>
 			<kbd
 				aria-hidden
-				className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 rounded border px-1 font-mono text-[10px] text-foreground/50"
+				className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 rounded border px-1 font-mono text-[10px] text-muted-foreground"
 			>
 				/
 			</kbd>
