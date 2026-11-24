@@ -53,3 +53,16 @@ When adding a shadcn component, replace `lucide-react` icons with Tabler, drop `
 ## Tests
 
 Browser tests in `tests/e2e` mount the real route tree on `document` with a memory history, through `tests/e2e/app.tsx` (`mount`, `openFile`, and `useApp`, which fails a test on any console error or warning). Storage tests are in `tests/storage`, and the real worker is tested in `tests/worker`. Drags are driven with explicit pointer events. Radix menus give focus back a moment after closing, so wait for that focus before sending more keys.
+
+
+## File Operations Policy
+
+- Always use Claude Code's native Read tool to inspect files.
+- Always use the native Edit tool for modifying existing files.
+- Use the native Write tool for creating new files.
+- NEVER use shell commands (cat, less, head, tail, sed, awk, perl, Python, Node.js) to read or modify file contents.
+- Do not use shell-based file manipulation when native file tools are available.
+- Use Bash exclusively for operations that genuinely require shell execution, such as running tests, builds, package managers, Git commands, and system utilities.
+- Before editing, read the relevant file using the Read tool.
+- Prefer targeted edits over rewriting entire files.
+- Verify changes using Read and appropriate project checks.
