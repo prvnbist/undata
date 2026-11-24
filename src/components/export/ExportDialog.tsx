@@ -109,7 +109,7 @@ export function ExportDialog() {
 		<>
 			<Button variant="outline" size="sm" onClick={() => setOpen(true)}>
 				<IconDownload />
-				Export
+				<span className="max-sm:sr-only">Export</span>
 			</Button>
 			<Dialog open={open} onOpenChange={setOpen}>
 				<DialogContent className="sm:max-w-md" onCloseAutoFocus={event => returnFocus(event)}>

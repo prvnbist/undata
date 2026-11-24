@@ -1,5 +1,6 @@
 import { fitColumn } from '@/components/grid/layout'
 import type { ExportOptions } from '@/lib/engine/export'
+import { fitsColumns } from '@/lib/engine/operators'
 import { defaultView } from '@/lib/engine/view'
 import type { ColumnSetup, ViewState } from '@/lib/engine/view'
 import { formatBytes } from '@/lib/bytes'
@@ -49,6 +50,17 @@ export const closeDataset = () => {
 }
 
 const toSetup = ({ id, title, type }: ColumnSetup): ColumnSetup => ({ id, title, type })
+
+const droppedNotice = (dropped: number) =>
+	dropped === 1
+		? 'A filter no longer fit its column, so it was removed.'
+		: `${dropped} filters no longer fit their columns, so they were removed.`
+
+// A view whose filters all still fit the columns. One that does not would fail every query.
+const fitView = (view: ViewState, columns: ColumnSetup[]) => {
+	const { kept, dropped } = fitsColumns(view.filters, columns)
+	return { view: dropped ? { ...view, filters: kept } : view, dropped }
+}
 
 const unsaved = (error: unknown) => {
 	const reason = error instanceof DOMException && error.name === 'QuotaExceededError'
@@ -119,7 +131,7 @@ const read = async (request: Required<Omit<ImportRequest, 'known'>>) => {
 				workspace.set({ phase: { kind: 'importing', id, name, progress } }),
 		})
 		const ids = opened.columns.map(column => column.id)
-		const initial = view ?? defaultView(ids)
+		const { view: initial, dropped } = fitView(view ?? defaultView(ids), opened.columns)
 		const { queryId, rowCount } = await own.query(initial)
 		const sample = await own.rows(queryId, 0, FIT_ROWS, ids)
 		if (own !== client) return
@@ -138,6 +150,7 @@ const read = async (request: Required<Omit<ImportRequest, 'known'>>) => {
 			dataset: { id, name, size: blob.size, ...opened },
 			view: initial,
 			query: { id: queryId, rowCount },
+			...(dropped ? { notice: droppedNotice(dropped) } : {}),
 		})
 		pendingWrite = save(id, blob)
 		await pendingWrite
@@ -219,7 +232,17 @@ export const applyColumns = async (setup: ColumnSetup[]) => {
 	const columns = await own.setColumns(setup)
 	if (own !== client) return
 	workspace.set({ dataset: { ...dataset, columns } })
-	await persist({ setup: columns.map(toSetup) })
+	const saving = persist({ setup: columns.map(toSetup) })
+
+	// A new type sorts and filters by other values, so the rows are found again.
+	const before = new Map(dataset.columns.map(column => [column.id, column.type]))
+	const retyped = columns.some(column => column.type !== before.get(column.id))
+	if (retyped) {
+		const { view, dropped } = fitView(workspace.get().view, columns)
+		if (dropped) workspace.set({ notice: droppedNotice(dropped) })
+		await applyView(view)
+	}
+	await saving
 }
 
 // Order and widths: they change what is shown, not which rows, so the engine is not asked again.

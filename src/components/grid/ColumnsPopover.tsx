@@ -42,10 +42,12 @@ export function ColumnsPopover() {
 			<PopoverTrigger asChild>
 				<Button variant="outline" size="sm">
 					<IconColumns />
-					Columns
-					{hiddenCount > 0 && (
-						<span className="text-xs text-foreground/70">({hiddenCount} hidden)</span>
-					)}
+					<span className="max-sm:sr-only">
+						Columns
+						{hiddenCount > 0 && (
+							<span className="text-xs text-foreground/70"> ({hiddenCount} hidden)</span>
+						)}
+					</span>
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent align="end" className="flex w-72 flex-col gap-2 p-2">
