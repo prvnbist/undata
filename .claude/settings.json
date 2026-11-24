@@ -1,5 +1,5 @@
 {
-  "permissions": {
-    "defaultMode": "acceptEdits"
-  }
+	"permissions": {
+		"defaultMode": "acceptEdits"
+	}
 }
