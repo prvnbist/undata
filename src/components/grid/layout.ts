@@ -2,7 +2,8 @@ import type { ColumnInfo } from '@/lib/engine/store'
 import type { ViewColumn } from '@/lib/engine/view'
 
 export const ROW_HEIGHT = 32
-export const HEADER_HEIGHT = 40
+// A title row and a chart of the column's values.
+export const HEADER_HEIGHT = 68
 export const MIN_COLUMN = 60
 export const MAX_FITTED = 420
 export const MAX_COLUMN = 2000

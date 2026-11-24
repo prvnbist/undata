@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { SearchContext } from '@/components/filtering/Highlighted'
 import { CELL_KINDS } from '@/lib/import/types'
 import { useWorkspace, workspace } from '@/store/workspace'
+import { useColumnStats } from '@/components/profile/useColumnStats'
 import { Cell } from './Cell'
 import { CellMenu } from './CellMenu'
 import type { CellMenuTarget } from './CellMenu'
@@ -144,6 +145,7 @@ export function DataGrid() {
 	const shown = useMemo(() => columns.slice(first, last), [columns, first, last])
 	const ids = useMemo(() => shown.map(column => column.info.id), [shown])
 	const cache = useRowWindow(query, rows, ids)
+	const stats = useColumnStats(dataset?.id ?? null, query, ids)
 
 	const { indicator, onPointerDown, consumeDrag } = useColumnDrag(
 		scroller,
@@ -319,6 +321,7 @@ export function DataGrid() {
 										sort={sort}
 										onDragStart={onPointerDown}
 										consumeDrag={consumeDrag}
+										stats={stats?.get(info.id)?.stats ?? null}
 									/>
 								))}
 							</Cells>

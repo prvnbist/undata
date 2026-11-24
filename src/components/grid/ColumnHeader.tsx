@@ -8,6 +8,8 @@ import { cycleSort, setSize } from '@/lib/engine/view'
 import type { SortKey } from '@/lib/engine/view'
 import { applyView, arrangeView } from '@/store/session'
 import { workspace } from '@/store/workspace'
+import { MiniChart } from '@/components/profile/MiniChart'
+import type { ColumnStats } from '@/lib/engine/stats'
 import { ColumnMenu } from './ColumnMenu'
 import { MAX_COLUMN, MIN_COLUMN } from './layout'
 
@@ -85,6 +87,7 @@ export function ColumnHeader({
 	sort,
 	onDragStart,
 	consumeDrag,
+	stats,
 }: {
 	column: ColumnInfo
 	size: number
@@ -92,6 +95,8 @@ export function ColumnHeader({
 	sort: SortKey[]
 	onDragStart: (id: string, event: PointerEvent) => void
 	consumeDrag: () => boolean
+	// For the rows of the view, once they are known.
+	stats: ColumnStats | null
 }) {
 	const at = sort.findIndex(key => key.columnId === column.id)
 	const key = at === -1 ? null : sort[at]!
@@ -111,27 +116,36 @@ export function ColumnHeader({
 					? `Sorted ${direction === 'desc' ? 'descending' : 'ascending'}${sort.length > 1 ? `, ${at + 1} of ${sort.length}` : ''}`
 					: undefined
 			}
-			className="relative flex shrink-0 items-center gap-1 border-r pr-1 pl-3 text-sm"
+			className="relative flex shrink-0 flex-col border-r pr-1 pb-1.5 pl-3 text-sm"
 			style={{ width: size }}
 		>
-			<button
-				type="button"
-				onPointerDown={event => onDragStart(column.id, event)}
-				onClick={event => {
-					if (!consumeDrag()) sortBy(column.id, event)
-				}}
-				title={`${column.title} (${LABELS.get(column.type)}). Click to sort, Shift-click to add to the sort, drag to move`}
-				className="flex min-w-0 flex-1 items-center gap-1 self-stretch text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-			>
-				<span className="truncate">{column.title}</span>
-				{key && (
-					<span className="flex shrink-0 items-center text-primary">
-						<Arrow className="size-3.5" aria-hidden />
-						{sort.length > 1 && <span className="font-mono text-[10px]">{at + 1}</span>}
-					</span>
-				)}
-			</button>
-			<ColumnMenu column={column} sorted={direction} sortCount={sort.length} />
+			<div className="flex h-9 shrink-0 items-center gap-1">
+				<button
+					type="button"
+					onPointerDown={event => onDragStart(column.id, event)}
+					onClick={event => {
+						if (!consumeDrag()) sortBy(column.id, event)
+					}}
+					title={`${column.title} (${LABELS.get(column.type)}). Click to sort, Shift-click to add to the sort, drag to move`}
+					className="flex min-w-0 flex-1 items-center gap-1 self-stretch text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+				>
+					<span className="truncate">{column.title}</span>
+					{key && (
+						<span className="flex shrink-0 items-center text-primary">
+							<Arrow className="size-3.5" aria-hidden />
+							{sort.length > 1 && <span className="font-mono text-[10px]">{at + 1}</span>}
+						</span>
+					)}
+				</button>
+				<ColumnMenu column={column} sorted={direction} sortCount={sort.length} />
+			</div>
+			<MiniChart
+				title={column.title}
+				type={column.type}
+				columnId={column.id}
+				stats={stats}
+				className="mr-2 min-h-0 flex-1"
+			/>
 			<ResizeHandle id={column.id} title={column.title} size={size} />
 		</div>
 	)
