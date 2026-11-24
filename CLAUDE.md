@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Undata is a client-side, read-only data explorer. A file (delimited text, JSON or NDJSON) is opened by
+Undata is a client-side, read-only data explorer. A file (delimited text, JSON, NDJSON or an `.xlsx` workbook) is opened by
 picker, drop, paste or the sample, parsed and queried in a Web Worker, shown in a virtualised grid,
 and exported as CSV or JSON. Datasets, column setup and the current view are saved in IndexedDB. It
 runs on TanStack Start in SPA mode, Vite+ (`vp`) and Tailwind CSS v4, with shadcn/ui (Radix)
@@ -28,7 +28,7 @@ Style (set in `vite.config.ts`): tabs at width 3, 100-column lines, single quote
 
 **Rows never leave the worker.** `src/workers/engine.worker.ts` holds the dataset. `src/workers/client.ts` is its typed client, and `src/workers/protocol.ts` lists every call (`open`, `query`, `rows`, `stats`, `setColumns`, `export`). Only the newest `query` runs, and older ones fail as `superseded`. A regex query that runs over 10 s restarts the worker without it.
 
-**The engine is pure** (`src/lib/engine`): column store, sort, filter, stats and export, all unit-tested in Node. Import (`src/lib/import`) detects the format and parses to a `RawTable` of exact source text. Types (`src/lib/types`) parse, format and infer, and never throw. A type is only a reading of the text: nothing converts or rewrites a cell. `src/lib/**` imports no React and no browser globals, except `src/lib/storage`.
+**The engine is pure** (`src/lib/engine`): column store, sort, filter, stats and export, all unit-tested in Node. Import (`src/lib/import`) detects the format and parses to a `RawTable` of exact source text. Workbooks are read by `xlsx.ts` with no library (the browser's `DecompressionStream` unzips them), loaded with a dynamic import, which is why the worker builds as an ES module (`worker.format` in `vite.config.ts`). A workbook of several sheets fails as `choose-sheet` and the workspace phase becomes `choosing`. Types (`src/lib/types`) parse, format and infer, and never throw. A type is only a reading of the text: nothing converts or rewrites a cell. `src/lib/**` imports no React and no browser globals, except `src/lib/storage`.
 
 **UI state is one Zustand store**, `useWorkspace` in `src/store/workspace.ts`: the import phase, dataset metadata, the `ViewState` (search, filters, sort, column order, width and hidden), and UI flags. It never holds rows. `src/store/session.ts` owns the engine client and is how the UI changes anything: `importDataset`, `applyView` (re-queries), `arrangeView` (order and widths, no re-query), `applyColumns` (titles and types), and `exportDataset`. Each saves to IndexedDB, and a full or blocked store marks the dataset "Not saved" instead of failing.
 

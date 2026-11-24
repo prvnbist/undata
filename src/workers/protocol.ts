@@ -19,6 +19,7 @@ export type EngineError = {
 	code: EngineErrorCode
 	message: string
 	position?: { line: number; column: number } | null
+	sheets?: string[]
 }
 
 export type Progress = { phase: 'reading' | 'parsing' | 'checking'; ratio: number }

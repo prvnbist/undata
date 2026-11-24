@@ -9,6 +9,7 @@ import type { Phase } from '@/store/workspace'
 import type { Progress } from '@/workers/protocol'
 import { Notice } from './Notice'
 import { OpenFileButton } from './OpenFileButton'
+import { SheetPicker } from './SheetPicker'
 
 const STEPS: Record<Progress['phase'], string> = {
 	reading: 'Reading the file',
@@ -113,6 +114,7 @@ export function ImportStatus() {
 		return <Importing name={phase.name} progress={phase.progress} />
 	}
 	if (phase.kind === 'confirming') return <Confirming name={phase.name} size={phase.size} />
+	if (phase.kind === 'choosing') return <SheetPicker name={phase.name} sheets={phase.sheets} />
 	if (phase.kind === 'failed') return <Failed {...phase} />
 	return null
 }

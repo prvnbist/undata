@@ -3,6 +3,7 @@ import type { Detection, Encoding } from './detect'
 import { parseJson, parseNdjson } from './json'
 import { createDelimitedStream } from './stream'
 import type { ImportError, ImportErrorCode, ImportOptions, RawTable } from './types'
+import { isSpreadsheet } from './xlsx-magic'
 
 export type ReadProgress = { phase: 'reading' | 'parsing'; ratio: number }
 
@@ -63,11 +64,31 @@ const readText = async (
 	onText(decode())
 }
 
+// Loaded only when a workbook is opened.
+const readWorkbook = async (
+	blob: Blob,
+	options: Extract<ImportOptions, { format: 'xlsx' }>,
+	onProgress: (progress: ReadProgress) => void
+): Promise<OpenResult> => {
+	const [{ readXlsx }, bytes] = await Promise.all([
+		import('./xlsx'),
+		blob.arrayBuffer().then(buffer => new Uint8Array(buffer)),
+	])
+	onProgress({ phase: 'parsing', ratio: 1 })
+	const result = await readXlsx(bytes, options)
+	if (!result.ok) {
+		const { code, message, sheets } = result
+		return { ok: false, error: { code, message, position: null, ...(sheets ? { sheets } : {}) } }
+	}
+	return { ok: true, table: result.table, options: { ...options, sheet: result.sheet } }
+}
+
 const readTable = async (
 	blob: Blob,
 	options: ImportOptions,
 	onProgress: (progress: ReadProgress) => void
 ): Promise<OpenResult> => {
+	if (options.format === 'xlsx') return readWorkbook(blob, options, onProgress)
 	const reading = (ratio: number) => onProgress({ phase: 'reading', ratio })
 
 	if (options.format === 'delimited') {
@@ -100,6 +121,13 @@ export const openBlob = async (
 	try {
 		if (!options) {
 			const sample = new Uint8Array(await blob.slice(0, SAMPLE_BYTES).arrayBuffer())
+			if (isSpreadsheet(sample)) {
+				return await readTable(
+					blob,
+					{ format: 'xlsx', sheet: null, hasHeader: true },
+					onProgress
+				)
+			}
 			const detection = detect(sample, { truncated: blob.size > SAMPLE_BYTES })
 			if (!detection.ok) return fail(detection.code, DETECT_MESSAGES[detection.code])
 			options = optionsFrom(detection)
@@ -109,7 +137,7 @@ export const openBlob = async (
 	} catch (error) {
 		// The start of the file looked like UTF-8 and a later byte was not. Windows-1252 accepts any
 		// byte, so this cannot loop.
-		if (error instanceof NotUtf8 && options) {
+		if (error instanceof NotUtf8 && options && options.format !== 'xlsx') {
 			return readTable(blob, { ...options, encoding: 'windows-1252' }, onProgress)
 		}
 		return fail('unreadable', error instanceof Error ? error.message : 'The file cannot be read')

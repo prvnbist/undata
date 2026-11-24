@@ -86,7 +86,13 @@ const FORMAT_NAMES: Record<ImportOptions['format'], string> = {
 	delimited: 'Delimited text',
 	json: 'JSON',
 	ndjson: 'NDJSON',
+	xlsx: 'Excel workbook',
 }
+
+const describeOptions = (options: ImportOptions) =>
+	options.format === 'xlsx'
+		? `${FORMAT_NAMES.xlsx}, sheet “${options.sheet ?? ''}”`
+		: `${FORMAT_NAMES[options.format]}, ${options.encoding.toUpperCase()}`
 
 function Details({ dataset, onDone }: { dataset: DatasetMeta; onDone: () => void }) {
 	const { options, warnings } = dataset
@@ -95,9 +101,7 @@ function Details({ dataset, onDone }: { dataset: DatasetMeta; onDone: () => void
 		<>
 			<DialogHeader>
 				<DialogTitle>How this file was read</DialogTitle>
-				<DialogDescription>
-					{FORMAT_NAMES[options.format]}, {options.encoding.toUpperCase()}
-				</DialogDescription>
+				<DialogDescription>{describeOptions(options)}</DialogDescription>
 			</DialogHeader>
 			{warnings.length > 0 && (
 				<ul

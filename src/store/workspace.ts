@@ -25,6 +25,8 @@ export type Phase =
 	// Large enough to ask before reading it.
 	| { kind: 'confirming'; id: string; name: string; size: number }
 	| { kind: 'importing'; id: string; name: string; progress: Progress | null }
+	// A workbook with several sheets, waiting for one to be picked.
+	| { kind: 'choosing'; id: string; name: string; sheets: string[] }
 	| { kind: 'failed'; id: string; name: string; error: ImportFailure }
 	| { kind: 'ready'; id: string; name: string }
 

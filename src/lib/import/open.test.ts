@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vite-plus/test'
 
+import { makeXlsx, oleFile, sheetXml } from '../../../tests/fixtures/makeXlsx'
 import { openBlob } from './open'
 import type { ImportOptions } from './types'
 
@@ -66,7 +67,7 @@ describe('openBlob', () => {
 		const value = '日本😀'.repeat(60_000)
 		const result = await openBlob(inParts(`a,b\n1,${value}\n`, 1001), null)
 		if (!result.ok) throw new Error(result.error.message)
-		expect(result.options.encoding).toBe('utf-8')
+		expect(result.options).toMatchObject({ encoding: 'utf-8' })
 		expect(result.table.columns[1]!.text[0] === value).toBe(true)
 	})
 
@@ -76,7 +77,7 @@ describe('openBlob', () => {
 		const result = await openBlob(new Blob([ascii, latin]), null)
 
 		if (!result.ok) throw new Error(result.error.message)
-		expect(result.options.encoding).toBe('windows-1252')
+		expect(result.options).toMatchObject({ encoding: 'windows-1252' })
 		expect(result.table.columns[0]!.text.at(-1)).toBe('cé')
 		expect(result.table.rowCount).toBe(40_001)
 	})
@@ -103,5 +104,44 @@ describe('openBlob', () => {
 		expect(seen.length).toBeGreaterThan(1)
 		expect(seen.at(-1)).toBe(1)
 		expect(seen).toEqual([...seen].sort((a, b) => a - b))
+	})
+})
+
+describe('openBlob with a workbook', () => {
+	test('reads the only sheet, and says which it was', async () => {
+		const bytes = await makeXlsx({
+			sheets: [
+				{
+					name: 'Sales',
+					xml: sheetXml('<row><c t="str"><v>a</v></c></row><row><c><v>1</v></c></row>'),
+				},
+			],
+		})
+		const result = await opened(bytes)
+		expect(result.options).toEqual({ format: 'xlsx', sheet: 'Sales', hasHeader: true })
+		expect(result.table.columns[0]!.text).toEqual(['1'])
+	})
+
+	test('with several sheets, asks which, and opens the one named', async () => {
+		const sheet = (name: string, value: string) => ({
+			name,
+			xml: sheetXml(`<row><c t="str"><v>a</v></c></row><row><c><v>${value}</v></c></row>`),
+		})
+		const bytes = await makeXlsx({ sheets: [sheet('One', '1'), sheet('Two', '2')] })
+		expect(await open(bytes)).toEqual({
+			ok: false,
+			error: {
+				code: 'choose-sheet',
+				message: 'Choose a sheet to open.',
+				position: null,
+				sheets: ['One', 'Two'],
+			},
+		})
+		const two = await opened(bytes, { format: 'xlsx', sheet: 'Two', hasHeader: true })
+		expect(two.table.columns[0]!.text).toEqual(['2'])
+	})
+
+	test('a password-protected workbook says so', async () => {
+		expect(await open(oleFile(true))).toMatchObject({ ok: false, error: { code: 'encrypted' } })
 	})
 })

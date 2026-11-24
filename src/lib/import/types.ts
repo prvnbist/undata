@@ -72,11 +72,24 @@ export type RawTable = {
 export type ImportOptions =
 	| { format: 'delimited'; delimiter: string; encoding: Encoding; hasHeader: boolean }
 	| { format: 'json' | 'ndjson'; encoding: Encoding }
+	// Null takes the only sheet, and asks when there are several.
+	| { format: 'xlsx'; sheet: string | null; hasHeader: boolean }
 
-export type ImportErrorCode = DetectError | 'invalid-json' | 'no-records' | 'unreadable'
+export type ImportErrorCode =
+	| DetectError
+	| 'invalid-json'
+	| 'no-records'
+	| 'unreadable'
+	// A workbook with several sheets, opened without saying which. Not a failure: the user picks one.
+	| 'choose-sheet'
+	| 'encrypted'
+	| 'old-excel'
+	| 'corrupt'
 
 export type ImportError = {
 	code: ImportErrorCode
 	message: string
 	position: { line: number; column: number } | null
+	// For `choose-sheet`: the sheets there are, in order.
+	sheets?: string[]
 }

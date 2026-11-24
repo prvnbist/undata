@@ -48,6 +48,7 @@ export const closeDataset = () => {
 	client = null
 	source = null
 	waiting = null
+	choosing = null
 	workspace.set(initialWorkspace)
 }
 
@@ -194,7 +195,13 @@ const read = async (request: Required<Omit<ImportRequest, 'known'>>) => {
 	} catch (error) {
 		// Another import took over, or this one was cancelled.
 		if (own !== client) return
-		workspace.set({ phase: { kind: 'failed', id, name, error: toEngineError(error) } })
+		const failure = toEngineError(error)
+		if (failure.code === 'choose-sheet') {
+			choosing = request
+			workspace.set({ phase: { kind: 'choosing', id, name, sheets: failure.sheets ?? [] } })
+			return
+		}
+		workspace.set({ phase: { kind: 'failed', id, name, error: failure } })
 	}
 }
 
@@ -225,6 +232,18 @@ export const importDataset = ({
 	}
 
 	return { id, done: read(request) }
+}
+
+// A workbook read without saying which sheet, waiting for one.
+let choosing: Required<Omit<ImportRequest, 'known'>> | null = null
+
+export const chooseSheet = (sheet: string) => {
+	const request = choosing
+	choosing = null
+	if (!request) return Promise.resolve()
+	client?.terminate()
+	client = null
+	return read({ ...request, options: { format: 'xlsx', sheet, hasHeader: true } })
 }
 
 export const openAnyway = () => {

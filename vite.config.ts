@@ -7,6 +7,9 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
 	resolve: { tsconfigPaths: true },
 	plugins: [tanstackStart({ spa: { enabled: true } }), viteReact(), tailwindcss()],
+	// The worker is a module, so what it loads only for some files, such as the workbook reader, is a
+	// chunk of its own.
+	worker: { format: 'es' },
 	test: {
 		projects: [
 			{

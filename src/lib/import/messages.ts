@@ -57,7 +57,7 @@ const FAILURES: Record<FailureCode, { title: string; hint: string }> = {
 	},
 	binary: {
 		title: 'This is not a text file',
-		hint: 'Undata reads CSV, TSV, JSON and NDJSON. If this is a spreadsheet, save it as CSV first.',
+		hint: 'Undata reads CSV, TSV, JSON, NDJSON and Excel workbooks (.xlsx).',
 	},
 	'invalid-json': {
 		title: 'This JSON is not valid',
@@ -70,6 +70,22 @@ const FAILURES: Record<FailureCode, { title: string; hint: string }> = {
 	unreadable: {
 		title: 'This file could not be read',
 		hint: 'It may have been moved, changed or removed since you chose it. Choose it again.',
+	},
+	'choose-sheet': {
+		title: 'Choose a sheet',
+		hint: 'This workbook has several sheets.',
+	},
+	encrypted: {
+		title: 'This workbook is protected with a password',
+		hint: 'Undata cannot open it. Remove the password in Excel, or save the sheet as CSV, and open that.',
+	},
+	'old-excel': {
+		title: 'This is an older Excel file',
+		hint: 'Undata reads .xlsx workbooks. Save it as .xlsx or CSV in Excel, and open that.',
+	},
+	corrupt: {
+		title: 'This workbook is damaged',
+		hint: 'Part of it is missing or cannot be unpacked. Download or export it again.',
 	},
 	'too-large': {
 		title: 'This file is too large',
