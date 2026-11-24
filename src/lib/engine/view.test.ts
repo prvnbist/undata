@@ -9,7 +9,9 @@ import {
 	setHidden,
 	setSize,
 	setSort,
+	withColumns,
 } from './view'
+import type { ViewState } from './view'
 
 const asc = (columnId: string) => ({ columnId, desc: false })
 const desc = (columnId: string) => ({ columnId, desc: true })
@@ -77,4 +79,56 @@ test('setSize and setAllHidden change only the named columns', () => {
 	expect(setSize(view, 'a', null).columns[0]!.size).toBeNull()
 	const hidden = setAllHidden(view, new Set(['a', 'b']), true)
 	expect(hidden.columns.every(column => column.hidden)).toBe(true)
+})
+
+describe('withColumns', () => {
+	const view: ViewState = {
+		search: 'x',
+		filters: [
+			{ columnId: 'a', op: 'empty' },
+			{ columnId: 'gone', op: 'notEmpty' },
+		],
+		sort: [
+			{ columnId: 'gone', desc: false },
+			{ columnId: 'b', desc: true },
+		],
+		grouping: {
+			by: ['gone', 'a'],
+			aggregates: [{ columnId: 'gone', fn: 'sum' }],
+			sort: [{ key: 'sum:gone', desc: false }],
+		},
+		columns: [
+			{ id: 'b', hidden: false, size: 90 },
+			{ id: 'gone', hidden: false, size: null },
+			{ id: 'a', hidden: true, size: null },
+		],
+	}
+
+	test('drops what names a column that is gone, and says which', () => {
+		const { view: fitted, missing } = withColumns(view, ['a', 'b', 'c'])
+		expect(missing).toEqual(['gone'])
+		expect(fitted.filters).toEqual([{ columnId: 'a', op: 'empty' }])
+		expect(fitted.sort).toEqual([{ columnId: 'b', desc: true }])
+		expect(fitted.grouping).toEqual({ by: ['a'], aggregates: [], sort: [] })
+		// New columns go last, shown.
+		expect(fitted.columns).toEqual([
+			{ id: 'b', hidden: false, size: 90 },
+			{ id: 'a', hidden: true, size: null },
+			{ id: 'c', hidden: false, size: null },
+		])
+	})
+
+	test('a grouping left with no column is none', () => {
+		const { view: fitted } = withColumns(
+			{ ...view, grouping: { by: ['gone'], aggregates: [], sort: [] } },
+			['a', 'b']
+		)
+		expect(fitted.grouping).toBeNull()
+	})
+
+	test('the same view back when every column is there', () => {
+		const same = withColumns(view, ['a', 'b', 'gone'])
+		expect(same).toEqual({ view, missing: [] })
+		expect(same.view).toBe(view)
+	})
 })

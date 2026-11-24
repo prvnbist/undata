@@ -1,6 +1,7 @@
 import type { ColumnSetup, ViewState } from '@/lib/engine/view'
 import type { ImportOptions } from '@/lib/import/types'
 import { STORES, request, transact } from './db'
+import type { SavedView } from './views'
 
 // What is kept of a dataset. Parsed rows never are: opening it again reads the bytes again.
 export type StoredDataset = {
@@ -12,11 +13,14 @@ export type StoredDataset = {
 	options: ImportOptions
 	setup: ColumnSetup[]
 	view: ViewState
+	// Saved views, and the one the view was last switched to. Missing in records from before them.
+	views?: SavedView[]
+	activeView?: string | null
 	createdAt: number
 	openedAt: number
 }
 
-export type DatasetRecord = Omit<StoredDataset, 'createdAt' | 'openedAt'>
+export type DatasetRecord = Omit<StoredDataset, 'createdAt' | 'openedAt' | 'views' | 'activeView'>
 
 // Saves the dataset as just opened. The bytes are written only the first time, since reading the
 // same dataset again with other options does not change them.
@@ -25,7 +29,10 @@ export const saveDataset = (record: DatasetRecord, blob: Blob, now = Date.now())
 		const existing = (await request(datasets.get(record.id))) as StoredDataset | undefined
 		const hasBytes = (await request(blobs.getKey(record.id))) !== undefined
 		if (!hasBytes) blobs.put(blob, record.id)
+		// Saved views stay through reading the dataset again.
 		const stored: StoredDataset = {
+			views: existing?.views ?? [],
+			activeView: existing?.activeView ?? null,
 			...record,
 			createdAt: existing?.createdAt ?? now,
 			openedAt: now,

@@ -4,6 +4,7 @@ import { DataGrid } from '@/components/grid/DataGrid'
 import { GroupBar, GroupButton } from '@/components/grouping/GroupBar'
 import { SummaryGrid } from '@/components/grouping/SummaryGrid'
 import { Inspector } from '@/components/inspector/Inspector'
+import { ViewSwitcher } from '@/components/views/ViewSwitcher'
 import { AddFilter, FilterBar } from '@/components/filtering/FilterBar'
 import { NoMatches } from '@/components/filtering/NoMatches'
 import { SearchBox } from '@/components/filtering/SearchBox'
@@ -22,6 +23,7 @@ export function Workspace() {
 		<main className="flex h-dvh flex-col">
 			<header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
 				<h1 className="min-w-20 flex-1 truncate text-lg">{name}</h1>
+				<ViewSwitcher />
 				<SearchBox />
 				<AddFilter />
 				<GroupButton />

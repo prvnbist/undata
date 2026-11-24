@@ -116,3 +116,51 @@ export const setAllHidden = (view: ViewState, ids: Set<string>, hidden: boolean)
 	...view,
 	columns: view.columns.map(column => (ids.has(column.id) ? { ...column, hidden } : column)),
 })
+
+// A view saved for other columns, fitted to these. Whatever names a column that is gone is dropped,
+// and columns it never knew go last. `missing` is the ids it named that are gone.
+export const withColumns = (
+	view: ViewState,
+	ids: string[]
+): { view: ViewState; missing: string[] } => {
+	const known = new Set(ids)
+	const named = [
+		...view.columns.map(column => column.id),
+		...view.filters.map(filter => filter.columnId),
+		...view.sort.map(key => key.columnId),
+		...(view.grouping?.by ?? []),
+		...(view.grouping?.aggregates.map(aggregate => aggregate.columnId) ?? []),
+	]
+	const missing = [...new Set(named.filter(id => !known.has(id)))]
+	const listed = new Set(view.columns.map(column => column.id))
+	const added = ids.filter(id => !listed.has(id))
+	if (missing.length === 0 && added.length === 0) return { view, missing }
+
+	const gone = new Set(missing)
+	let grouping = view.grouping
+	if (grouping) {
+		const by = grouping.by.filter(id => !gone.has(id))
+		const aggregates = grouping.aggregates.filter(aggregate => !gone.has(aggregate.columnId))
+		const keys = new Set([
+			'count',
+			...by,
+			...aggregates.map(({ fn, columnId }) => `${fn}:${columnId}`),
+		])
+		grouping = by.length
+			? { by, aggregates, sort: grouping.sort.filter(key => keys.has(key.key)) }
+			: null
+	}
+	return {
+		view: {
+			...view,
+			filters: view.filters.filter(filter => !gone.has(filter.columnId)),
+			sort: view.sort.filter(key => !gone.has(key.columnId)),
+			grouping,
+			columns: [
+				...view.columns.filter(column => !gone.has(column.id)),
+				...added.map(id => ({ id, hidden: false, size: null })),
+			],
+		},
+		missing,
+	}
+}

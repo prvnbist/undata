@@ -4,6 +4,7 @@ import type { ColumnInfo } from '@/lib/engine/store'
 import { defaultView } from '@/lib/engine/view'
 import type { ViewState } from '@/lib/engine/view'
 import type { ImportOptions, ImportWarning } from '@/lib/import/types'
+import type { SavedView } from '@/lib/storage/views'
 import type { EngineError, Grouped, Progress } from '@/workers/protocol'
 
 // A file can also be turned away before the engine sees it.
@@ -49,6 +50,9 @@ export type WorkspaceState = {
 	drilledFrom: ViewState | null
 	queryError: EngineError | null
 	saved: SaveState
+	// The dataset's saved views, and the one last switched to. Null is all rows.
+	views: SavedView[]
+	activeView: string | null
 	// Whether the export dialog is open, so the palette can open it too.
 	exporting: boolean
 	// A cell to bring into view and make active. A part left out stays where it is. `nonce` tells one
@@ -71,6 +75,8 @@ export const initialWorkspace: WorkspaceState = {
 	drilledFrom: null,
 	queryError: null,
 	saved: null,
+	views: [],
+	activeView: null,
 	exporting: false,
 	goTo: null,
 	inspector: null,

@@ -7,6 +7,7 @@ import type { ColumnSetup, Grouping, ViewState } from '@/lib/engine/view'
 import { formatBytes } from '@/lib/bytes'
 import type { ImportOptions } from '@/lib/import/types'
 import { requestPersistence, saveDataset, updateDataset } from '@/lib/storage/datasets'
+import { setActiveView } from '@/lib/storage/views'
 import { createEngineClient, isEngineError } from '@/workers/client'
 import type { EngineClient } from '@/workers/client'
 import type { EngineError } from '@/workers/protocol'
@@ -102,12 +103,13 @@ const unsaved = (error: unknown) => {
 }
 
 // Saving never stops a dataset from opening. It only changes what is said about it.
-const save = async (id: string, blob: Blob) => {
+// `fresh` is a dataset read without its view, whose saved views are then none of them on screen.
+const save = async (id: string, blob: Blob, fresh: boolean) => {
 	const { dataset, view } = workspace.get()
 	if (!dataset || dataset.id !== id) return
 	workspace.set({ saved: 'saving' })
 	try {
-		await saveDataset(
+		const stored = await saveDataset(
 			{
 				id,
 				name: dataset.name,
@@ -120,7 +122,11 @@ const save = async (id: string, blob: Blob) => {
 			},
 			blob
 		)
-		if (workspace.get().dataset?.id === id) workspace.set({ saved: 'saved' })
+		if (workspace.get().dataset?.id === id) {
+			const activeView = fresh ? null : (stored.activeView ?? null)
+			workspace.set({ saved: 'saved', views: stored.views ?? [], activeView })
+			if (fresh && stored.activeView) await setActiveView(id, null)
+		}
 		void requestPersistence()
 	} catch (error) {
 		if (workspace.get().dataset?.id === id) unsaved(error)
@@ -183,7 +189,7 @@ const read = async (request: Required<Omit<ImportRequest, 'known'>>) => {
 			groups,
 			...(dropped ? { notice: droppedNotice(dropped) } : {}),
 		})
-		pendingWrite = save(id, blob)
+		pendingWrite = save(id, blob, view === null)
 		await pendingWrite
 	} catch (error) {
 		// Another import took over, or this one was cancelled.
@@ -261,6 +267,15 @@ export const applyView = async (view: ViewState) => {
 		workspace.set({ querying: false, queryError: toEngineError(error) })
 	}
 	await saving
+}
+
+// A view made for these columns once, such as a saved one, fitted to their types now.
+export const applyFittedView = (view: ViewState) => {
+	const { dataset } = workspace.get()
+	if (!dataset) return Promise.resolve()
+	const { view: fitted, dropped } = fitView(view, dataset.columns)
+	if (dropped) workspace.set({ notice: droppedNotice(dropped) })
+	return applyView(fitted)
 }
 
 // Titles and types. The engine works out the counts again for the new types.
