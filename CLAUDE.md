@@ -40,6 +40,8 @@ Style (set in `vite.config.ts`): tabs at width 3, 100-column lines, single quote
 
 **Grid** (`src/components/grid`): `DataGrid` windows rows and columns, with scaled scrolling past browsers' maximum element height (`scaledScroll.ts`). `Cell` parses each value for its column type before handing it to a renderer in `renderers/`, and shows values that do not fit as written with a labelled marker. JSON opens in `JsonTree`. Headers sort, drag and resize, and `ColumnMenu` holds the rest. The body is one tab stop, using `aria-activedescendant` (`useGridKeyboard.ts`, `navigation.ts`).
 
+**SQL** (`src/lib/query`): a one-table dialect parsed and compiled on the main thread into a `ViewState`, with no worker change. `printQuery` writes a view back as SQL, so the editor (`components/query`, lazy-loaded) and the filter bar, headers and group bar are two views of the same state. `compile(print(view))` must give the view back, which `print.test.ts` checks for every filter op, so a new op needs a case in `compile.ts` and `print.ts`. Unsupported SQL (`OR`, `LIMIT`, expressions) fails with a positioned message, never silently.
+
 **Cell types:** the list is `DATA_TYPES` in `src/lib/constants.ts`, and `DataType` derives from it. Adding one means a parser in `src/lib/types/parse.ts` and a case in `components/grid/Cell.tsx`.
 
 ## UI

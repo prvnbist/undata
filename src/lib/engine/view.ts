@@ -8,7 +8,7 @@ export type ColumnSetup = { id: string; title: string; type: DataType }
 export type FilterTest =
 	| { op: 'anyOf' | 'noneOf'; values: string[] }
 	| { op: 'contains' | 'notContains' | 'regex'; value: string }
-	| { op: 'eq' | 'gt' | 'gte' | 'lt' | 'lte'; value: string }
+	| { op: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte'; value: string }
 	// `includeMax` is false for a histogram bar, so that no value belongs to two bars.
 	| { op: 'between'; min: string; max: string; includeMax: boolean }
 	| { op: 'empty' | 'notEmpty' | 'malformed' | 'notMalformed' }

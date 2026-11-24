@@ -64,6 +64,11 @@ export type WorkspaceState = {
 	inspector: Inspecting | null
 	// Something to tell the user once.
 	notice: string | null
+	// The SQL editor: whether it is shown, and text typed there that has not been run. Null shows the
+	// view as SQL. `queryFocus` changes when something asks for focus to go to it.
+	queryOpen: boolean
+	queryDraft: string | null
+	queryFocus: number
 }
 
 export const initialWorkspace: WorkspaceState = {
@@ -83,6 +88,9 @@ export const initialWorkspace: WorkspaceState = {
 	goTo: null,
 	inspector: null,
 	notice: null,
+	queryOpen: false,
+	queryDraft: null,
+	queryFocus: 0,
 }
 
 // UI state and the view only. Rows stay in the engine, and `session.ts` is what talks to it.

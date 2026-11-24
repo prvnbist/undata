@@ -5,7 +5,7 @@ import type { Filter, FilterOp } from './view'
 
 // What a filter is offered with on each type. Comparisons are only for types that have an order, and
 // a text column is never malformed, so it is not offered there.
-const COMPARE: FilterOp[] = ['eq', 'gt', 'gte', 'lt', 'lte', 'between']
+const COMPARE: FilterOp[] = ['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'between']
 const TEXT: FilterOp[] = ['contains', 'notContains', 'anyOf', 'noneOf', 'regex']
 const EMPTY: FilterOp[] = ['empty', 'notEmpty']
 const VALID: FilterOp[] = ['malformed', 'notMalformed']
@@ -22,6 +22,7 @@ export const operatorsFor = (type: DataType): FilterOp[] => {
 
 const SYMBOLS: Partial<Record<FilterOp, string>> = {
 	eq: '=',
+	ne: '≠',
 	gt: '>',
 	gte: '≥',
 	lt: '<',
@@ -35,6 +36,8 @@ export const operatorLabel = (type: DataType, op: FilterOp): string => {
 	switch (op) {
 		case 'eq':
 			return 'is'
+		case 'ne':
+			return 'is not'
 		case 'gt':
 			return 'is after'
 		case 'gte':

@@ -50,6 +50,8 @@ describe('filters on parsed values', () => {
 
 	test.each<[FilterTest, string[]]>([
 		[{ op: 'eq', value: '9' }, ['9.0']],
+		// Like `=`, it only looks at values that fit: empty and malformed cells have no value to differ.
+		[{ op: 'ne', value: '9' }, ['5', '10', '-1']],
 		[{ op: 'gt', value: '5' }, ['10', '9.0']],
 		[{ op: 'gte', value: '5' }, ['5', '10', '9.0']],
 		[{ op: 'lt', value: '5' }, ['-1']],
@@ -66,6 +68,7 @@ describe('filters on parsed values', () => {
 		['date', ['2024-01-01', '2024-02-01'], { op: 'gt', value: '2024-01-15' }, ['2024-02-01']],
 		['time', ['9:00', '14:00'], { op: 'lt', value: '10:00' }, ['9:00']],
 		['boolean', ['yes', 'FALSE', '1'], { op: 'eq', value: 'true' }, ['yes', '1']],
+		['date', ['2024-01-01', '2024-02-01', ''], { op: 'ne', value: '2024-01-01' }, ['2024-02-01']],
 		[
 			'timestamptz',
 			['2024-01-01T10:00:00Z', '2024-01-01T11:00:00+02:00'],

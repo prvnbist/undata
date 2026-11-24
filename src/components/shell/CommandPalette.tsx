@@ -6,6 +6,7 @@ import {
 	IconCornerDownRight,
 	IconFile,
 	IconSearch,
+	IconSql,
 } from '@tabler/icons-react'
 
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
@@ -24,6 +25,7 @@ import { useOpenDataset } from './useOpenDataset'
 
 const GROUP_ICONS: Record<Command['group'], typeof IconFile> = {
 	File: IconFile,
+	View: IconSql,
 	Columns: IconColumns,
 	Sort: IconArrowsSort,
 	'Go to': IconCornerDownRight,
@@ -73,6 +75,7 @@ export function CommandPalette() {
 				void applyView({ ...view, sort: setSort(view.sort, columnId, desc, false) })
 			},
 			inspectColumn,
+			editQuery: () => workspace.set({ queryOpen: true, queryFocus: nextNonce() }),
 			setHidden: (columnId, hidden) =>
 				void applyView(setHidden(workspace.get().view, columnId, hidden)),
 		}

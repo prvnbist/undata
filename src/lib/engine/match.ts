@@ -1,6 +1,6 @@
 export type TextMatcher = (text: string) => boolean
 
-const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\/]/g, String.raw`\$&`)
+export const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\/]/g, String.raw`\$&`)
 
 // Case-insensitive substring. A regular expression does it without allocating a lower-cased copy of
 // every cell, which is what makes searching a million rows quick.
