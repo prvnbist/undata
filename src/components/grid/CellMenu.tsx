@@ -92,7 +92,7 @@ export function CellMenu({
 			>
 				{ready && (
 					<>
-						<DropdownMenuLabel className="truncate text-xs text-foreground/70">
+						<DropdownMenuLabel className="truncate text-xs text-muted-foreground">
 							Filter {target.column.title}
 						</DropdownMenuLabel>
 						{cellFilters(target.column.id, value).map(({ label, icon: Icon, filter }) => (

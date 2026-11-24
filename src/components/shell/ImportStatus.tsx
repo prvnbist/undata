@@ -39,7 +39,7 @@ function Importing({ name, progress }: { name: string; progress: Progress | null
 				aria-valuemin={0}
 				aria-valuemax={100}
 				aria-valuenow={percent ?? undefined}
-				className="h-2 overflow-hidden rounded-full bg-accent"
+				className="h-1 overflow-hidden rounded-full bg-accent"
 			>
 				<div
 					className={
@@ -99,7 +99,7 @@ function Failed({ name, error }: Extract<Phase, { kind: 'failed' }>) {
 				</>
 			}
 		>
-			<p className="font-mono break-all text-foreground/70">{name}</p>
+			<p className="font-mono break-all text-muted-foreground">{name}</p>
 			{error.message && <p>{error.message}</p>}
 			<p>{hint}</p>
 		</Notice>

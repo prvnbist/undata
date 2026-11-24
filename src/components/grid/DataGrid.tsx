@@ -58,7 +58,7 @@ const GridRow = memo(function GridRow({
 			role="row"
 			aria-rowindex={index + 2}
 			aria-current={inspected || undefined}
-			className="flex border-b hover:bg-accent/30 aria-current:bg-primary/5"
+			className="flex border-b border-border/60 hover:bg-foreground/[0.025] aria-current:bg-primary/[0.06]"
 			style={{ height: ROW_HEIGHT, width: span.width }}
 		>
 			<div
@@ -66,7 +66,7 @@ const GridRow = memo(function GridRow({
 				aria-colindex={1}
 				data-row={index}
 				title="Open this row"
-				className="sticky left-0 z-10 flex shrink-0 cursor-pointer items-center justify-end border-r bg-background px-2 font-mono text-xs text-foreground/70 hover:text-foreground"
+				className="sticky left-0 z-10 flex shrink-0 cursor-pointer items-center justify-end border-r border-border/70 bg-background px-2 text-xs text-subtle-foreground tabular hover:text-foreground"
 				style={{ width: gutter }}
 			>
 				{source === undefined ? '' : source + 1}
@@ -85,7 +85,7 @@ const GridRow = memo(function GridRow({
 							aria-selected={col === activeCol || undefined}
 							data-row={index}
 							data-col={col}
-							className="flex shrink-0 items-center overflow-hidden border-r px-3 text-sm whitespace-nowrap aria-selected:bg-primary/10 aria-selected:outline-2 aria-selected:-outline-offset-2 aria-selected:outline-primary/60 group-focus-visible/grid:aria-selected:outline-primary"
+							className="flex shrink-0 items-center overflow-hidden border-r border-border/40 px-3 text-sm whitespace-nowrap tabular aria-selected:bg-primary/[0.08] aria-selected:outline-1 aria-selected:-outline-offset-1 aria-selected:outline-primary/50 group-focus-visible/grid:aria-selected:outline-primary"
 							style={{ width: size }}
 						>
 							{column && (
@@ -290,7 +290,7 @@ export function DataGrid() {
 					className="relative"
 					style={{ height: HEADER_HEIGHT + scale.bodyHeight, width: total }}
 				>
-					<div role="rowgroup" className="sticky top-0 z-20 bg-card">
+					<div role="rowgroup" className="sticky top-0 z-20 bg-background">
 						{indicator !== null && (
 							<div
 								aria-hidden
@@ -308,7 +308,7 @@ export function DataGrid() {
 								role="columnheader"
 								aria-colindex={1}
 								aria-label="Row number"
-								className="sticky left-0 z-10 shrink-0 border-r bg-card"
+								className="sticky left-0 z-10 shrink-0 border-r border-border/70 bg-background"
 								style={{ width: gutter }}
 							/>
 							<Cells span={span}>

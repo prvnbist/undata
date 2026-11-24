@@ -24,7 +24,7 @@ export function AddFilter() {
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
-				<Button id={ADD_FILTER} variant="outline" size="sm" aria-label="Add filter">
+				<Button id={ADD_FILTER} variant="ghost" size="sm" aria-label="Add filter">
 					<IconFilter />
 					<span className="max-sm:sr-only">Filter</span>
 				</Button>
@@ -51,14 +51,14 @@ function FilterChip({
 }) {
 	const removed = useRef(false)
 	return (
-		<li className="flex items-center rounded-full border bg-secondary/40 text-sm">
+		<li className="flex h-6 items-center rounded-md border border-input bg-secondary text-xs">
 			<Popover open={open} onOpenChange={onOpenChange}>
 				<PopoverTrigger asChild>
 					<button
 						type="button"
 						data-filter-chip
 						aria-label={`Edit filter: ${label}`}
-						className="max-w-80 truncate rounded-l-full py-1 pr-1 pl-3 hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
+						className="h-full max-w-80 truncate rounded-l-md pr-1.5 pl-2 text-foreground hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
 					>
 						{label}
 					</button>
@@ -90,13 +90,13 @@ function FilterChip({
 			<button
 				type="button"
 				aria-label={`Remove filter: ${label}`}
-				className="rounded-r-full py-1.5 pr-2 pl-1 hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
+				className="flex h-full items-center rounded-r-md border-l border-input px-1.5 text-subtle-foreground hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
 				onClick={() => {
 					void removeFilter(index)
 					onRemove()
 				}}
 			>
-				<IconX className="size-3.5" aria-hidden />
+				<IconX className="size-3" aria-hidden />
 			</button>
 		</li>
 	)
@@ -134,9 +134,9 @@ export function FilterBar() {
 		<div
 			role="region"
 			aria-label="Filters"
-			className="flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-2"
+			className="flex shrink-0 flex-wrap items-center gap-1.5 border-b px-3 py-1.5"
 		>
-			<ul className="flex flex-wrap items-center gap-2">
+			<ul className="flex flex-wrap items-center gap-1.5">
 				{filters.map((filter, index) => (
 					<FilterChip
 						key={`${index}:${filter.columnId}:${filter.op}`}

@@ -61,7 +61,9 @@ function GroupEditor() {
 				<fieldset className="flex flex-col gap-3" disabled={by.length === 0}>
 					<legend className="mb-1 text-sm font-medium">For each group</legend>
 					{by.length === 0 && (
-						<p className="text-xs text-foreground/70">Choose a column to group by first.</p>
+						<p className="text-xs text-muted-foreground">
+							Choose a column to group by first.
+						</p>
 					)}
 					{measurable.map(column => (
 						<div key={column.id} className="grid grid-cols-2 gap-2">
@@ -87,7 +89,7 @@ export function GroupButton() {
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
-				<Button variant={grouped ? 'secondary' : 'outline'} size="sm" aria-label="Group rows">
+				<Button variant={grouped ? 'secondary' : 'ghost'} size="sm" aria-label="Group rows">
 					<IconLayoutList />
 					<span className="max-sm:sr-only">Group</span>
 				</Button>
@@ -121,7 +123,7 @@ export function GroupBar() {
 			<div
 				role="region"
 				aria-label="Grouping"
-				className="flex shrink-0 items-center gap-2 border-b px-4 py-1.5"
+				className="flex shrink-0 items-center gap-2 border-b px-3 py-1"
 			>
 				<Button variant="ghost" size="xs" onClick={() => void backToGroups()}>
 					<IconArrowLeft /> Back to groups
@@ -144,10 +146,12 @@ export function GroupBar() {
 		<div
 			role="region"
 			aria-label="Grouping"
-			className="flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-1.5 text-sm"
+			className="flex shrink-0 flex-wrap items-center gap-2 border-b px-3 py-1 text-xs"
 		>
-			<p className="truncate">Grouped by {grouping.by.map(titleOf).join(', ')}</p>
-			{left.length > 0 && <p className="text-xs text-foreground/70">{left.join(' · ')}</p>}
+			<p className="truncate text-muted-foreground">
+				Grouped by {grouping.by.map(titleOf).join(', ')}
+			</p>
+			{left.length > 0 && <p className="text-subtle-foreground">{left.join(' · ')}</p>}
 			<div className="ml-auto flex items-center gap-1">
 				<Button
 					variant="ghost"

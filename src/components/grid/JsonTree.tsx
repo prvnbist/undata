@@ -27,7 +27,7 @@ function Branch({ label, node, open }: { label: ReactNode; node: JsonNode; open:
 	const children: [ReactNode, JsonNode][] =
 		node.kind === 'object'
 			? node.entries.map(([key, child]) => [
-					<span className="text-foreground/70">{key}:</span>,
+					<span className="text-muted-foreground">{key}:</span>,
 					child,
 				])
 			: node.items.map((child, i) => [

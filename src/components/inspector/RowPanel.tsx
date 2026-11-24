@@ -171,7 +171,7 @@ export function RowPanel({ row }: { row: number }) {
 			}
 		>
 			<div className="flex shrink-0 flex-col gap-1 border-b px-4 py-2">
-				<p className="text-xs text-foreground/70" aria-live="polite">
+				<p className="text-xs text-subtle-foreground tabular" aria-live="polite">
 					{rowCount > 0
 						? `${inEnglish.format(row + 1)} of ${inEnglish.format(rowCount)} in this view`
 						: 'No rows'}
@@ -187,23 +187,27 @@ export function RowPanel({ row }: { row: number }) {
 							setFind('')
 						}
 					}}
-					className="h-8"
+					className="h-7"
 				/>
 			</div>
 			<dl className="min-h-0 flex-1 overflow-y-auto px-4 py-2 text-sm">
 				{shown.map(({ column, hidden, text, kind }) => (
 					<div
 						key={column.id}
-						className="group flex flex-col gap-1 border-b py-2 last:border-b-0"
+						className="group flex flex-col gap-1 border-b border-border/60 py-2.5 last:border-b-0"
 					>
-						<dt className="flex items-center gap-2 text-xs text-foreground/70">
+						<dt className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
 							<span className="min-w-0 flex-1 truncate">
 								{column.title}
 								<span className="sr-only">, </span>
-								<span className="ml-1.5 text-muted-foreground">
+								<span className="ml-1.5 font-normal text-subtle-foreground">
 									{LABELS.get(column.type)}
 								</span>
-								{hidden && <span className="ml-1.5 text-muted-foreground">· hidden</span>}
+								{hidden && (
+									<span className="ml-1.5 font-normal text-subtle-foreground">
+										· hidden
+									</span>
+								)}
 							</span>
 							<Button
 								variant="ghost"
@@ -221,7 +225,7 @@ export function RowPanel({ row }: { row: number }) {
 					</div>
 				))}
 				{record && shown.length === 0 && (
-					<p className="py-4 text-center text-foreground/70">No field matches</p>
+					<p className="py-4 text-center text-muted-foreground">No field matches</p>
 				)}
 			</dl>
 		</InspectorFrame>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { IconTrash } from '@tabler/icons-react'
+import { IconTable, IconTrash } from '@tabler/icons-react'
 
 import { Button } from '@/components/ui/button'
 import { formatBytes } from '@/lib/bytes'
@@ -62,24 +62,33 @@ export function Recents() {
 	if (datasets.length === 0) return null
 
 	return (
-		<section aria-labelledby="recents" className="space-y-3">
-			<h2 id="recents" className="text-lg">
+		<section aria-labelledby="recents" className="space-y-2">
+			<h2 id="recents" className="px-2 text-xs font-medium text-subtle-foreground">
 				Recent
 			</h2>
-			<ul aria-label="Recent datasets" className="divide-y rounded-md border">
+			<ul aria-label="Recent datasets" className="flex flex-col">
 				{datasets.map(dataset => (
-					<li key={dataset.id} className="flex items-center gap-2 pr-2">
+					<li
+						key={dataset.id}
+						className="group flex items-center gap-1 rounded-md pr-1.5 hover:bg-accent/60 has-focus-visible:bg-accent/60"
+					>
 						<Link
 							to="/d/$datasetId"
 							params={{ datasetId: dataset.id }}
-							className="flex min-w-0 flex-1 flex-col gap-0.5 rounded-md px-4 py-3 outline-none hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50"
+							className="flex min-w-0 flex-1 items-center gap-3 rounded-md px-2 py-2 outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
 						>
-							<span className="truncate">{dataset.name}</span>
-							<span className="text-xs text-foreground/70">{details(dataset)}</span>
+							<IconTable className="size-4 shrink-0 text-subtle-foreground" aria-hidden />
+							<span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3">
+								<span className="min-w-0 flex-1 truncate">{dataset.name}</span>
+								<span className="shrink-0 text-xs text-subtle-foreground tabular">
+									{details(dataset)}
+								</span>
+							</span>
 						</Link>
 						<Button
 							variant="ghost"
-							size="icon-sm"
+							size="icon-xs"
+							className="transition-opacity [@media(hover:hover)]:not-group-hover:not-group-has-focus-visible:opacity-0"
 							aria-label={`Delete ${dataset.name}`}
 							onClick={() => void remove(dataset.id)}
 						>

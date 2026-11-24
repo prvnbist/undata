@@ -42,6 +42,7 @@ import { toggleGroupBy } from '@/components/grouping/actions'
 import { inspectColumn } from '@/components/inspector/Inspector'
 import { Input } from '@/components/ui/input'
 import { DATA_TYPES } from '@/lib/constants'
+import { TYPE_ICONS } from './typeIcons'
 import type { DataType } from '@/lib/constants'
 import type { ColumnInfo } from '@/lib/engine/store'
 import { moveColumnBy, setHidden, setSize, setSort } from '@/lib/engine/view'
@@ -165,7 +166,7 @@ export function ColumnMenu({
 						variant="ghost"
 						size="icon-xs"
 						aria-label={`Column menu for ${column.title}`}
-						className="shrink-0"
+						className="shrink-0 transition-opacity [@media(hover:hover)]:not-aria-expanded:not-group-hover/header:not-group-focus-within/header:opacity-0"
 					>
 						<IconChevronDown />
 					</Button>
@@ -218,7 +219,7 @@ export function ColumnMenu({
 										onSelect={() => void addFilter({ columnId: column.id, op })}
 									>
 										{label}
-										<span className="ml-auto font-mono text-xs text-foreground/70">
+										<span className="ml-auto font-mono text-xs text-muted-foreground">
 											{inEnglish.format(n)}
 										</span>
 									</DropdownMenuItem>
@@ -239,6 +240,10 @@ export function ColumnMenu({
 							>
 								{DATA_TYPES.map(({ value, label }) => (
 									<DropdownMenuRadioItem key={value} value={value}>
+										{(() => {
+											const Icon = TYPE_ICONS[value]
+											return <Icon aria-hidden />
+										})()}
 										{label}
 									</DropdownMenuRadioItem>
 								))}

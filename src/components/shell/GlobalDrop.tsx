@@ -49,8 +49,8 @@ export function GlobalDrop() {
 	if (!over) return null
 
 	return (
-		<div className="pointer-events-none fixed inset-0 z-100 flex items-center justify-center border-4 border-dashed border-primary bg-background/90">
-			<p className="text-3xl">Drop to open</p>
+		<div className="pointer-events-none fixed inset-0 z-100 flex items-center justify-center m-2 rounded-xl border-2 border-dashed border-primary/60 bg-background/85 backdrop-blur-sm">
+			<p className="text-xl font-medium">Drop to open</p>
 		</div>
 	)
 }
